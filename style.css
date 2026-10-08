@@ -1363,3 +1363,536 @@ body {
         font-size: 14px;
     }
 }
+
+/* =====================================================
+   INVENTORY PAGE
+   ===================================================== */
+
+
+/* Inventory Filter */
+
+.inventory-filter {
+    display: grid;
+
+    grid-template-columns:
+        1.5fr 1fr 1fr;
+
+    gap: 10px;
+
+    margin-bottom: 18px;
+}
+
+.inventory-filter input,
+.inventory-filter select {
+    width: 100%;
+
+    height: 40px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 7px;
+
+    background: #fff;
+
+    padding: 0 12px;
+
+    font-size: 11px;
+
+    color: var(--text);
+
+    outline: none;
+}
+
+.inventory-filter input:focus,
+.inventory-filter select:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 2px rgba(37, 99, 235, 0.08);
+}
+
+
+/* Inventory Table */
+
+.inventory-table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+}
+
+.inventory-table {
+    width: 100%;
+
+    min-width: 850px;
+
+    border-collapse: collapse;
+
+    background: #fff;
+}
+
+.inventory-table th {
+    background: #f8fafc;
+
+    color: #6b7280;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    text-align: left;
+
+    padding: 12px;
+
+    border-bottom: 1px solid var(--border);
+
+    white-space: nowrap;
+}
+
+.inventory-table td {
+    padding: 12px;
+
+    border-bottom: 1px solid #f1f5f9;
+
+    font-size: 11px;
+
+    vertical-align: middle;
+}
+
+.inventory-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.inventory-table tbody tr:hover {
+    background: #fafcff;
+}
+
+
+/* Empty Inventory */
+
+.empty-inventory {
+    height: 220px;
+
+    text-align: center;
+
+    color: var(--text-muted);
+}
+
+.empty-inventory div {
+    width: 50px;
+    height: 50px;
+
+    border-radius: 50%;
+
+    background: #f3f4f6;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 10px;
+
+    font-size: 22px;
+}
+
+.empty-inventory strong {
+    display: block;
+
+    color: var(--text);
+
+    font-size: 12px;
+
+    margin-bottom: 5px;
+}
+
+.empty-inventory span {
+    font-size: 10px;
+}
+
+
+/* Product Status */
+
+.stock-status {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 4px 8px;
+
+    border-radius: 20px;
+
+    font-size: 9px;
+
+    font-weight: 600;
+}
+
+.stock-status.in-stock {
+    background: #dcfce7;
+
+    color: #15803d;
+}
+
+.stock-status.low-stock {
+    background: #fef3c7;
+
+    color: #b45309;
+}
+
+.stock-status.out-stock {
+    background: #fee2e2;
+
+    color: #b91c1c;
+}
+
+
+/* Product Name */
+
+.product-name-cell {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+}
+
+.product-image-small {
+    width: 32px;
+    height: 32px;
+
+    border-radius: 7px;
+
+    background: #eff6ff;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 14px;
+
+    flex-shrink: 0;
+}
+
+.product-name-cell strong {
+    display: block;
+
+    font-size: 11px;
+
+    color: var(--text);
+}
+
+.product-name-cell small {
+    display: block;
+
+    color: var(--text-muted);
+
+    font-size: 8px;
+
+    margin-top: 2px;
+}
+
+
+/* Table Action */
+
+.table-action-btn {
+    border: 1px solid var(--border);
+
+    background: #fff;
+
+    color: var(--text-light);
+
+    width: 29px;
+    height: 29px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+}
+
+.table-action-btn:hover {
+    background: #f3f4f6;
+
+    color: var(--primary);
+}
+
+
+/* =====================================================
+   MODAL
+   ===================================================== */
+
+.modal-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(15, 23, 42, 0.55);
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    z-index: 2000;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.product-modal {
+    width: 100%;
+
+    max-width: 650px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: #fff;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Modal Header */
+
+.modal-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    padding: 20px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+    font-size: 16px;
+
+    margin-bottom: 4px;
+}
+
+.modal-header p {
+    color: var(--text-light);
+
+    font-size: 10px;
+}
+
+.modal-close {
+    width: 30px;
+    height: 30px;
+
+    border: none;
+
+    background: #f3f4f6;
+
+    border-radius: 7px;
+
+    font-size: 20px;
+
+    color: #6b7280;
+
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    background: #e5e7eb;
+
+    color: #111827;
+}
+
+
+/* Form */
+
+#productForm {
+    padding: 20px;
+}
+
+.form-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 10px;
+
+    font-weight: 600;
+
+    color: #374151;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+
+    height: 40px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 7px;
+
+    padding: 0 11px;
+
+    font-size: 11px;
+
+    outline: none;
+
+    background: #fff;
+
+    color: var(--text);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 2px rgba(37, 99, 235, 0.08);
+}
+
+
+/* Checkbox */
+
+.checkbox-label {
+    display: flex !important;
+
+    flex-direction: row !important;
+
+    align-items: center;
+
+    gap: 8px;
+
+    cursor: pointer;
+
+    font-weight: 500 !important;
+}
+
+.checkbox-label input {
+    width: 16px !important;
+    height: 16px !important;
+
+    accent-color: var(--primary);
+
+    cursor: pointer;
+}
+
+
+/* Modal Actions */
+
+.modal-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 9px;
+
+    padding-top: 20px;
+
+    margin-top: 20px;
+
+    border-top: 1px solid var(--border);
+}
+
+.secondary-btn {
+    border: 1px solid var(--border);
+
+    background: #fff;
+
+    color: #374151;
+
+    padding: 10px 16px;
+
+    border-radius: 7px;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.secondary-btn:hover {
+    background: #f9fafb;
+}
+
+
+/* =====================================================
+   INVENTORY MOBILE
+   ===================================================== */
+
+@media (max-width: 760px) {
+
+    .inventory-filter {
+        grid-template-columns: 1fr;
+
+        gap: 8px;
+    }
+
+    .inventory-filter input,
+    .inventory-filter select {
+        height: 38px;
+    }
+
+    .product-modal {
+        max-height: 94vh;
+
+        border-radius: 10px;
+    }
+
+    .modal-header {
+        padding: 16px;
+    }
+
+    #productForm {
+        padding: 16px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+    }
+
+    .form-group.full {
+        grid-column: auto;
+    }
+
+    .modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .modal-actions button {
+        width: 100%;
+    }
+}
