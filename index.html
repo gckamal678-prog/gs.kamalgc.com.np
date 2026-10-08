@@ -1,861 +1,728 @@
-/* ================================
-   GENERAL STORE MANAGEMENT SYSTEM
-   Dashboard CSS
-================================ */
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-:root {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
-    --sidebar: #111827;
-    --sidebar-hover: #1f2937;
-    --background: #f3f4f6;
-    --card: #ffffff;
-    --text: #111827;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-    --success: #16a34a;
-    --warning: #d97706;
-    --danger: #dc2626;
-    --purple: #7c3aed;
-}
-
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: var(--background);
-    color: var(--text);
-    min-height: 100vh;
-}
-
-/* ================================
-   APP LAYOUT
-================================ */
-
-.app {
-    display: flex;
-    min-height: 100vh;
-}
-
-/* ================================
-   SIDEBAR
-================================ */
-
-.sidebar {
-    width: 250px;
-    background: var(--sidebar);
-    color: white;
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    transition: 0.3s ease;
-}
-
-.logo {
-    height: 70px;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    border-bottom: 1px solid #374151;
-}
-
-.logo-icon {
-    width: 38px;
-    height: 38px;
-    background: var(--primary);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 10px;
-    font-size: 20px;
-}
-
-.logo-text {
-    font-size: 17px;
-    font-weight: bold;
-}
-
-.logo-subtitle {
-    font-size: 10px;
-    color: #9ca3af;
-    margin-top: 2px;
-}
-
-.sidebar-menu {
-    padding: 15px 10px;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.menu-title {
-    color: #6b7280;
-    font-size: 11px;
-    text-transform: uppercase;
-    padding: 10px 12px 7px;
-    font-weight: bold;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #d1d5db;
-    text-decoration: none;
-    padding: 11px 12px;
-    border-radius: 8px;
-    margin-bottom: 3px;
-    font-size: 14px;
-    transition: 0.2s;
-}
-
-.menu-item:hover {
-    background: var(--sidebar-hover);
-    color: white;
-}
-
-.menu-item.active {
-    background: var(--primary);
-    color: white;
-}
-
-.menu-icon {
-    width: 20px;
-    text-align: center;
-    font-size: 17px;
-}
-
-.sidebar-footer {
-    padding: 12px;
-    border-top: 1px solid #374151;
-    font-size: 12px;
-    color: #9ca3af;
-}
-
-/* ================================
-   MAIN CONTENT
-================================ */
-
-.main {
-    margin-left: 250px;
-    width: calc(100% - 250px);
-    min-height: 100vh;
-}
-
-/* ================================
-   TOPBAR
-================================ */
-
-.topbar {
-    height: 70px;
-    background: white;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 25px;
-    position: sticky;
-    top: 0;
-    z-index: 500;
-}
-
-.topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.menu-toggle {
-    display: none;
-    border: none;
-    background: transparent;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.page-title h1 {
-    font-size: 20px;
-    margin-bottom: 3px;
-}
-
-.page-title p {
-    color: var(--muted);
-    font-size: 12px;
-}
-
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.search-box {
-    position: relative;
-}
-
-.search-box input {
-    width: 220px;
-    height: 38px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0 12px 0 38px;
-    outline: none;
-}
-
-.search-box input:focus {
-    border-color: var(--primary);
-}
-
-.search-icon {
-    position: absolute;
-    left: 12px;
-    top: 10px;
-    color: var(--muted);
-}
-
-.icon-button {
-    width: 38px;
-    height: 38px;
-    border: 1px solid var(--border);
-    background: white;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 17px;
-}
-
-.profile {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    cursor: pointer;
-}
-
-.profile-avatar {
-    width: 38px;
-    height: 38px;
-    background: #dbeafe;
-    color: var(--primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-
-.profile-info {
-    line-height: 1.2;
-}
-
-.profile-name {
-    font-size: 13px;
-    font-weight: bold;
-}
-
-.profile-role {
-    font-size: 11px;
-    color: var(--muted);
-}
-
-/* ================================
-   CONTENT
-================================ */
-
-.content {
-    padding: 25px;
-}
-
-/* ================================
-   QUICK ACTIONS
-================================ */
-
-.quick-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-}
-
-.quick-btn {
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    background: white;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    transition: 0.2s;
-}
-
-.quick-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-}
-
-.quick-btn.primary {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-
-.quick-btn.primary:hover {
-    background: var(--primary-dark);
-}
-
-/* ================================
-   STAT CARDS
-================================ */
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px;
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.stat-label {
-    font-size: 13px;
-    color: var(--muted);
-}
-
-.stat-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-}
-
-.stat-value {
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 12px;
-}
-
-.stat-footer {
-    margin-top: 8px;
-    font-size: 11px;
-    color: var(--muted);
-}
-
-.green {
-    background: #dcfce7;
-    color: var(--success);
-}
-
-.blue {
-    background: #dbeafe;
-    color: var(--primary);
-}
-
-.orange {
-    background: #ffedd5;
-    color: var(--warning);
-}
-
-.red {
-    background: #fee2e2;
-    color: var(--danger);
-}
-
-.purple {
-    background: #ede9fe;
-    color: var(--purple);
-}
-
-/* ================================
-   BALANCE CARDS
-================================ */
-
-.balance-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.balance-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px;
-}
-
-.balance-label {
-    color: var(--muted);
-    font-size: 12px;
-}
-
-.balance-value {
-    font-size: 20px;
-    font-weight: bold;
-    margin-top: 8px;
-}
-
-/* ================================
-   SECTION
-================================ */
-
-.section {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px;
-    margin-bottom: 20px;
-}
-
-.section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-}
-
-.section-title {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.section-link {
-    color: var(--primary);
-    text-decoration: none;
-    font-size: 12px;
-}
-
-/* ================================
-   CHART PLACEHOLDER
-================================ */
-
-.chart-area {
-    height: 250px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f9fafb;
-    border: 1px dashed #d1d5db;
-    border-radius: 10px;
-    color: var(--muted);
-    text-align: center;
-}
-
-.chart-empty-icon {
-    font-size: 35px;
-    margin-bottom: 8px;
-}
-
-.chart-empty-text {
-    font-size: 13px;
-}
-
-/* ================================
-   TWO COLUMN
-================================ */
-
-.two-column {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-/* ================================
-   ATTENTION CARDS
-================================ */
-
-.attention-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.attention-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px;
-    border-radius: 9px;
-    background: #f9fafb;
-}
-
-.attention-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.attention-icon {
-    width: 35px;
-    height: 35px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.attention-name {
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.attention-desc {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-}
-
-.badge {
-    padding: 4px 8px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: bold;
-}
-
-.badge.red {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.badge.orange {
-    background: #ffedd5;
-    color: #c2410c;
-}
-
-.badge.green {
-    background: #dcfce7;
-    color: #15803d;
-}
-
-/* ================================
-   TABLE
-================================ */
-
-.table-wrapper {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th {
-    text-align: left;
-    font-size: 11px;
-    color: var(--muted);
-    padding: 10px;
-    border-bottom: 1px solid var(--border);
-}
-
-td {
-    padding: 12px 10px;
-    font-size: 12px;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.empty-row {
-    text-align: center;
-    color: var(--muted);
-    padding: 30px;
-}
-
-/* ================================
-   ACTIVITY
-================================ */
-
-.activity-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.activity-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-.activity-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.activity-title {
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.activity-time {
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 3px;
-}
-
-/* ================================
-   AI ASSISTANT
-================================ */
-
-.ai-card {
-    background: linear-gradient(135deg, #eff6ff, #f5f3ff);
-    border: 1px solid #dbeafe;
-}
-
-.ai-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-.ai-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.ai-icon {
-    width: 50px;
-    height: 50px;
-    background: white;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 25px;
-}
-
-.ai-title {
-    font-weight: bold;
-    font-size: 15px;
-}
-
-.ai-text {
-    color: var(--muted);
-    font-size: 12px;
-    margin-top: 4px;
-}
-
-.ai-button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-/* ================================
-   MOBILE OVERLAY
-================================ */
-
-.overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    z-index: 900;
-}
-
-.overlay.show {
-    display: block;
-}
-
-/* ================================
-   RESPONSIVE - TABLET
-================================ */
-
-@media (max-width: 1050px) {
-
-    .sidebar {
-        width: 220px;
-    }
-
-    .main {
-        margin-left: 220px;
-        width: calc(100% - 220px);
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .balance-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .search-box input {
-        width: 170px;
-    }
-}
-
-/* ================================
-   RESPONSIVE - MOBILE
-================================ */
-
-@media (max-width: 760px) {
-
-    .sidebar {
-        left: -260px;
-        width: 250px;
-    }
-
-    .sidebar.open {
-        left: 0;
-    }
-
-    .main {
-        margin-left: 0;
-        width: 100%;
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    .topbar {
-        padding: 0 15px;
-        height: 65px;
-    }
-
-    .page-title h1 {
-        font-size: 17px;
-    }
-
-    .page-title p {
-        display: none;
-    }
-
-    .topbar-right {
-        gap: 7px;
-    }
-
-    .search-box {
-        display: none;
-    }
-
-    .profile-info {
-        display: none;
-    }
-
-    .content {
-        padding: 15px;
-    }
-
-    .stats-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    .stat-card {
-        padding: 14px;
-    }
-
-    .stat-value {
-        font-size: 19px;
-    }
-
-    .stat-label {
-        font-size: 11px;
-    }
-
-    .balance-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
-    .two-column {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-
-    .quick-actions {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        padding-bottom: 4px;
-    }
-
-    .quick-btn {
-        white-space: nowrap;
-    }
-
-    .section {
-        padding: 14px;
-    }
-
-    .ai-content {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .ai-button {
-        width: 100%;
-    }
-}
-
-/* ================================
-   VERY SMALL MOBILE
-================================ */
-
-@media (max-width: 420px) {
-
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .stat-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .stat-value {
-        margin-top: 5px;
-    }
-
-    .stat-footer {
-        display: none;
-    }
-
-    .profile-avatar {
-        width: 34px;
-        height: 34px;
-    }
-
-    .icon-button {
-        width: 34px;
-        height: 34px;
-    }
-}
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>General Store Management</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Mobile Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="logo-area">
+            <div class="logo-icon">GS</div>
+
+            <div>
+                <h2>General Store</h2>
+                <span>Management System</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+
+            <a href="#" class="menu-item active">
+                <span class="menu-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">🛒</span>
+                <span>New Sale</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">📦</span>
+                <span>Purchase</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">▣</span>
+                <span>Inventory</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">👥</span>
+                <span>Customers</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">🏢</span>
+                <span>Suppliers</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">💰</span>
+                <span>Finance</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">📊</span>
+                <span>Reports</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">💬</span>
+                <span>WhatsApp</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">🤖</span>
+                <span>AI Assistant</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">⚙️</span>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="store-status">
+                <span class="status-dot"></span>
+
+                <div>
+                    <strong>Store Online</strong>
+                    <small>Data synced</small>
+                </div>
+            </div>
+
+            <div class="version">
+                General Store v1.0
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN AREA ================= -->
+    <main class="main-content">
+
+        <!-- ================= TOPBAR ================= -->
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button class="mobile-menu-btn" id="menuBtn">
+                    ☰
+                </button>
+
+                <div>
+                    <h1>Dashboard</h1>
+                    <p id="todayDate">आजको व्यापारको अवस्था</p>
+                </div>
+
+            </div>
+
+
+            <div class="topbar-right">
+
+                <!-- Search -->
+                <div class="search-box">
+                    <span>⌕</span>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Product, customer, bill..."
+                    >
+                </div>
+
+                <!-- Notification -->
+                <button class="icon-btn notification-btn">
+                    🔔
+                    <span class="notification-dot"></span>
+                </button>
+
+                <!-- Profile -->
+                <div class="profile">
+
+                    <div class="profile-avatar">
+                        A
+                    </div>
+
+                    <div class="profile-info">
+                        <strong>Admin</strong>
+                        <small>Owner</small>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ================= DASHBOARD CONTENT ================= -->
+        <section class="dashboard-content">
+
+
+            <!-- Welcome -->
+            <div class="welcome-section">
+
+                <div>
+                    <h2>नमस्ते, Admin 👋</h2>
+
+                    <p>
+                        आजको पसलको अवस्था यहाँबाट हेर्नुहोस्।
+                    </p>
+                </div>
+
+                <button class="primary-btn">
+                    + New Sale
+                </button>
+
+            </div>
+
+
+            <!-- ================= MAIN STATS ================= -->
+            <div class="stats-grid">
+
+                <!-- Today's Sales -->
+                <div class="stat-card">
+
+                    <div class="stat-top">
+                        <div class="stat-icon sales-icon">
+                            🛒
+                        </div>
+
+                        <span class="stat-label">
+                            आजको बिक्री
+                        </span>
+                    </div>
+
+                    <div class="stat-value">
+                        Rs. <span id="todaySales">0</span>
+                    </div>
+
+                    <div class="stat-bottom">
+                        <span class="positive">↑ 0%</span>
+                        <span>vs yesterday</span>
+                    </div>
+
+                </div>
+
+
+                <!-- Gross Profit -->
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon profit-icon">
+                            📈
+                        </div>
+
+                        <span class="stat-label">
+                            Gross Profit
+                        </span>
+
+                    </div>
+
+                    <div class="stat-value">
+                        Rs. <span id="grossProfit">0</span>
+                    </div>
+
+                    <div class="stat-bottom">
+                        <span class="positive">↑ 0%</span>
+                        <span>आज</span>
+                    </div>
+
+                </div>
+
+
+                <!-- Expenses -->
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon expense-icon">
+                            💸
+                        </div>
+
+                        <span class="stat-label">
+                            Expenses
+                        </span>
+
+                    </div>
+
+                    <div class="stat-value">
+                        Rs. <span id="expenses">0</span>
+                    </div>
+
+                    <div class="stat-bottom">
+                        <span>आजको खर्च</span>
+                    </div>
+
+                </div>
+
+
+                <!-- Net Profit -->
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <div class="stat-icon net-profit-icon">
+                            💰
+                        </div>
+
+                        <span class="stat-label">
+                            Net Profit
+                        </span>
+
+                    </div>
+
+                    <div class="stat-value">
+                        Rs. <span id="netProfit">0</span>
+                    </div>
+
+                    <div class="stat-bottom">
+                        <span class="positive">आज</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= FINANCE CARDS ================= -->
+            <div class="section-title">
+
+                <div>
+                    <h3>Financial Overview</h3>
+                    <p>पसलको पैसा र बाँकी रकम</p>
+                </div>
+
+            </div>
+
+
+            <div class="finance-grid">
+
+                <!-- Customer Receivable -->
+                <div class="finance-card">
+
+                    <div class="finance-icon">
+                        👤
+                    </div>
+
+                    <div>
+                        <span>Customer Receivable</span>
+
+                        <strong>
+                            Rs. <span id="customerReceivable">0</span>
+                        </strong>
+
+                        <small>
+                            ग्राहकबाट लिन बाँकी
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <!-- Supplier Payable -->
+                <div class="finance-card">
+
+                    <div class="finance-icon">
+                        🏢
+                    </div>
+
+                    <div>
+                        <span>Supplier Payable</span>
+
+                        <strong>
+                            Rs. <span id="supplierPayable">0</span>
+                        </strong>
+
+                        <small>
+                            Supplier लाई दिन बाँकी
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <!-- Stock Value -->
+                <div class="finance-card">
+
+                    <div class="finance-icon">
+                        📦
+                    </div>
+
+                    <div>
+                        <span>Stock Value</span>
+
+                        <strong>
+                            Rs. <span id="stockValue">0</span>
+                        </strong>
+
+                        <small>
+                            हालको stock value
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <!-- Cash / Bank / QR -->
+                <div class="finance-card">
+
+                    <div class="finance-icon">
+                        💳
+                    </div>
+
+                    <div>
+                        <span>Cash / Bank / QR</span>
+
+                        <strong>
+                            Rs. <span id="availableBalance">0</span>
+                        </strong>
+
+                        <small>
+                            उपलब्ध balance
+                        </small>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= SALES OVERVIEW ================= -->
+            <div class="dashboard-grid">
+
+                <div class="dashboard-card sales-overview">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>Sales Overview</h3>
+                            <p>पछिल्लो 7 दिनको बिक्री</p>
+                        </div>
+
+                        <select id="salesPeriod">
+                            <option>Last 7 Days</option>
+                            <option>Last 30 Days</option>
+                            <option>This Month</option>
+                        </select>
+
+                    </div>
+
+
+                    <!-- Empty Chart Area -->
+                    <div class="chart-area">
+
+                        <div class="chart-empty">
+
+                            <div class="chart-empty-icon">
+                                📊
+                            </div>
+
+                            <strong>
+                                बिक्रीको data यहाँ देखिनेछ
+                            </strong>
+
+                            <span>
+                                Sale transaction सुरु भएपछि chart तयार हुनेछ।
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================= ATTENTION ================= -->
+                <div class="dashboard-card attention-card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>Attention Required</h3>
+                            <p>तुरुन्त हेर्नुपर्ने कुरा</p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="attention-list">
+
+                        <!-- Low Stock -->
+                        <div class="attention-item">
+
+                            <div class="attention-icon warning">
+                                ⚠️
+                            </div>
+
+                            <div class="attention-text">
+                                <strong>Low Stock</strong>
+                                <span id="lowStockCount">
+                                    0 products
+                                </span>
+                            </div>
+
+                            <button>
+                                View
+                            </button>
+
+                        </div>
+
+
+                        <!-- Expiry -->
+                        <div class="attention-item">
+
+                            <div class="attention-icon danger">
+                                ⏰
+                            </div>
+
+                            <div class="attention-text">
+                                <strong>Expiry Near</strong>
+                                <span id="expiryCount">
+                                    0 products
+                                </span>
+                            </div>
+
+                            <button>
+                                View
+                            </button>
+
+                        </div>
+
+
+                        <!-- Customer Due -->
+                        <div class="attention-item">
+
+                            <div class="attention-icon money">
+                                💰
+                            </div>
+
+                            <div class="attention-text">
+                                <strong>Credit Due</strong>
+                                <span id="creditDueCount">
+                                    0 customers
+                                </span>
+                            </div>
+
+                            <button>
+                                View
+                            </button>
+
+                        </div>
+
+
+                        <!-- Supplier Due -->
+                        <div class="attention-item">
+
+                            <div class="attention-icon supplier">
+                                🏢
+                            </div>
+
+                            <div class="attention-text">
+                                <strong>Supplier Payment</strong>
+                                <span id="supplierDueCount">
+                                    0 suppliers
+                                </span>
+                            </div>
+
+                            <button>
+                                View
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= FAST MOVING PRODUCTS ================= -->
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>Fast Moving Products</h3>
+                        <p>छिटो बिक्री हुने सामान</p>
+                    </div>
+
+                    <button class="text-btn">
+                        View All →
+                    </button>
+
+                </div>
+
+
+                <div class="empty-table">
+
+                    <div class="empty-icon">
+                        📦
+                    </div>
+
+                    <strong>
+                        Product data छैन
+                    </strong>
+
+                    <span>
+                        बिक्री सुरु भएपछि fast moving products यहाँ देखिनेछन्।
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= QUICK ACTIONS ================= -->
+            <div class="section-title quick-title">
+
+                <div>
+                    <h3>Quick Actions</h3>
+                    <p>बारम्बार प्रयोग हुने काम</p>
+                </div>
+
+            </div>
+
+
+            <div class="quick-actions">
+
+                <button class="quick-action">
+                    <span>🛒</span>
+                    <strong>New Sale</strong>
+                    <small>नयाँ बिक्री</small>
+                </button>
+
+                <button class="quick-action">
+                    <span>📦</span>
+                    <strong>Purchase</strong>
+                    <small>नयाँ खरीद</small>
+                </button>
+
+                <button class="quick-action">
+                    <span>👤</span>
+                    <strong>Customer Payment</strong>
+                    <small>ग्राहकबाट रकम</small>
+                </button>
+
+                <button class="quick-action">
+                    <span>🏢</span>
+                    <strong>Supplier Payment</strong>
+                    <small>Supplier payment</small>
+                </button>
+
+                <button class="quick-action">
+                    <span>💸</span>
+                    <strong>Add Expense</strong>
+                    <small>खर्च राख्नुहोस्</small>
+                </button>
+
+                <button class="quick-action">
+                    <span>🔧</span>
+                    <strong>Stock Adjustment</strong>
+                    <small>Stock मिलाउनुहोस्</small>
+                </button>
+
+            </div>
+
+
+            <!-- ================= RECENT ACTIVITY ================= -->
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>Recent Activity</h3>
+                        <p>पछिल्ला कारोबारहरू</p>
+                    </div>
+
+                    <button class="text-btn">
+                        View All →
+                    </button>
+
+                </div>
+
+
+                <div class="empty-table">
+
+                    <div class="empty-icon">
+                        📝
+                    </div>
+
+                    <strong>
+                        कुनै activity छैन
+                    </strong>
+
+                    <span>
+                        नयाँ transaction भएपछि activity यहाँ देखिनेछ।
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= AI ASSISTANT ================= -->
+            <div class="ai-card">
+
+                <div class="ai-content">
+
+                    <div class="ai-icon">
+                        🤖
+                    </div>
+
+                    <div>
+
+                        <h3>AI Shop Assistant</h3>
+
+                        <p>
+                            "आजको व्यापार कस्तो भयो?",
+                            "कुन सामान order गर्नुपर्छ?",
+                            "कसबाट पैसा लिन बाँकी छ?"
+                            जस्ता प्रश्न सोध्न सक्नुहुन्छ।
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <button class="ai-btn">
+                    Ask AI →
+                </button>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- ================= FOOTER ================= -->
+        <footer class="footer">
+
+            <span>
+                © 2026 General Store Management System
+            </span>
+
+            <span>
+                v1.0
+            </span>
+
+        </footer>
+
+    </main>
+
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+</html>
