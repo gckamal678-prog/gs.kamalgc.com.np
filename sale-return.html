@@ -1,0 +1,410 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Return - General Store</title>
+    <link rel="stylesheet" href="style.css">
+</head><body><div class="app"><aside class="sidebar">
+
+    <div class="sidebar-header">
+        <div class="logo">GS</div>
+
+        <div>
+            <h2>General Store</h2>
+            <p>Management System</p>
+        </div>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a href="index.html" class="menu-item">
+            <span class="menu-icon">🏠</span>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="sale.html" class="menu-item">
+            <span class="menu-icon">🛒</span>
+            <span>New Sale</span>
+        </a>
+
+        <a href="sales-return.html" class="menu-item active">
+            <span class="menu-icon">↩️</span>
+            <span>Sales Return</span>
+        </a>
+
+        <a href="purchase.html" class="menu-item">
+            <span class="menu-icon">📦</span>
+            <span>Purchase</span>
+        </a>
+
+        <a href="inventory.html" class="menu-item">
+            <span class="menu-icon">📋</span>
+            <span>Inventory</span>
+        </a>
+
+        <a href="customers.html" class="menu-item">
+            <span class="menu-icon">👥</span>
+            <span>Customers</span>
+        </a>
+
+        <a href="suppliers.html" class="menu-item">
+            <span class="menu-icon">🚚</span>
+            <span>Suppliers</span>
+        </a>
+
+        <a href="finance.html" class="menu-item">
+            <span class="menu-icon">💰</span>
+            <span>Finance</span>
+        </a>
+
+        <a href="reports.html" class="menu-item">
+            <span class="menu-icon">📊</span>
+            <span>Reports</span>
+        </a>
+
+        <a href="whatsapp.html" class="menu-item">
+            <span class="menu-icon">💬</span>
+            <span>WhatsApp</span>
+        </a>
+
+        <a href="ai.html" class="menu-item">
+            <span class="menu-icon">🤖</span>
+            <span>AI Assistant</span>
+        </a>
+
+        <a href="settings.html" class="menu-item">
+            <span class="menu-icon">⚙️</span>
+            <span>Settings</span>
+        </a>
+
+    </nav>
+
+</aside>
+
+
+<main class="main-content">
+
+    <header class="topbar">
+
+        <div>
+            <h1>Sales Return</h1>
+            <p>Return sold products and restore stock</p>
+        </div>
+
+        <div class="topbar-actions">
+
+            <a href="sale.html" class="secondary-btn">
+                ← Sales
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <section class="content">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Find Sale</h2>
+                    <p>
+                        Select a previous sale for return
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group full-width">
+
+                    <label for="returnSale">
+                        Sale / Bill
+                    </label>
+
+                    <select id="returnSale">
+
+                        <option value="">
+                            Select Sale
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="card"
+            id="returnDetailsCard"
+            style="display:none;"
+        >
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Return Details</h2>
+                    <p>
+                        Enter returned quantity and condition
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>Bill Number</label>
+
+                    <input
+                        type="text"
+                        id="returnBillNumber"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Customer</label>
+
+                    <input
+                        type="text"
+                        id="returnCustomer"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Product</label>
+
+                    <input
+                        type="text"
+                        id="returnProduct"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Sold Quantity</label>
+
+                    <input
+                        type="number"
+                        id="soldQty"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Already Returned</label>
+
+                    <input
+                        type="number"
+                        id="alreadyReturnedQty"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="returnQty">
+                        Return Quantity
+                    </label>
+
+                    <input
+                        type="number"
+                        id="returnQty"
+                        min="0.01"
+                        step="0.01"
+                        value="0"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="returnCondition">
+                        Condition
+                    </label>
+
+                    <select id="returnCondition">
+
+                        <option value="GOOD">
+                            Good / Saleable
+                        </option>
+
+                        <option value="DAMAGED">
+                            Damaged
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="returnReason">
+                        Return Reason
+                    </label>
+
+                    <input
+                        type="text"
+                        id="returnReason"
+                        placeholder="Customer return reason"
+                    >
+
+                </div>
+
+
+                <div class="form-group full-width">
+
+                    <label for="returnNote">
+                        Note
+                    </label>
+
+                    <textarea
+                        id="returnNote"
+                        rows="3"
+                        placeholder="Optional note"
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <div class="sale-summary-box">
+
+                <div class="summary-row">
+
+                    <span>Return Qty</span>
+
+                    <strong id="returnQtyPreview">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>Return Amount</span>
+
+                    <strong id="returnAmountPreview">
+                        Rs. 0.00
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    id="clearReturnBtn"
+                >
+                    Clear
+                </button>
+
+                <button
+                    type="button"
+                    class="primary-btn"
+                    id="saveReturnBtn"
+                >
+                    ↩️ Save Return
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Return History</h2>
+                    <p>
+                        Previously processed returns
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Date</th>
+                            <th>Return No.</th>
+                            <th>Bill No.</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Condition</th>
+                            <th>Amount</th>
+                            <th>Reason</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="returnHistoryBody">
+
+                        <tr>
+
+                            <td
+                                colspan="8"
+                                class="empty-state"
+                            >
+                                No returns found
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+</div><script src="sales-return.js"></script></body>
+</html>
