@@ -1,635 +1,489 @@
 const PRODUCT_KEY = "gs_products";
 const SALE_KEY = "gs_sales";
 
-const saleForm = document.getElementById("saleForm");
-
-const saleDate = document.getElementById("saleDate");
-const billNumber = document.getElementById("billNumber");
-const saleProduct = document.getElementById("saleProduct");
-const saleQty = document.getElementById("saleQty");
-const saleRate = document.getElementById("saleRate");
-const saleDiscount = document.getElementById("saleDiscount");
-const customerName = document.getElementById("customerName");
-const paymentMethod = document.getElementById("paymentMethod");
-const paidAmount = document.getElementById("paidAmount");
-const saleNote = document.getElementById("saleNote");
-
-const stockInfo = document.getElementById("stockInfo");
-
-const previewItemAmount = document.getElementById("previewItemAmount");
-const previewDiscount = document.getElementById("previewDiscount");
-const previewTotal = document.getElementById("previewTotal");
-const previewPaid = document.getElementById("previewPaid");
-const previewBalance = document.getElementById("previewBalance");
-
-const infoProduct = document.getElementById("infoProduct");
-const infoUnit = document.getElementById("infoUnit");
-const infoStock = document.getElementById("infoStock");
-const infoQty = document.getElementById("infoQty");
-const infoPayment = document.getElementById("infoPayment");
-
-const salesHistoryBody =
-document.getElementById("salesHistoryBody");
-
-const saleSearch =
-document.getElementById("saleSearch");
-
-function getProducts() {
-try {
-return JSON.parse(
-localStorage.getItem(PRODUCT_KEY)
-) || [];
-} catch (error) {
-console.error(
-"Unable to read products:",
-error
-);
-return [];
-}
-}
-
-function saveProducts(products) {
-localStorage.setItem(
-PRODUCT_KEY,
-JSON.stringify(products)
-);
-}
-
-function getSales() {
-try {
-return JSON.parse(
-localStorage.getItem(SALE_KEY)
-) || [];
-} catch (error) {
-console.error(
-"Unable to read sales:",
-error
-);
-return [];
-}
-}
-
-function saveSales(sales) {
-localStorage.setItem(
-SALE_KEY,
-JSON.stringify(sales)
-);
-}
-
-function money(value) {
-return "Rs. " +
-Number(value || 0).toFixed(2);
-}
-
-function escapeHTML(value) {
-
-return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-}
-
-function today() {
-
-const date = new Date();
-
-const year =
-    date.getFullYear();
-
-const month =
-    String(
-        date.getMonth() + 1
-    ).padStart(2, "0");
-
-const day =
-    String(
-        date.getDate()
-    ).padStart(2, "0");
-
-return `${year}-${month}-${day}`;
-
-}
-
-function generateBillNumber() {
-
-const now = new Date();
-
-const year =
-    now.getFullYear();
-
-const month =
-    String(
-        now.getMonth() + 1
-    ).padStart(2, "0");
-
-const day =
-    String(
-        now.getDate()
-    ).padStart(2, "0");
-
-const time =
-    String(
-        now.getHours()
-    ).padStart(2, "0")
-    +
-    String(
-        now.getMinutes()
-    ).padStart(2, "0")
-    +
-    String(
-        now.getSeconds()
-    ).padStart(2, "0");
-
-return `SALE-${year}${month}${day}-${time}`;
-
-}
-
-function loadProducts() {
-
-const products =
-    getProducts();
-
-saleProduct.innerHTML =
-    '<option value="">Select Product</option>';
-
-products
-    .filter(function (product) {
-        return product.active !== false;
-    })
-    .forEach(function (product) {
-
-        const option =
-            document.createElement("option");
-
-        option.value =
-            product.id;
-
-        option.textContent =
-            `${product.name} | Stock: ${Number(product.stock || 0)} ${product.unit || ""}`;
-
-        option.dataset.rate =
-            product.salePrice || 0;
-
-        saleProduct.appendChild(
-            option
-        );
-    });
-
-updateProductInfo();
-
-}
-
-function getSelectedProduct() {
-
-const productId =
-    saleProduct.value;
-
-if (!productId) {
-    return null;
-}
-
-const products =
-    getProducts();
-
-return products.find(
-    function (product) {
-        return product.id === productId;
-    }
-) || null;
-
-}
-
-function updateProductInfo() {
-
-const product =
-    getSelectedProduct();
-
-if (!product) {
-
-    stockInfo.textContent =
-        "Available stock: -";
-
-    infoProduct.textContent =
-        "-";
-
-    infoUnit.textContent =
-        "-";
-
-    infoStock.textContent =
-        "-";
-
-    infoQty.textContent =
-        "0";
-
-    return;
-}
-
-const stock =
-    Number(product.stock || 0);
-
-stockInfo.textContent =
-    `Available stock: ${stock} ${product.unit || ""}`;
-
-infoProduct.textContent =
-    product.name || "-";
-
-infoUnit.textContent =
-    product.unit || "-";
-
-infoStock.textContent =
-    `${stock} ${product.unit || ""}`;
-
-saleRate.value =
-    Number(product.salePrice || 0);
-
-calculatePreview();
-
-}
-
-function calculatePreview() {
-
-const qty =
-    Number(
-        saleQty.value || 0
-    );
-
-const rate =
-    Number(
-        saleRate.value || 0
-    );
-
-const discount =
-    Number(
-        saleDiscount.value || 0
-    );
-
-const paid =
-    Number(
-        paidAmount.value || 0
-    );
-
-const itemAmount =
-    qty * rate;
-
-const total =
-    Math.max(
-        itemAmount - discount,
-        0
-    );
-
-const balance =
-    Math.max(
-        total - paid,
-        0
-    );
-
-previewItemAmount.textContent =
-    money(itemAmount);
-
-previewDiscount.textContent =
-    money(discount);
-
-previewTotal.textContent =
-    money(total);
-
-previewPaid.textContent =
-    money(paid);
-
-previewBalance.textContent =
-    money(balance);
-
-infoQty.textContent =
-    qty;
-
-infoPayment.textContent =
-    paymentMethod.value;
-
-}
-
-function clearForm() {
-
-saleForm.reset();
-
-saleDate.value =
-    today();
-
-billNumber.value =
-    generateBillNumber();
-
-paidAmount.value =
-    "0";
-
-saleDiscount.value =
-    "0";
-
-loadProducts();
-
-calculatePreview();
-
-}
-
-function renderSalesHistory() {
-
-const search =
-    (
-        saleSearch.value || ""
-    )
-    .trim()
-    .toLowerCase();
-
-let sales =
-    getSales();
-
-sales.sort(
-    function (a, b) {
-
-        return String(
-            b.createdAt || ""
-        ).localeCompare(
-            String(
-                a.createdAt || ""
-            )
-        );
-    }
-);
-
-if (search) {
-
-    sales =
-        sales.filter(
-            function (sale) {
-
-                const text =
-                    [
-                        sale.billNumber,
-                        sale.customerName,
-                        sale.productName,
-                        sale.paymentMethod,
-                        sale.date
-                    ]
-                    .join(" ")
-                    .toLowerCase();
-
-                return text.includes(
-                    search
-                );
-            }
-        );
-}
-
-if (!sales.length) {
-
-    salesHistoryBody.innerHTML =
-        `
-        <tr>
-            <td
-                colspan="10"
-                class="empty-state"
-            >
-                No sales found
-            </td>
-        </tr>
-        `;
-
-    return;
-}
-
-salesHistoryBody.innerHTML =
-    sales.map(
-        function (sale) {
-
-            return `
-            <tr>
-
-                <td>
-                    ${escapeHTML(
-                        sale.date || "-"
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        sale.billNumber || "-"
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        sale.customerName ||
-                        "Walk-in Customer"
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        sale.productName || "-"
-                    )}
-                </td>
-
-                <td>
-                    ${Number(
-                        sale.qty || 0
-                    )}
-                    ${escapeHTML(
-                        sale.unit || ""
-                    )}
-                </td>
-
-                <td>
-                    ${money(
-                        sale.total
-                    )}
-                </td>
-
-                <td>
-                    ${money(
-                        sale.paidAmount
-                    )}
-                </td>
-
-                <td>
-                    ${money(
-                        sale.balance
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        sale.paymentMethod ||
-                        "-"
-                    )}
-                </td>
-
-                <td>
-
-                    <button
-                        type="button"
-                        class="secondary-btn"
-                        onclick="viewSaleBill('${sale.id}')"
-                    >
-                        View Bill
-                    </button>
-
-                </td>
-
-            </tr>
-            `;
+document.addEventListener("DOMContentLoaded", function () {
+    // ==============================
+    // ELEMENTS
+    // ==============================
+
+    const saleForm = document.getElementById("saleForm");
+
+    const saleDate = document.getElementById("saleDate");
+    const billNumber = document.getElementById("billNumber");
+    const saleProduct = document.getElementById("saleProduct");
+    const saleQty = document.getElementById("saleQty");
+    const saleRate = document.getElementById("saleRate");
+    const saleDiscount = document.getElementById("saleDiscount");
+    const customerName = document.getElementById("customerName");
+    const paymentMethod = document.getElementById("paymentMethod");
+    const paidAmount = document.getElementById("paidAmount");
+    const saleNote = document.getElementById("saleNote");
+
+    const previewItemAmount = document.getElementById("previewItemAmount");
+    const previewDiscount = document.getElementById("previewDiscount");
+    const previewTotal = document.getElementById("previewTotal");
+    const previewPaid = document.getElementById("previewPaid");
+    const previewBalance = document.getElementById("previewBalance");
+
+    const infoProduct = document.getElementById("infoProduct");
+    const infoUnit = document.getElementById("infoUnit");
+    const infoStock = document.getElementById("infoStock");
+    const infoQty = document.getElementById("infoQty");
+    const infoPayment = document.getElementById("infoPayment");
+
+    const saleSearch = document.getElementById("saleSearch");
+    const salesHistoryBody = document.getElementById("salesHistoryBody");
+
+    const sidebar = document.querySelector(".sidebar");
+    const overlay = document.querySelector(".overlay");
+
+    // ==============================
+    // STORAGE
+    // ==============================
+
+    function getProducts() {
+        try {
+            return JSON.parse(localStorage.getItem(PRODUCT_KEY)) || [];
+        } catch (error) {
+            console.error("Product data error:", error);
+            return [];
         }
-    )
-    .join("");
-
-}
-
-function findSaleById(id) {
-
-const sales =
-    getSales();
-
-return sales.find(
-    function (sale) {
-        return sale.id === id;
     }
-) || null;
 
-}
+    function saveProducts(products) {
+        localStorage.setItem(PRODUCT_KEY, JSON.stringify(products));
+    }
 
-function viewSaleBill(id) {
+    function getSales() {
+        try {
+            return JSON.parse(localStorage.getItem(SALE_KEY)) || [];
+        } catch (error) {
+            console.error("Sales data error:", error);
+            return [];
+        }
+    }
 
-const sale =
-    findSaleById(id);
+    function saveSales(sales) {
+        localStorage.setItem(SALE_KEY, JSON.stringify(sales));
+    }
 
-if (!sale) {
+    // ==============================
+    // HELPERS
+    // ==============================
 
-    alert(
-        "Sale record भेटिएन।"
-    );
+    function money(value) {
+        const number = Number(value) || 0;
 
-    return;
-}
+        return "Rs. " + number.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
 
-const billWindow =
-    window.open(
-        "",
-        "_blank",
-        "width=500,height=700"
-    );
+    function numberValue(value) {
+        const number = parseFloat(value);
 
-if (!billWindow) {
+        return Number.isFinite(number) ? number : 0;
+    }
 
-    alert(
-        "Bill खोल्न browser popup अनुमति दिनुहोस्।"
-    );
+    function escapeHTML(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
-    return;
-}
+    function todayDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
 
-const html = `
+        return `${year}-${month}-${day}`;
+    }
 
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta
-name="viewport"
-content="width=device-width, initial-scale=1.0"
+    function generateBillNumber() {
+        const sales = getSales();
 
-«»
+        const today = todayDate();
 
-<title>
-    ${escapeHTML(
-        sale.billNumber || "Sales Bill"
-    )}
-</title><style>
+        const todaySales = sales.filter(function (sale) {
+            return sale.date === today;
+        });
+
+        const sequence = todaySales.length + 1;
+
+        return "SALE-" + today.replace(/-/g, "") + "-" + String(sequence).padStart(3, "0");
+    }
+
+    // ==============================
+    // INITIAL FORM SETUP
+    // ==============================
+
+    function setToday() {
+        if (saleDate) {
+            saleDate.value = todayDate();
+        }
+    }
+
+    function setBillNumber() {
+        if (billNumber && !billNumber.value.trim()) {
+            billNumber.value = generateBillNumber();
+        }
+    }
+
+    // ==============================
+    // LOAD PRODUCTS
+    // ==============================
+
+    function loadProducts() {
+        if (!saleProduct) return;
+
+        const products = getProducts();
+
+        saleProduct.innerHTML = '<option value="">-- Product Select गर्नुहोस् --</option>';
+
+        products.forEach(function (product) {
+            if (product.active === false) return;
+
+            const option = document.createElement("option");
+
+            option.value = product.id;
+
+            option.textContent =
+                product.name +
+                " | Stock: " +
+                (Number(product.stock) || 0) +
+                " " +
+                (product.unit || "");
+
+            saleProduct.appendChild(option);
+        });
+    }
+
+    // ==============================
+    // SELECTED PRODUCT INFO
+    // ==============================
+
+    function updateProductInfo() {
+        if (!saleProduct) return;
+
+        const productId = saleProduct.value;
+        const products = getProducts();
+
+        const product = products.find(function (item) {
+            return item.id === productId;
+        });
+
+        if (!product) {
+            if (infoProduct) infoProduct.textContent = "-";
+            if (infoUnit) infoUnit.textContent = "-";
+            if (infoStock) infoStock.textContent = "0";
+            if (infoQty) infoQty.textContent = "0";
+            return;
+        }
+
+        if (infoProduct) {
+            infoProduct.textContent = product.name || "-";
+        }
+
+        if (infoUnit) {
+            infoUnit.textContent = product.unit || "-";
+        }
+
+        if (infoStock) {
+            infoStock.textContent = Number(product.stock) || 0;
+        }
+
+        if (saleRate) {
+            saleRate.value = Number(product.salePrice) || 0;
+        }
+
+        updateProductQtyInfo();
+        calculateSale();
+    }
+
+    // ==============================
+    // QUANTITY INFO
+    // ==============================
+
+    function updateProductQtyInfo() {
+        if (!infoQty) return;
+
+        const qty = numberValue(saleQty ? saleQty.value : 0);
+
+        infoQty.textContent = qty;
+    }
+
+    // ==============================
+    // CALCULATE SALE
+    // ==============================
+
+    function calculateSale() {
+        const qty = numberValue(saleQty ? saleQty.value : 0);
+        const rate = numberValue(saleRate ? saleRate.value : 0);
+        const discount = numberValue(saleDiscount ? saleDiscount.value : 0);
+        const paid = numberValue(paidAmount ? paidAmount.value : 0);
+
+        const itemAmount = qty * rate;
+
+        const total = Math.max(0, itemAmount - discount);
+
+        const balance = Math.max(0, total - paid);
+
+        if (previewItemAmount) {
+            previewItemAmount.textContent = money(itemAmount);
+        }
+
+        if (previewDiscount) {
+            previewDiscount.textContent = money(discount);
+        }
+
+        if (previewTotal) {
+            previewTotal.textContent = money(total);
+        }
+
+        if (previewPaid) {
+            previewPaid.textContent = money(paid);
+        }
+
+        if (previewBalance) {
+            previewBalance.textContent = money(balance);
+        }
+
+        updateProductQtyInfo();
+
+        if (infoPayment && paymentMethod) {
+            infoPayment.textContent = paymentMethod.value || "-";
+        }
+
+        return {
+            qty,
+            rate,
+            discount,
+            paid,
+            itemAmount,
+            total,
+            balance
+        };
+    }
+
+    // ==============================
+    // SALES HISTORY
+    // ==============================
+
+    function renderSalesHistory(searchText) {
+        if (!salesHistoryBody) return;
+
+        const sales = getSales();
+
+        const search = String(searchText || "")
+            .trim()
+            .toLowerCase();
+
+        let filteredSales = sales.slice();
+
+        if (search) {
+            filteredSales = filteredSales.filter(function (sale) {
+                const bill = String(sale.billNumber || "").toLowerCase();
+                const customer = String(sale.customerName || "").toLowerCase();
+                const product = String(sale.productName || "").toLowerCase();
+                const date = String(sale.date || "").toLowerCase();
+                const payment = String(sale.paymentMethod || "").toLowerCase();
+
+                return (
+                    bill.includes(search) ||
+                    customer.includes(search) ||
+                    product.includes(search) ||
+                    date.includes(search) ||
+                    payment.includes(search)
+                );
+            });
+        }
+
+        // Latest sale first
+        filteredSales.sort(function (a, b) {
+            return String(b.createdAt || "").localeCompare(
+                String(a.createdAt || "")
+            );
+        });
+
+        if (filteredSales.length === 0) {
+            salesHistoryBody.innerHTML = `
+                <tr>
+                    <td colspan="10" style="text-align:center; padding:20px;">
+                        ${search
+                            ? "Search गर्दा कुनै Sales Record भेटिएन।"
+                            : "अहिलेसम्म कुनै Sales Record छैन।"}
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        salesHistoryBody.innerHTML = filteredSales.map(function (sale) {
+            return `
+                <tr>
+                    <td>${escapeHTML(sale.date || "-")}</td>
+
+                    <td>
+                        <strong>${escapeHTML(sale.billNumber || "-")}</strong>
+                    </td>
+
+                    <td>
+                        ${escapeHTML(sale.customerName || "Cash Customer")}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(sale.productName || "-")}
+                    </td>
+
+                    <td>
+                        ${Number(sale.qty) || 0}
+                        ${escapeHTML(sale.unit || "")}
+                    </td>
+
+                    <td>
+                        ${money(sale.total)}
+                    </td>
+
+                    <td>
+                        ${money(sale.paidAmount)}
+                    </td>
+
+                    <td>
+                        ${money(sale.balance)}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(sale.paymentMethod || "-")}
+                    </td>
+
+                    <td>
+                        <button
+                            type="button"
+                            class="view-sale-bill-btn"
+                            data-sale-id="${escapeHTML(sale.id)}"
+                        >
+                            View Bill
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    }
+
+    // ==============================
+    // VIEW BILL
+    // ==============================
+
+    function viewSaleBill(id) {
+        const sales = getSales();
+
+        const sale = sales.find(function (item) {
+            return item.id === id;
+        });
+
+        if (!sale) {
+            alert("Sales record भेटिएन।");
+            return;
+        }
+
+        const billWindow = window.open(
+            "",
+            "_blank",
+            "width=500,height=700"
+        );
+
+        if (!billWindow) {
+            alert(
+                "Bill खोल्न सकेन। Browser मा popup अनुमति दिनुहोस्।"
+            );
+            return;
+        }
+
+        const billHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<title>${escapeHTML(sale.billNumber || "Sales Bill")}</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
 
     body {
-        font-family:
-            Arial,
-            sans-serif;
-
+        font-family: Arial, sans-serif;
         margin: 0;
         padding: 20px;
-
-        background: #fff;
-
-        color: #222;
+        background: #ffffff;
+        color: #111111;
     }
 
-    .bill {
+    .receipt {
         max-width: 420px;
-        margin: auto;
+        margin: 0 auto;
     }
 
-    .center {
+    h2 {
         text-align: center;
+        margin: 0 0 5px;
     }
 
-    h1 {
-        margin:
-            0 0 5px;
+    .subtitle {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #555;
     }
 
-    p {
-        margin:
-            4px 0;
+    .line {
+        border-top: 1px dashed #777;
+        margin: 12px 0;
     }
 
-    hr {
-        border: 0;
-        border-top:
-            1px dashed #999;
-
-        margin:
-            15px 0;
+    .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        margin: 7px 0;
     }
 
-    table {
-        width: 100%;
-        border-collapse:
-            collapse;
+    .label {
+        color: #555;
     }
 
-    td {
-        padding:
-            7px 0;
-
-        vertical-align:
-            top;
-    }
-
-    .right {
-        text-align:
-            right;
+    .value {
+        text-align: right;
+        font-weight: 600;
     }
 
     .total {
-        font-size:
-            18px;
-
-        font-weight:
-            bold;
+        font-size: 18px;
+        font-weight: bold;
     }
 
     .actions {
-        margin-top:
-            20px;
-
-        text-align:
-            center;
+        text-align: center;
+        margin-top: 25px;
     }
 
     button {
-        padding:
-            10px 18px;
-
-        border: 0;
-
-        border-radius:
-            6px;
-
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
         cursor: pointer;
+        background: #111;
+        color: #fff;
+        font-size: 15px;
     }
 
     @media print {
-
         .actions {
             display: none;
         }
@@ -637,544 +491,465 @@ content="width=device-width, initial-scale=1.0"
         body {
             padding: 0;
         }
-
     }
+</style>
+</head>
 
-</style></head><body><div class="bill"><div class="center">
+<body>
 
-    <h1>
-        GENERAL STORE
-    </h1>
+<div class="receipt">
 
-    <p>
+    <h2>GENERAL STORE</h2>
+
+    <div class="subtitle">
         Sales Receipt
-    </p>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+        <span class="label">Bill No.</span>
+        <span class="value">
+            ${escapeHTML(sale.billNumber || "-")}
+        </span>
+    </div>
+
+    <div class="row">
+        <span class="label">Date</span>
+        <span class="value">
+            ${escapeHTML(sale.date || "-")}
+        </span>
+    </div>
+
+    <div class="row">
+        <span class="label">Customer</span>
+        <span class="value">
+            ${escapeHTML(sale.customerName || "Cash Customer")}
+        </span>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+        <span class="label">Product</span>
+        <span class="value">
+            ${escapeHTML(sale.productName || "-")}
+        </span>
+    </div>
+
+    <div class="row">
+        <span class="label">Quantity</span>
+        <span class="value">
+            ${Number(sale.qty) || 0}
+            ${escapeHTML(sale.unit || "")}
+        </span>
+    </div>
+
+    <div class="row">
+        <span class="label">Rate</span>
+        <span class="value">
+            ${money(sale.rate)}
+        </span>
+    </div>
+
+    <div class="row">
+        <span class="label">Amount</span>
+        <span class="value">
+            ${money(sale.itemAmount)}
+        </span>
+    </div>
+
+    <div class="row">
+        <span class="label">Discount</span>
+        <span class="value">
+            ${money(sale.discount)}
+        </span>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row total">
+        <span>Total</span>
+        <span>${money(sale.total)}</span>
+    </div>
+
+    <div class="row">
+        <span class="label">Paid</span>
+        <span class="value">
+            ${money(sale.paidAmount)}
+        </span>
+    </div>
+
+    <div class="row">
+        <span class="label">Balance</span>
+        <span class="value">
+            ${money(sale.balance)}
+        </span>
+    </div>
+
+    <div class="row">
+        <span class="label">Payment</span>
+        <span class="value">
+            ${escapeHTML(sale.paymentMethod || "-")}
+        </span>
+    </div>
+
+    ${
+        sale.note
+            ? `
+            <div class="line"></div>
+
+            <div>
+                <strong>Note:</strong>
+                ${escapeHTML(sale.note)}
+            </div>
+            `
+            : ""
+    }
+
+    <div class="line"></div>
+
+    <div style="text-align:center;">
+        Thank you for your purchase.
+    </div>
+
+    <div class="actions">
+        <button onclick="window.print()">
+            Print Bill
+        </button>
+    </div>
 
 </div>
 
-<hr>
-
-<table>
-
-    <tr>
-        <td>Bill No.</td>
-        <td class="right">
-            ${escapeHTML(
-                sale.billNumber || "-"
-            )}
-        </td>
-    </tr>
-
-    <tr>
-        <td>Date</td>
-        <td class="right">
-            ${escapeHTML(
-                sale.date || "-"
-            )}
-        </td>
-    </tr>
-
-    <tr>
-        <td>Customer</td>
-        <td class="right">
-            ${escapeHTML(
-                sale.customerName ||
-                "Walk-in Customer"
-            )}
-        </td>
-    </tr>
-
-</table>
-
-<hr>
-
-<table>
-
-    <tr>
-
-        <td>
-            ${escapeHTML(
-                sale.productName || "-"
-            )}
-            <br>
-            ${Number(
-                sale.qty || 0
-            )}
-            ${escapeHTML(
-                sale.unit || ""
-            )}
-            ×
-            ${money(
-                sale.rate
-            )}
-        </td>
-
-        <td class="right">
-            ${money(
-                sale.itemAmount
-            )}
-        </td>
-
-    </tr>
-
-</table>
-
-<hr>
-
-<table>
-
-    <tr>
-
-        <td>
-            Discount
-        </td>
-
-        <td class="right">
-            ${money(
-                sale.discount
-            )}
-        </td>
-
-    </tr>
-
-    <tr class="total">
-
-        <td>
-            TOTAL
-        </td>
-
-        <td class="right">
-            ${money(
-                sale.total
-            )}
-        </td>
-
-    </tr>
-
-    <tr>
-
-        <td>
-            Paid
-        </td>
-
-        <td class="right">
-            ${money(
-                sale.paidAmount
-            )}
-        </td>
-
-    </tr>
-
-    <tr>
-
-        <td>
-            Balance
-        </td>
-
-        <td class="right">
-            ${money(
-                sale.balance
-            )}
-        </td>
-
-    </tr>
-
-    <tr>
-
-        <td>
-            Payment
-        </td>
-
-        <td class="right">
-            ${escapeHTML(
-                sale.paymentMethod ||
-                "-"
-            )}
-        </td>
-
-    </tr>
-
-</table>
-
-${
-    sale.note
-    ? `
-    <hr>
-
-    <p>
-        <strong>Note:</strong>
-        ${escapeHTML(
-            sale.note
-        )}
-    </p>
-    `
-    : ""
-}
-
-<hr>
-
-<div class="center">
-
-    <p>
-        Thank you!
-    </p>
-
-</div>
-
-<div class="actions">
-
-    <button
-        onclick="window.print()"
-    >
-        🖨️ Print Bill
-    </button>
-
-</div>
-
-</div></body></html>
-`;billWindow.document.open();
-
-billWindow.document.write(
-    html
-);
-
-billWindow.document.close();
-
-}
-
-saleProduct.addEventListener(
-"change",
-function () {
-
-    updateProductInfo();
-
-}
-
-);
-
-saleQty.addEventListener(
-"input",
-calculatePreview
-);
-
-saleRate.addEventListener(
-"input",
-calculatePreview
-);
-
-saleDiscount.addEventListener(
-"input",
-calculatePreview
-);
-
-paidAmount.addEventListener(
-"input",
-calculatePreview
-);
-
-paymentMethod.addEventListener(
-"change",
-calculatePreview
-);
-
-saleSearch.addEventListener(
-"input",
-renderSalesHistory
-);
-
-saleForm.addEventListener(
-"reset",
-function () {
-
-    setTimeout(
-        function () {
-
-            saleDate.value =
-                today();
-
-            billNumber.value =
-                generateBillNumber();
-
-            paidAmount.value =
-                "0";
-
-            saleDiscount.value =
-                "0";
-
-            loadProducts();
-
-            calculatePreview();
-
-        },
-        0
-    );
-}
-
-);
-
-saleForm.addEventListener(
-"submit",
-function (event) {
-
-    event.preventDefault();
-
-    const product =
-        getSelectedProduct();
-
-    if (!product) {
-
-        alert(
-            "कृपया Product चयन गर्नुहोस्।"
-        );
-
-        return;
+</body>
+</html>
+        `;
+
+        billWindow.document.open();
+        billWindow.document.write(billHTML);
+        billWindow.document.close();
     }
 
-    const qty =
-        Number(
-            saleQty.value || 0
+    // Make available if HTML/other code needs it
+    window.viewSaleBill = viewSaleBill;
+
+    // ==============================
+    // SAVE SALE
+    // ==============================
+
+    function saveSale() {
+        if (!saleForm) return;
+
+        const productId = saleProduct ? saleProduct.value : "";
+
+        if (!productId) {
+            alert("कृपया Product Select गर्नुहोस्।");
+            return;
+        }
+
+        const products = getProducts();
+
+        const productIndex = products.findIndex(function (product) {
+            return product.id === productId;
+        });
+
+        if (productIndex === -1) {
+            alert("Selected Product भेटिएन।");
+            return;
+        }
+
+        const product = products[productIndex];
+
+        const qty = numberValue(saleQty ? saleQty.value : 0);
+        const rate = numberValue(saleRate ? saleRate.value : 0);
+        const discount = numberValue(
+            saleDiscount ? saleDiscount.value : 0
+        );
+        const paid = numberValue(
+            paidAmount ? paidAmount.value : 0
         );
 
-    const rate =
-        Number(
-            saleRate.value || 0
+        if (qty <= 0) {
+            alert("Quantity 0 भन्दा ठूलो हुनुपर्छ।");
+            return;
+        }
+
+        const currentStock = numberValue(product.stock);
+
+        if (qty > currentStock) {
+            alert(
+                "पर्याप्त Stock छैन।\n\n" +
+                "Available Stock: " +
+                currentStock +
+                "\n" +
+                "Requested Qty: " +
+                qty
+            );
+
+            return;
+        }
+
+        if (rate <= 0) {
+            alert("Sale Rate सही राख्नुहोस्।");
+            return;
+        }
+
+        const itemAmount = qty * rate;
+
+        if (discount > itemAmount) {
+            alert("Discount Amount भन्दा बढी हुन सक्दैन।");
+            return;
+        }
+
+        const total = Math.max(
+            0,
+            itemAmount - discount
         );
 
-    const discount =
-        Number(
-            saleDiscount.value || 0
-        );
+        if (paid > total) {
+            alert("Paid Amount Total भन्दा बढी हुन सक्दैन।");
+            return;
+        }
 
-    const paid =
-        Number(
-            paidAmount.value || 0
-        );
+        const balance = total - paid;
 
-    const stock =
-        Number(
-            product.stock || 0
-        );
+        const sales = getSales();
 
-    if (qty <= 0) {
+        const sale = {
+            id:
+                "SALE-" +
+                Date.now() +
+                "-" +
+                Math.floor(Math.random() * 10000),
+
+            date: saleDate && saleDate.value
+                ? saleDate.value
+                : todayDate(),
+
+            billNumber:
+                billNumber && billNumber.value.trim()
+                    ? billNumber.value.trim()
+                    : generateBillNumber(),
+
+            customerName:
+                customerName && customerName.value.trim()
+                    ? customerName.value.trim()
+                    : "Cash Customer",
+
+            productId: product.id,
+
+            productName: product.name || "",
+
+            unit: product.unit || "",
+
+            qty: qty,
+
+            rate: rate,
+
+            discount: discount,
+
+            itemAmount: itemAmount,
+
+            total: total,
+
+            paidAmount: paid,
+
+            balance: balance,
+
+            paymentMethod:
+                paymentMethod && paymentMethod.value
+                    ? paymentMethod.value
+                    : "CASH",
+
+            note:
+                saleNote && saleNote.value.trim()
+                    ? saleNote.value.trim()
+                    : "",
+
+            createdAt: new Date().toISOString()
+        };
+
+        // Add sale record
+        sales.push(sale);
+
+        // Reduce stock
+        products[productIndex].stock =
+            Math.max(0, currentStock - qty);
+
+        // Keep latest sale price
+        products[productIndex].salePrice = rate;
+
+        // Save both
+        saveSales(sales);
+        saveProducts(products);
+
+        // Refresh UI
+        renderSalesHistory(
+            saleSearch ? saleSearch.value : ""
+        );
 
         alert(
-            "कृपया Sale Quantity राख्नुहोस्।"
+            "Sale सफल भयो।\n\n" +
+            "Bill No: " +
+            sale.billNumber
         );
 
-        return;
+        // Reset form
+        saleForm.reset();
+
+        setToday();
+        setBillNumber();
+        loadProducts();
+
+        if (infoProduct) infoProduct.textContent = "-";
+        if (infoUnit) infoUnit.textContent = "-";
+        if (infoStock) infoStock.textContent = "0";
+        if (infoQty) infoQty.textContent = "0";
+
+        calculateSale();
     }
 
-    if (rate < 0) {
+    // ==============================
+    // FORM EVENTS
+    // ==============================
 
-        alert(
-            "Sale Rate गलत छ।"
+    if (saleProduct) {
+        saleProduct.addEventListener(
+            "change",
+            updateProductInfo
         );
-
-        return;
     }
 
-    if (discount < 0) {
-
-        alert(
-            "Discount गलत छ।"
+    if (saleQty) {
+        saleQty.addEventListener(
+            "input",
+            calculateSale
         );
-
-        return;
     }
 
-    if (discount > qty * rate) {
-
-        alert(
-            "Discount item amount भन्दा बढी हुन सक्दैन।"
+    if (saleRate) {
+        saleRate.addEventListener(
+            "input",
+            calculateSale
         );
-
-        return;
     }
 
-    if (qty > stock) {
-
-        alert(
-            `पर्याप्त stock छैन। Available stock: ${stock}`
+    if (saleDiscount) {
+        saleDiscount.addEventListener(
+            "input",
+            calculateSale
         );
-
-        return;
     }
 
-    const itemAmount =
-        qty * rate;
-
-    const total =
-        Math.max(
-            itemAmount - discount,
-            0
+    if (paidAmount) {
+        paidAmount.addEventListener(
+            "input",
+            calculateSale
         );
-
-    if (paid < 0) {
-
-        alert(
-            "Paid Amount गलत छ।"
-        );
-
-        return;
     }
 
-    if (paid > total) {
-
-        alert(
-            "Paid Amount total भन्दा बढी हुन सक्दैन।"
+    if (paymentMethod) {
+        paymentMethod.addEventListener(
+            "change",
+            calculateSale
         );
-
-        return;
     }
 
-    const balance =
-        total - paid;
+    // ==============================
+    // SALE FORM SUBMIT
+    // ==============================
 
-    const products =
-        getProducts();
-
-    const productIndex =
-        products.findIndex(
-            function (item) {
-
-                return item.id ===
-                    product.id;
-
+    if (saleForm) {
+        saleForm.addEventListener(
+            "submit",
+            function (event) {
+                event.preventDefault();
+                saveSale();
             }
         );
-
-    if (productIndex === -1) {
-
-        alert(
-            "Product भेटिएन। फेरि प्रयास गर्नुहोस्।"
-        );
-
-        return;
     }
 
-    products[productIndex].stock =
-        Number(
-            products[productIndex].stock || 0
-        ) - qty;
+    // ==============================
+    // SEARCH
+    // ==============================
 
-    saveProducts(
-        products
-    );
+    if (saleSearch) {
+        saleSearch.addEventListener(
+            "input",
+            function () {
+                renderSalesHistory(
+                    saleSearch.value
+                );
+            }
+        );
+    }
 
+    // ==============================
+    // VIEW BILL BUTTON
+    // ==============================
 
-    const sales =
-        getSales();
+    if (salesHistoryBody) {
+        salesHistoryBody.addEventListener(
+            "click",
+            function (event) {
+                const button =
+                    event.target.closest(
+                        ".view-sale-bill-btn"
+                    );
 
+                if (!button) return;
 
-    const sale = {
+                const saleId =
+                    button.getAttribute(
+                        "data-sale-id"
+                    );
 
-        id:
-            "SALE-" +
-            Date.now() +
-            "-" +
-            Math.floor(
-                Math.random() * 10000
-            ),
+                if (saleId) {
+                    viewSaleBill(saleId);
+                }
+            }
+        );
+    }
 
-        date:
-            saleDate.value ||
-            today(),
+    // ==============================
+    // MOBILE SIDEBAR
+    // ==============================
 
-        billNumber:
-            billNumber.value.trim() ||
-            generateBillNumber(),
+    const menuButton =
+        document.querySelector(
+            ".menu-btn, .mobile-menu-btn, .menu-toggle"
+        );
 
-        customerName:
-            customerName.value.trim() ||
-            "Walk-in Customer",
+    if (menuButton && sidebar) {
+        menuButton.addEventListener(
+            "click",
+            function () {
+                sidebar.classList.toggle("open");
 
-        productId:
-            product.id,
+                if (overlay) {
+                    overlay.classList.toggle("show");
+                }
+            }
+        );
+    }
 
-        productName:
-            product.name,
+    if (overlay && sidebar) {
+        overlay.addEventListener(
+            "click",
+            function () {
+                sidebar.classList.remove("open");
+                overlay.classList.remove("show");
+            }
+        );
+    }
 
-        unit:
-            product.unit || "",
+    // ==============================
+    // INITIALIZE
+    // ==============================
 
-        qty:
-            qty,
-
-        rate:
-            rate,
-
-        discount:
-            discount,
-
-        itemAmount:
-            itemAmount,
-
-        total:
-            total,
-
-        paidAmount:
-            paid,
-
-        balance:
-            balance,
-
-        paymentMethod:
-            paymentMethod.value,
-
-        note:
-            saleNote.value.trim(),
-
-        createdAt:
-            new Date().toISOString()
-
-    };
-
-
-    sales.push(
-        sale
-    );
-
-    saveSales(
-        sales
-    );
-
-
-    alert(
-        `Sale सफल भयो।\n\n` +
-        `Product: ${product.name}\n` +
-        `Qty: ${qty}\n` +
-        `Total: ${money(total)}\n` +
-        `Balance: ${money(balance)}`
-    );
-
-
-    clearForm();
-
-    renderSalesHistory();
-
-}
-
-);
-
-document.addEventListener(
-"DOMContentLoaded",
-function () {
-
-    saleDate.value =
-        today();
-
-    billNumber.value =
-        generateBillNumber();
-
+    setToday();
+    setBillNumber();
     loadProducts();
-
-    calculatePreview();
-
     renderSalesHistory();
-
-}
-
-);
-
-window.viewSaleBill =
-viewSaleBill;
+    calculateSale();
+});
