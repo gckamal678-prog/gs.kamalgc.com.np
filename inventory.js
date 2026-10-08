@@ -1,94 +1,175 @@
-// ==========================================
-// GENERAL STORE MANAGEMENT SYSTEM
-// INVENTORY MODULE
-// ==========================================
+/* =====================================================
+   GENERAL STORE MANAGEMENT SYSTEM
+   INVENTORY MODULE
+   ===================================================== */
 
 const PRODUCT_KEY = "gs_products";
 
-// -------------------------------
-// DOM Elements
-// -------------------------------
+
+/* =====================================================
+   DOM ELEMENTS
+   ===================================================== */
 
 const addProductBtn = document.getElementById("addProductBtn");
+
 const productModal = document.getElementById("productModal");
-const closeProductModal = document.getElementById("closeProductModal");
-const cancelProductBtn = document.getElementById("cancelProductBtn");
-const productForm = document.getElementById("productForm");
 
-const productSearch = document.getElementById("productSearch");
-const inventorySearch = document.getElementById("inventorySearch");
+const closeProductModal =
+    document.getElementById("closeProductModal");
 
-const categoryFilter = document.getElementById("categoryFilter");
-const stockFilter = document.getElementById("stockFilter");
+const cancelProductBtn =
+    document.getElementById("cancelProductBtn");
 
-const productTableBody = document.getElementById("productTableBody");
-const emptyInventory = document.getElementById("emptyInventory");
-
-const totalProducts = document.getElementById("totalProducts");
-const inStockProducts = document.getElementById("inStockProducts");
-const lowStockProducts = document.getElementById("lowStockProducts");
-const stockValue = document.getElementById("stockValue");
-
-// Mobile menu
-const inventoryMenuBtn = document.getElementById("inventoryMenuBtn");
+const productForm =
+    document.getElementById("productForm");
 
 
-// -------------------------------
-// Load Products
-// -------------------------------
+const productSearch =
+    document.getElementById("productSearch");
+
+const inventorySearch =
+    document.getElementById("inventorySearch");
+
+
+const categoryFilter =
+    document.getElementById("categoryFilter");
+
+const stockFilter =
+    document.getElementById("stockFilter");
+
+
+const productTableBody =
+    document.getElementById("productTableBody");
+
+const totalProducts =
+    document.getElementById("totalProducts");
+
+const inStockProducts =
+    document.getElementById("inStockProducts");
+
+const lowStockProducts =
+    document.getElementById("lowStockProducts");
+
+const stockValue =
+    document.getElementById("stockValue");
+
+const inventoryMenuBtn =
+    document.getElementById("inventoryMenuBtn");
+
+
+/* =====================================================
+   GET PRODUCTS
+   ===================================================== */
 
 function getProducts() {
+
     try {
-        return JSON.parse(localStorage.getItem(PRODUCT_KEY)) || [];
+
+        const data =
+            localStorage.getItem(PRODUCT_KEY);
+
+        if (!data) {
+            return [];
+        }
+
+        const products = JSON.parse(data);
+
+        return Array.isArray(products)
+            ? products
+            : [];
+
     } catch (error) {
-        console.error("Product data error:", error);
+
+        console.error(
+            "Product data read error:",
+            error
+        );
+
         return [];
     }
 }
 
 
-// -------------------------------
-// Save Products
-// -------------------------------
+/* =====================================================
+   SAVE PRODUCTS
+   ===================================================== */
 
 function saveProducts(products) {
-    localStorage.setItem(PRODUCT_KEY, JSON.stringify(products));
+
+    try {
+
+        localStorage.setItem(
+            PRODUCT_KEY,
+            JSON.stringify(products)
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Product save error:",
+            error
+        );
+
+        alert(
+            "Product save हुन सकेन। Browser storage check गर्नुहोस्।"
+        );
+
+        return false;
+    }
 }
 
 
-// -------------------------------
-// Currency Format
-// -------------------------------
+/* =====================================================
+   FORMAT MONEY
+   ===================================================== */
 
-function formatMoney(amount) {
-    return Number(amount || 0).toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
+function formatMoney(value) {
+
+    const number = Number(value) || 0;
+
+    return number.toLocaleString(
+        "en-IN",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    );
 }
 
 
-// -------------------------------
-// Stock Status
-// -------------------------------
+/* =====================================================
+   STOCK STATUS
+   ===================================================== */
 
 function getStockStatus(product) {
-    const stock = Number(product.stock || 0);
-    const minStock = Number(product.minStock || 0);
+
+    const stock = Number(product.stock) || 0;
+
+    const minStock =
+        Number(product.minStock) || 0;
+
 
     if (stock <= 0) {
+
         return {
             key: "out",
             label: "Out of Stock"
         };
+
     }
 
+
     if (stock <= minStock) {
+
         return {
             key: "low",
             label: "Low Stock"
         };
+
     }
+
 
     return {
         key: "in",
@@ -97,234 +178,82 @@ function getStockStatus(product) {
 }
 
 
-// -------------------------------
-// Update Summary Cards
-// -------------------------------
+/* =====================================================
+   UPDATE SUMMARY
+   ===================================================== */
 
 function updateSummary(products) {
 
-    const total = products.length;
+    const total =
+        products.length;
+
 
     let inStock = 0;
+
     let lowStock = 0;
-    let totalStockValue = 0;
 
-    products.forEach(product => {
+    let value = 0;
 
-        const status = getStockStatus(product);
+
+    products.forEach(function (product) {
+
+        const stock =
+            Number(product.stock) || 0;
+
+        const purchasePrice =
+            Number(product.purchasePrice) || 0;
+
+
+        const status =
+            getStockStatus(product);
+
 
         if (status.key === "in") {
             inStock++;
         }
 
+
         if (status.key === "low") {
             lowStock++;
         }
 
-        const stock = Number(product.stock || 0);
-        const purchasePrice = Number(product.purchasePrice || 0);
 
-        totalStockValue += stock * purchasePrice;
+        value +=
+            stock * purchasePrice;
+
     });
+
 
     if (totalProducts) {
         totalProducts.textContent = total;
     }
 
+
     if (inStockProducts) {
         inStockProducts.textContent = inStock;
     }
+
 
     if (lowStockProducts) {
         lowStockProducts.textContent = lowStock;
     }
 
+
     if (stockValue) {
-        stockValue.textContent = "Rs. " + formatMoney(totalStockValue);
+        stockValue.textContent =
+            formatMoney(value);
     }
+
 }
 
 
-// -------------------------------
-// Render Products
-// -------------------------------
-
-function renderProducts() {
-
-    const products = getProducts();
-
-    updateSummary(products);
-
-    let searchText = "";
-
-    if (productSearch && productSearch.value.trim()) {
-        searchText = productSearch.value.trim().toLowerCase();
-    }
-
-    if (inventorySearch && inventorySearch.value.trim()) {
-        searchText = inventorySearch.value.trim().toLowerCase();
-    }
-
-    const selectedCategory = categoryFilter
-        ? categoryFilter.value
-        : "all";
-
-    const selectedStock = stockFilter
-        ? stockFilter.value
-        : "all";
-
-
-    const filteredProducts = products.filter(product => {
-
-        // Search
-        const searchableText = [
-            product.name,
-            product.brand,
-            product.category,
-            product.size,
-            product.unit
-        ]
-            .join(" ")
-            .toLowerCase();
-
-        const matchesSearch =
-            !searchText ||
-            searchableText.includes(searchText);
-
-
-        // Category
-        const matchesCategory =
-            selectedCategory === "all" ||
-            product.category === selectedCategory;
-
-
-        // Stock
-        const stockStatus = getStockStatus(product);
-
-        const matchesStock =
-            selectedStock === "all" ||
-            stockStatus.key === selectedStock;
-
-
-        return (
-            matchesSearch &&
-            matchesCategory &&
-            matchesStock
-        );
-    });
-
-
-    // Empty state
-    if (filteredProducts.length === 0) {
-
-        productTableBody.innerHTML = "";
-
-        if (emptyInventory) {
-            emptyInventory.style.display = "block";
-        }
-
-        return;
-    }
-
-
-    if (emptyInventory) {
-        emptyInventory.style.display = "none";
-    }
-
-
-    // Table
-    productTableBody.innerHTML = filteredProducts
-        .map(product => {
-
-            const status = getStockStatus(product);
-
-            return `
-                <tr>
-
-                    <td>
-                        <div class="product-name-cell">
-                            <div class="product-icon">📦</div>
-
-                            <div>
-                                <strong>${escapeHTML(product.name)}</strong>
-
-                                ${
-                                    product.brand
-                                        ? `<small>${escapeHTML(product.brand)}</small>`
-                                        : ""
-                                }
-
-                                ${
-                                    product.size
-                                        ? `<small>${escapeHTML(product.size)}</small>`
-                                        : ""
-                                }
-                            </div>
-                        </div>
-                    </td>
-
-
-                    <td>
-                        ${escapeHTML(product.category || "-")}
-                    </td>
-
-
-                    <td>
-                        ${escapeHTML(product.unit || "-")}
-                    </td>
-
-
-                    <td>
-                        Rs. ${formatMoney(product.purchasePrice)}
-                    </td>
-
-
-                    <td>
-                        Rs. ${formatMoney(product.salePrice)}
-                    </td>
-
-
-                    <td>
-                        <strong>${Number(product.stock || 0)}</strong>
-                    </td>
-
-
-                    <td>
-                        <span class="stock-status ${status.key}">
-                            ${status.label}
-                        </span>
-                    </td>
-
-
-                    <td>
-                        <button
-                            class="table-action-btn"
-                            onclick="viewProduct('${product.id}')"
-                            title="View Product"
-                        >
-                            👁️
-                        </button>
-                    </td>
-
-                </tr>
-            `;
-
-        })
-        .join("");
-}
-
-
-// -------------------------------
-// Escape HTML
-// -------------------------------
+/* =====================================================
+   ESCAPE HTML
+   ===================================================== */
 
 function escapeHTML(value) {
 
-    if (value === null || value === undefined) {
-        return "";
-    }
-
-    return String(value)
+    return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -333,9 +262,262 @@ function escapeHTML(value) {
 }
 
 
-// -------------------------------
-// Open Modal
-// -------------------------------
+/* =====================================================
+   RENDER PRODUCTS
+   ===================================================== */
+
+function renderProducts() {
+
+    if (!productTableBody) {
+        return;
+    }
+
+
+    const allProducts =
+        getProducts();
+
+
+    updateSummary(allProducts);
+
+
+    const searchValue =
+        (
+            productSearch?.value ||
+            inventorySearch?.value ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const categoryValue =
+        categoryFilter?.value || "";
+
+
+    const stockValueFilter =
+        stockFilter?.value || "";
+
+
+    const filteredProducts =
+        allProducts.filter(function (product) {
+
+
+            /* SEARCH */
+
+            const searchableText = [
+
+                product.name,
+                product.brand,
+                product.category,
+                product.size,
+                product.unit
+
+            ]
+                .join(" ")
+                .toLowerCase();
+
+
+            if (
+                searchValue &&
+                !searchableText.includes(searchValue)
+            ) {
+
+                return false;
+
+            }
+
+
+            /* CATEGORY */
+
+            if (
+                categoryValue &&
+                product.category !== categoryValue
+            ) {
+
+                return false;
+
+            }
+
+
+            /* STOCK */
+
+            if (stockValueFilter) {
+
+                const status =
+                    getStockStatus(product);
+
+                if (
+                    status.key !==
+                    stockValueFilter
+                ) {
+
+                    return false;
+
+                }
+
+            }
+
+
+            return true;
+
+        });
+
+
+    /* EMPTY */
+
+    if (filteredProducts.length === 0) {
+
+        productTableBody.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="8"
+                    class="empty-inventory"
+                >
+
+                    <div>📦</div>
+
+                    <strong>
+                        ${
+                            allProducts.length === 0
+                                ? "अहिलेसम्म Product छैन"
+                                : "Product भेटिएन"
+                        }
+                    </strong>
+
+                    <span>
+                        ${
+                            allProducts.length === 0
+                                ? 'सुरु गर्न "Add Product" थिच्नुहोस्।'
+                                : "Search वा filter परिवर्तन गर्नुहोस्।"
+                        }
+                    </span>
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+    }
+
+
+    /* TABLE ROWS */
+
+    productTableBody.innerHTML =
+        filteredProducts
+            .map(function (product) {
+
+                const status =
+                    getStockStatus(product);
+
+
+                const stock =
+                    Number(product.stock) || 0;
+
+
+                const purchasePrice =
+                    Number(product.purchasePrice) || 0;
+
+
+                const salePrice =
+                    Number(product.salePrice) || 0;
+
+
+                return `
+
+                    <tr>
+
+                        <td>
+
+                            <div class="product-name-cell">
+
+                                <strong>
+                                    ${escapeHTML(product.name)}
+                                </strong>
+
+                                ${
+                                    product.brand
+                                        ? `<small>${escapeHTML(product.brand)}</small>`
+                                        : ""
+                                }
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+                            ${escapeHTML(product.category)}
+                        </td>
+
+
+                        <td>
+
+                            ${escapeHTML(product.unit)}
+
+                            ${
+                                product.size
+                                    ? `<small> / ${escapeHTML(product.size)}</small>`
+                                    : ""
+                            }
+
+                        </td>
+
+
+                        <td>
+                            Rs. ${formatMoney(purchasePrice)}
+                        </td>
+
+
+                        <td>
+                            Rs. ${formatMoney(salePrice)}
+                        </td>
+
+
+                        <td>
+                            ${stock}
+                        </td>
+
+
+                        <td>
+
+                            <span
+                                class="stock-status ${status.key}"
+                            >
+                                ${status.label}
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <button
+                                type="button"
+                                class="table-action-btn"
+                                onclick="viewProduct('${product.id}')"
+                            >
+                                View
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                `;
+
+            })
+            .join("");
+
+}
+
+
+/* =====================================================
+   OPEN MODAL
+   ===================================================== */
 
 function openProductModal() {
 
@@ -343,23 +525,27 @@ function openProductModal() {
         return;
     }
 
+
     productModal.classList.add("show");
 
-    document.body.style.overflow = "hidden";
 
-    const firstInput = document.getElementById("productName");
+    setTimeout(function () {
 
-    if (firstInput) {
-        setTimeout(() => {
-            firstInput.focus();
-        }, 100);
-    }
+        const nameInput =
+            document.getElementById("productName");
+
+        if (nameInput) {
+            nameInput.focus();
+        }
+
+    }, 100);
+
 }
 
 
-// -------------------------------
-// Close Modal
-// -------------------------------
+/* =====================================================
+   CLOSE MODAL
+   ===================================================== */
 
 function closeProductModalFunc() {
 
@@ -367,75 +553,163 @@ function closeProductModalFunc() {
         return;
     }
 
+
     productModal.classList.remove("show");
 
-    document.body.style.overflow = "";
 
     if (productForm) {
         productForm.reset();
     }
+
 }
 
 
-// -------------------------------
-// Add Product
-// -------------------------------
+/* =====================================================
+   ADD PRODUCT
+   ===================================================== */
 
 function addProduct(event) {
 
     event.preventDefault();
 
-    const name = document.getElementById("productName").value.trim();
-    const category = document.getElementById("productCategory").value;
-    const brand = document.getElementById("productBrand").value.trim();
-    const size = document.getElementById("productSize").value.trim();
-    const unit = document.getElementById("productUnit").value;
-    const purchasePrice = Number(
-        document.getElementById("purchasePrice").value
-    );
-    const salePrice = Number(
-        document.getElementById("salePrice").value
-    );
-    const minStock = Number(
-        document.getElementById("minStock").value || 0
-    );
-    const targetStock = Number(
-        document.getElementById("targetStock").value || 0
-    );
+
+    /* GET FORM VALUES */
+
+    const name =
+        document
+            .getElementById("productName")
+            .value
+            .trim();
+
+
+    const category =
+        document
+            .getElementById("productCategory")
+            .value;
+
+
+    const brand =
+        document
+            .getElementById("productBrand")
+            .value
+            .trim();
+
+
+    const size =
+        document
+            .getElementById("productSize")
+            .value
+            .trim();
+
+
+    const unit =
+        document
+            .getElementById("productUnit")
+            .value;
+
+
+    const purchasePrice =
+        Number(
+            document
+                .getElementById("purchasePrice")
+                .value
+        );
+
+
+    const salePrice =
+        Number(
+            document
+                .getElementById("salePrice")
+                .value
+        );
+
+
+    const minStock =
+        Number(
+            document
+                .getElementById("minStock")
+                .value
+        ) || 0;
+
+
+    const targetStock =
+        Number(
+            document
+                .getElementById("targetStock")
+                .value
+        ) || 0;
+
 
     const expiryApplicable =
-        document.getElementById("expiryApplicable").checked;
+        document
+            .getElementById("expiryApplicable")
+            .checked;
 
 
-    // Validation
+    /* VALIDATION */
+
     if (!name) {
-        alert("Please enter product name.");
+
+        alert(
+            "Product Name राख्नुहोस्।"
+        );
+
         return;
     }
+
 
     if (!unit) {
-        alert("Please select product unit.");
+
+        alert(
+            "Unit select गर्नुहोस्।"
+        );
+
         return;
     }
 
-    if (purchasePrice < 0 || salePrice < 0) {
-        alert("Price cannot be negative.");
+
+    if (
+        Number.isNaN(purchasePrice) ||
+        purchasePrice < 0
+    ) {
+
+        alert(
+            "Purchase Price सही राख्नुहोस्।"
+        );
+
         return;
     }
 
 
-    // Create Product
+    if (
+        Number.isNaN(salePrice) ||
+        salePrice < 0
+    ) {
+
+        alert(
+            "Sale Price सही राख्नुहोस्।"
+        );
+
+        return;
+    }
+
+
+    /* PRODUCT OBJECT */
+
     const product = {
 
         id:
             "P-" +
             Date.now() +
             "-" +
-            Math.floor(Math.random() * 1000),
+            Math.floor(
+                Math.random() * 10000
+            ),
 
         name: name,
 
-        category: category || "Other",
+        category:
+            category || "Other",
 
         brand: brand,
 
@@ -443,79 +717,136 @@ function addProduct(event) {
 
         unit: unit,
 
-        purchasePrice: purchasePrice,
+        purchasePrice:
+            purchasePrice,
 
-        salePrice: salePrice,
+        salePrice:
+            salePrice,
 
-        minStock: minStock,
+        minStock:
+            minStock,
 
-        targetStock: targetStock,
+        targetStock:
+            targetStock,
 
-        expiryApplicable: expiryApplicable,
+        expiryApplicable:
+            expiryApplicable,
 
-        // Stock will come from Purchase module
+        /*
+         * New product को stock
+         * Purchase module आएसम्म 0 रहनेछ।
+         */
+
         stock: 0,
 
         active: true,
 
-        createdAt: new Date().toISOString()
+        createdAt:
+            new Date().toISOString()
+
     };
 
 
-    // Existing products
-    const products = getProducts();
+    /* GET EXISTING PRODUCTS */
+
+    const products =
+        getProducts();
+
+
+    /* ADD */
 
     products.push(product);
 
-    saveProducts(products);
+
+    /* SAVE */
+
+    const saved =
+        saveProducts(products);
 
 
-    // Close modal
-    closeProductModalFunc();
-
-
-    // Refresh table
-    renderProducts();
-
-
-    alert(
-        "Product added successfully.\n\n" +
-        product.name +
-        "\n\nOpening stock will be added through the Purchase module."
-    );
-}
-
-
-// -------------------------------
-// View Product
-// -------------------------------
-
-function viewProduct(productId) {
-
-    const products = getProducts();
-
-    const product = products.find(
-        item => item.id === productId
-    );
-
-    if (!product) {
+    if (!saved) {
         return;
     }
 
-    const status = getStockStatus(product);
 
-    const message =
-        "Product Details\n\n" +
+    /* CLOSE MODAL */
 
-        "Name: " + product.name + "\n" +
+    closeProductModalFunc();
 
-        "Category: " + product.category + "\n" +
 
-        "Brand: " + (product.brand || "-") + "\n" +
+    /* REFRESH TABLE */
 
-        "Size: " + (product.size || "-") + "\n" +
+    renderProducts();
 
-        "Unit: " + product.unit + "\n\n" +
+
+    /* SUCCESS */
+
+    alert(
+        "Product successfully save भयो।"
+    );
+
+
+    console.log(
+        "Product saved:",
+        product
+    );
+
+}
+
+
+/* =====================================================
+   VIEW PRODUCT
+   ===================================================== */
+
+function viewProduct(productId) {
+
+    const products =
+        getProducts();
+
+
+    const product =
+        products.find(function (item) {
+
+            return item.id === productId;
+
+        });
+
+
+    if (!product) {
+
+        alert(
+            "Product भेटिएन।"
+        );
+
+        return;
+    }
+
+
+    const status =
+        getStockStatus(product);
+
+
+    alert(
+
+        "Product: " +
+        product.name +
+        "\n\n" +
+
+        "Category: " +
+        product.category +
+        "\n" +
+
+        "Brand: " +
+        (product.brand || "-") +
+        "\n" +
+
+        "Size: " +
+        (product.size || "-") +
+        "\n" +
+
+        "Unit: " +
+        product.unit +
+        "\n" +
 
         "Purchase Price: Rs. " +
         formatMoney(product.purchasePrice) +
@@ -523,156 +854,174 @@ function viewProduct(productId) {
 
         "Sale Price: Rs. " +
         formatMoney(product.salePrice) +
-        "\n\n" +
+        "\n" +
 
         "Stock: " +
         product.stock +
         "\n" +
 
         "Status: " +
-        status.label;
+        status.label
 
+    );
 
-    alert(message);
 }
 
 
-// -------------------------------
-// Search
-// -------------------------------
+/* =====================================================
+   SEARCH
+   ===================================================== */
 
 function setupSearch() {
 
     if (productSearch) {
 
-        productSearch.addEventListener("input", () => {
+        productSearch.addEventListener(
+            "input",
+            function () {
 
-            if (inventorySearch) {
-                inventorySearch.value =
-                    productSearch.value;
+                if (inventorySearch) {
+                    inventorySearch.value =
+                        productSearch.value;
+                }
+
+                renderProducts();
+
             }
+        );
 
-            renderProducts();
-        });
     }
 
 
     if (inventorySearch) {
 
-        inventorySearch.addEventListener("input", () => {
+        inventorySearch.addEventListener(
+            "input",
+            function () {
 
-            if (productSearch) {
-                productSearch.value =
-                    inventorySearch.value;
+                if (productSearch) {
+                    productSearch.value =
+                        inventorySearch.value;
+                }
+
+                renderProducts();
+
             }
+        );
 
-            renderProducts();
-        });
     }
+
 }
 
 
-// -------------------------------
-// Filters
-// -------------------------------
+/* =====================================================
+   FILTERS
+   ===================================================== */
 
 function setupFilters() {
 
     if (categoryFilter) {
+
         categoryFilter.addEventListener(
             "change",
             renderProducts
         );
+
     }
 
+
     if (stockFilter) {
+
         stockFilter.addEventListener(
             "change",
             renderProducts
         );
+
     }
+
 }
 
 
-// -------------------------------
-// Modal Events
-// -------------------------------
+/* =====================================================
+   MODAL EVENTS
+   ===================================================== */
 
 function setupModal() {
 
     if (addProductBtn) {
+
         addProductBtn.addEventListener(
             "click",
             openProductModal
         );
+
     }
 
+
     if (closeProductModal) {
+
         closeProductModal.addEventListener(
             "click",
             closeProductModalFunc
         );
+
     }
 
+
     if (cancelProductBtn) {
+
         cancelProductBtn.addEventListener(
             "click",
             closeProductModalFunc
         );
+
     }
 
+
     if (productForm) {
+
         productForm.addEventListener(
             "submit",
             addProduct
         );
+
     }
 
 
-    // Click outside modal
+    /* CLICK OUTSIDE MODAL */
+
     if (productModal) {
 
         productModal.addEventListener(
             "click",
-            event => {
+            function (event) {
 
                 if (
-                    event.target === productModal
+                    event.target ===
+                    productModal
                 ) {
+
                     closeProductModalFunc();
+
                 }
 
             }
         );
+
     }
 
-
-    // ESC key
-    document.addEventListener(
-        "keydown",
-        event => {
-
-            if (
-                event.key === "Escape" &&
-                productModal &&
-                productModal.classList.contains("show")
-            ) {
-                closeProductModalFunc();
-            }
-
-        }
-    );
 }
 
 
-// -------------------------------
-// Mobile Sidebar
-// -------------------------------
+/* =====================================================
+   MOBILE SIDEBAR
+   ===================================================== */
 
 function setupMobileSidebar() {
 
     const sidebar =
         document.querySelector(".sidebar");
+
 
     if (!sidebar || !inventoryMenuBtn) {
         return;
@@ -680,69 +1029,120 @@ function setupMobileSidebar() {
 
 
     let overlay =
-        document.querySelector(".overlay");
+        document.querySelector(
+            ".mobile-overlay"
+        );
 
 
-    // Create overlay if missing
     if (!overlay) {
 
-        overlay = document.createElement("div");
+        overlay =
+            document.createElement("div");
 
-        overlay.className = "overlay";
+        overlay.className =
+            "mobile-overlay";
 
-        document.body.appendChild(overlay);
+        document.body.appendChild(
+            overlay
+        );
+
     }
 
 
     inventoryMenuBtn.addEventListener(
         "click",
-        () => {
+        function () {
 
-            sidebar.classList.toggle("open");
+            sidebar.classList.toggle(
+                "open"
+            );
 
-            overlay.classList.toggle("show");
+            overlay.classList.toggle(
+                "show"
+            );
+
         }
     );
 
 
     overlay.addEventListener(
         "click",
-        () => {
+        function () {
 
-            sidebar.classList.remove("open");
+            sidebar.classList.remove(
+                "open"
+            );
 
-            overlay.classList.remove("show");
+            overlay.classList.remove(
+                "show"
+            );
+
         }
     );
 
-
-    // Close sidebar after menu click
-    const menuLinks =
-        sidebar.querySelectorAll("a");
-
-    menuLinks.forEach(link => {
-
-        link.addEventListener(
-            "click",
-            () => {
-
-                sidebar.classList.remove("open");
-
-                overlay.classList.remove("show");
-            }
-        );
-
-    });
 }
 
 
-// -------------------------------
-// Initial Load
-// -------------------------------
+/* =====================================================
+   SIDEBAR LINK HANDLING
+   ===================================================== */
+
+function setupSidebarLinks() {
+
+    const menuItems =
+        document.querySelectorAll(
+            ".sidebar .menu-item"
+        );
+
+
+    menuItems.forEach(
+        function (item) {
+
+            item.addEventListener(
+                "click",
+                function (event) {
+
+                    const href =
+                        this.getAttribute(
+                            "href"
+                        );
+
+
+                    /*
+                     * Real page link भए
+                     * browser लाई normally
+                     * navigate गर्न दिने।
+                     */
+
+                    if (
+                        href &&
+                        href !== "#" &&
+                        href !== ""
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    event.preventDefault();
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   INITIALIZE
+   ===================================================== */
 
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
+    function () {
 
         setupSearch();
 
@@ -752,7 +1152,10 @@ document.addEventListener(
 
         setupMobileSidebar();
 
+        setupSidebarLinks();
+
         renderProducts();
+
 
         console.log(
             "Inventory module loaded successfully."
