@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Suppliers - General Store</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .supplier-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .supplier-modal.show {
+            display: flex;
+        }
+
+        .supplier-modal-box {
+            width: 100%;
+            max-width: 700px;
+            max-height: 92vh;
+            overflow-y: auto;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .supplier-form-group {
+            margin-bottom: 14px;
+        }
+
+        .supplier-form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .supplier-form-group input,
+        .supplier-form-group textarea,
+        .supplier-form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            box-sizing: border-box;
+        }
+
+        .supplier-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .supplier-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+
+        .supplier-empty {
+            text-align: center;
+            padding: 25px;
+            color: #777;
+        }
+
+        .supplier-status-active {
+            color: green;
+            font-weight: 600;
+        }
+
+        .supplier-status-inactive {
+            color: #999;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .supplier-form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .supplier-modal-box {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="sidebar-header">
+            <h2>General Store</h2>
+        </div>
+
+        <nav class="sidebar-menu">
+
+            <a href="index.html" class="menu-item">
+                <span class="menu-icon">🏠</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="sale.html" class="menu-item">
+                <span class="menu-icon">🧾</span>
+                <span>New Sale</span>
+            </a>
+
+            <a href="purchase.html" class="menu-item">
+                <span class="menu-icon">🛒</span>
+                <span>Purchase</span>
+            </a>
+
+            <a href="inventory.html" class="menu-item">
+                <span class="menu-icon">📦</span>
+                <span>Inventory</span>
+            </a>
+
+            <a href="customers.html" class="menu-item">
+                <span class="menu-icon">👥</span>
+                <span>Customers</span>
+            </a>
+
+            <a href="suppliers.html" class="menu-item active">
+                <span class="menu-icon">🚚</span>
+                <span>Suppliers</span>
+            </a>
+
+            <a href="finance.html" class="menu-item">
+                <span class="menu-icon">💰</span>
+                <span>Finance</span>
+            </a>
+
+            <a href="reports.html" class="menu-item">
+                <span class="menu-icon">📊</span>
+                <span>Reports</span>
+            </a>
+
+            <a href="whatsapp.html" class="menu-item">
+                <span class="menu-icon">📱</span>
+                <span>WhatsApp</span>
+            </a>
+
+            <a href="ai.html" class="menu-item">
+                <span class="menu-icon">🤖</span>
+                <span>AI Assistant</span>
+            </a>
+
+            <a href="settings.html" class="menu-item">
+                <span class="menu-icon">⚙️</span>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <h1>Suppliers</h1>
+                <p>Manage suppliers and payable balances</p>
+            </div>
+
+            <button
+                type="button"
+                id="newSupplierBtn"
+                class="btn btn-primary"
+            >
+                + New Supplier
+            </button>
+
+        </header>
+
+
+        <!-- Summary -->
+        <section class="dashboard-grid">
+
+            <div class="stat-card">
+                <div class="stat-title">
+                    Total Suppliers
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="totalSuppliers"
+                >
+                    0
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-title">
+                    Total Payable
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="totalSupplierPayable"
+                >
+                    Rs. 0.00
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-title">
+                    Total Paid
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="totalSupplierPaid"
+                >
+                    Rs. 0.00
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-title">
+                    Active Suppliers
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="activeSuppliers"
+                >
+                    0
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- Supplier History -->
+        <section class="card">
+
+            <div class="section-header">
+                <h2>Supplier History</h2>
+            </div>
+
+
+            <!-- Search -->
+            <div style="margin-bottom:15px;">
+
+                <input
+                    type="search"
+                    id="supplierSearch"
+                    placeholder="Search supplier, phone, PAN/VAT, address..."
+                    style="width:100%;padding:11px;border:1px solid #ccc;border-radius:7px;box-sizing:border-box;"
+                >
+
+            </div>
+
+
+            <div style="overflow-x:auto;">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Supplier Name</th>
+                            <th>Phone</th>
+                            <th>PAN / VAT</th>
+                            <th>Opening Payable</th>
+                            <th>Purchase Total</th>
+                            <th>Payment Made</th>
+                            <th>Current Payable</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="supplierTableBody">
+
+                        <tr>
+                            <td
+                                colspan="8"
+                                class="supplier-empty"
+                            >
+                                No suppliers found.
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- NEW / EDIT SUPPLIER MODAL -->
+
+<div
+    id="supplierModal"
+    class="supplier-modal"
+>
+
+    <div class="supplier-modal-box">
+
+        <div class="section-header">
+
+            <h2 id="supplierModalTitle">
+                New Supplier
+            </h2>
+
+            <button
+                type="button"
+                id="closeSupplierModal"
+                class="btn"
+            >
+                ✕
+            </button>
+
+        </div>
+
+
+        <form id="supplierForm">
+
+            <input
+                type="hidden"
+                id="supplierId"
+            >
+
+
+            <!-- Supplier Name -->
+
+            <div class="supplier-form-group">
+
+                <label for="supplierName">
+                    Supplier Name *
+                </label>
+
+                <input
+                    type="text"
+                    id="supplierName"
+                    required
+                    autocomplete="off"
+                    placeholder="Enter supplier name"
+                >
+
+            </div>
+
+
+            <!-- Phone / Status -->
+
+            <div class="supplier-form-row">
+
+                <div class="supplier-form-group">
+
+                    <label for="supplierPhone">
+                        Phone
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="supplierPhone"
+                        autocomplete="off"
+                        placeholder="Phone number"
+                    >
+
+                </div>
+
+
+                <div class="supplier-form-group">
+
+                    <label for="supplierActive">
+                        Status
+                    </label>
+
+                    <select id="supplierActive">
+
+                        <option value="true">
+                            Active
+                        </option>
+
+                        <option value="false">
+                            Inactive
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- Address -->
+
+            <div class="supplier-form-group">
+
+                <label for="supplierAddress">
+                    Address
+                </label>
+
+                <textarea
+                    id="supplierAddress"
+                    rows="3"
+                    placeholder="Supplier address"
+                ></textarea>
+
+            </div>
+
+
+            <!-- Tax Type / Number -->
+
+            <div class="supplier-form-row">
+
+                <div class="supplier-form-group">
+
+                    <label for="supplierTaxType">
+                        Tax Type
+                    </label>
+
+                    <select id="supplierTaxType">
+
+                        <option value="VAT">
+                            VAT
+                        </option>
+
+                        <option value="PAN">
+                            PAN
+                        </option>
+
+                        <option value="NON_TAX">
+                            Non Tax
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="supplier-form-group">
+
+                    <label for="supplierTaxNumber">
+                        PAN / VAT Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="supplierTaxNumber"
+                        autocomplete="off"
+                        placeholder="PAN / VAT number"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Opening Balance -->
+
+            <div class="supplier-form-row">
+
+                <div class="supplier-form-group">
+
+                    <label for="supplierOpeningBalance">
+                        Opening Payable
+                    </label>
+
+                    <input
+                        type="number"
+                        id="supplierOpeningBalance"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                        placeholder="0.00"
+                    >
+
+                </div>
+
+
+                <div class="supplier-form-group">
+
+                    <label for="supplierBalanceType">
+                        Balance Type
+                    </label>
+
+                    <select id="supplierBalanceType">
+
+                        <option value="PAYABLE">
+                            Payable / Due
+                        </option>
+
+                        <option value="ADVANCE">
+                            Advance Paid
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- Note -->
+
+            <div class="supplier-form-group">
+
+                <label for="supplierNote">
+                    Supplier Note / History
+                </label>
+
+                <textarea
+                    id="supplierNote"
+                    rows="3"
+                    placeholder="Additional supplier note"
+                ></textarea>
+
+            </div>
+
+
+            <!-- Buttons -->
+
+            <div class="supplier-modal-actions">
+
+                <button
+                    type="button"
+                    id="cancelSupplierBtn"
+                    class="btn"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Save Supplier
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+<script src="suppliers.js"></script>
+
+</body>
+</html>
