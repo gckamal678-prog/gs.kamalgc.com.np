@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reports - General Store</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .report-filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .report-filter-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .report-filter-group input,
+        .report-filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            box-sizing: border-box;
+        }
+
+        .report-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .report-tab {
+            padding: 9px 14px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .report-tab.active {
+            background: #222;
+            color: #fff;
+        }
+
+        .report-panel {
+            display: none;
+        }
+
+        .report-panel.active {
+            display: block;
+        }
+
+        .report-empty {
+            text-align: center;
+            padding: 25px;
+            color: #777;
+        }
+
+        .report-profit {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .report-positive {
+            color: green;
+        }
+
+        .report-negative {
+            color: #c00;
+        }
+
+        @media(max-width: 700px) {
+            .report-filters {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-header">
+            <h2>General Store</h2>
+        </div>
+
+        <nav class="sidebar-menu">
+
+            <a href="index.html" class="menu-item">
+                <span class="menu-icon">🏠</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="sale.html" class="menu-item">
+                <span class="menu-icon">🧾</span>
+                <span>New Sale</span>
+            </a>
+
+            <a href="purchase.html" class="menu-item">
+                <span class="menu-icon">🛒</span>
+                <span>Purchase</span>
+            </a>
+
+            <a href="inventory.html" class="menu-item">
+                <span class="menu-icon">📦</span>
+                <span>Inventory</span>
+            </a>
+
+            <a href="customers.html" class="menu-item">
+                <span class="menu-icon">👥</span>
+                <span>Customers</span>
+            </a>
+
+            <a href="suppliers.html" class="menu-item">
+                <span class="menu-icon">🚚</span>
+                <span>Suppliers</span>
+            </a>
+
+            <a href="finance.html" class="menu-item">
+                <span class="menu-icon">💰</span>
+                <span>Finance</span>
+            </a>
+
+            <a href="reports.html" class="menu-item active">
+                <span class="menu-icon">📊</span>
+                <span>Reports</span>
+            </a>
+
+            <a href="whatsapp.html" class="menu-item">
+                <span class="menu-icon">📱</span>
+                <span>WhatsApp</span>
+            </a>
+
+            <a href="ai.html" class="menu-item">
+                <span class="menu-icon">🤖</span>
+                <span>AI Assistant</span>
+            </a>
+
+            <a href="settings.html" class="menu-item">
+                <span class="menu-icon">⚙️</span>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <h1>Reports</h1>
+                <p>Sales, purchase, stock and financial reports</p>
+            </div>
+
+            <button
+                type="button"
+                id="refreshReportsBtn"
+                class="btn btn-primary"
+            >
+                ↻ Refresh
+            </button>
+
+        </header>
+
+
+        <!-- DATE FILTER -->
+
+        <section class="card">
+
+            <div class="report-filters">
+
+                <div class="report-filter-group">
+
+                    <label for="reportFromDate">
+                        From Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="reportFromDate"
+                    >
+
+                </div>
+
+
+                <div class="report-filter-group">
+
+                    <label for="reportToDate">
+                        To Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="reportToDate"
+                    >
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="applyReportFilterBtn"
+                    class="btn btn-primary"
+                >
+                    Apply
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- SUMMARY -->
+
+        <section class="dashboard-grid">
+
+            <div class="stat-card">
+                <div class="stat-title">
+                    Sales
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="reportSales"
+                >
+                    Rs. 0.00
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-title">
+                    Purchases
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="reportPurchases"
+                >
+                    Rs. 0.00
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-title">
+                    Expenses
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="reportExpenses"
+                >
+                    Rs. 0.00
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-title">
+                    Gross Profit
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="reportGrossProfit"
+                >
+                    Rs. 0.00
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- REPORT TABS -->
+
+        <section class="card">
+
+            <div class="report-tabs">
+
+                <button
+                    type="button"
+                    class="report-tab active"
+                    data-report="sales"
+                >
+                    Sales
+                </button>
+
+                <button
+                    type="button"
+                    class="report-tab"
+                    data-report="purchases"
+                >
+                    Purchases
+                </button>
+
+                <button
+                    type="button"
+                    class="report-tab"
+                    data-report="stock"
+                >
+                    Stock
+                </button>
+
+                <button
+                    type="button"
+                    class="report-tab"
+                    data-report="customers"
+                >
+                    Customer Due
+                </button>
+
+                <button
+                    type="button"
+                    class="report-tab"
+                    data-report="suppliers"
+                >
+                    Supplier Payable
+                </button>
+
+                <button
+                    type="button"
+                    class="report-tab"
+                    data-report="profit"
+                >
+                    Profit / Loss
+                </button>
+
+            </div>
+
+
+            <!-- SALES -->
+
+            <div
+                id="report-sales"
+                class="report-panel active"
+            >
+
+                <div style="overflow-x:auto;">
+
+                    <table class="data-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Date</th>
+                                <th>Bill No.</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                                <th>Balance</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="salesReportBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- PURCHASES -->
+
+            <div
+                id="report-purchases"
+                class="report-panel"
+            >
+
+                <div style="overflow-x:auto;">
+
+                    <table class="data-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Date</th>
+                                <th>Bill No.</th>
+                                <th>Supplier</th>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Rate</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="purchaseReportBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- STOCK -->
+
+            <div
+                id="report-stock"
+                class="report-panel"
+            >
+
+                <div style="overflow-x:auto;">
+
+                    <table class="data-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Unit</th>
+                                <th>Stock</th>
+                                <th>Purchase Price</th>
+                                <th>Sale Price</th>
+                                <th>Stock Value</th>
+                                <th>Status</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="stockReportBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- CUSTOMER -->
+
+            <div
+                id="report-customers"
+                class="report-panel"
+            >
+
+                <div style="overflow-x:auto;">
+
+                    <table class="data-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Opening</th>
+                                <th>Credit Sale</th>
+                                <th>Payment</th>
+                                <th>Current Due</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="customerReportBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- SUPPLIER -->
+
+            <div
+                id="report-suppliers"
+                class="report-panel"
+            >
+
+                <div style="overflow-x:auto;">
+
+                    <table class="data-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Supplier</th>
+                                <th>Phone</th>
+                                <th>Opening</th>
+                                <th>Purchase</th>
+                                <th>Payment</th>
+                                <th>Current Payable</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="supplierReportBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- PROFIT -->
+
+            <div
+                id="report-profit"
+                class="report-panel"
+            >
+
+                <div class="dashboard-grid">
+
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            Sales
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="profitSales"
+                        >
+                            Rs. 0.00
+                        </div>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            Estimated Cost
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="profitCost"
+                        >
+                            Rs. 0.00
+                        </div>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            Gross Profit
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="profitGross"
+                        >
+                            Rs. 0.00
+                        </div>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            Expenses
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="profitExpense"
+                        >
+                            Rs. 0.00
+                        </div>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            Net Profit / Loss
+                        </div>
+
+                        <div
+                            class="report-profit"
+                            id="profitNet"
+                        >
+                            Rs. 0.00
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script src="script.js"></script>
+<script src="reports.js"></script>
+
+</body>
+</html>
