@@ -14,70 +14,97 @@
     <!-- Mobile Overlay -->
     <div class="overlay" id="overlay"></div>
 
+
     <!-- ================= SIDEBAR ================= -->
     <aside class="sidebar" id="sidebar">
 
         <div class="logo-area">
-            <div class="logo-icon">GS</div>
+
+            <div class="logo-icon">
+                GS
+            </div>
 
             <div>
                 <h2>General Store</h2>
                 <span>Management System</span>
             </div>
+
         </div>
+
 
         <nav class="sidebar-menu">
 
-            <a href="#" class="menu-item active">
+            <!-- Dashboard -->
+            <a href="index.html" class="menu-item active">
                 <span class="menu-icon">⌂</span>
                 <span>Dashboard</span>
             </a>
 
+
+            <!-- New Sale -->
             <a href="#" class="menu-item">
                 <span class="menu-icon">🛒</span>
                 <span>New Sale</span>
             </a>
 
+
+            <!-- Purchase -->
             <a href="#" class="menu-item">
                 <span class="menu-icon">📦</span>
                 <span>Purchase</span>
             </a>
 
-            <a href="#" class="menu-item">
+
+            <!-- Inventory -->
+            <a href="inventory.html" class="menu-item">
                 <span class="menu-icon">▣</span>
                 <span>Inventory</span>
             </a>
 
+
+            <!-- Customers -->
             <a href="#" class="menu-item">
                 <span class="menu-icon">👥</span>
                 <span>Customers</span>
             </a>
 
+
+            <!-- Suppliers -->
             <a href="#" class="menu-item">
                 <span class="menu-icon">🏢</span>
                 <span>Suppliers</span>
             </a>
 
+
+            <!-- Finance -->
             <a href="#" class="menu-item">
                 <span class="menu-icon">💰</span>
                 <span>Finance</span>
             </a>
 
+
+            <!-- Reports -->
             <a href="#" class="menu-item">
                 <span class="menu-icon">📊</span>
                 <span>Reports</span>
             </a>
 
+
+            <!-- WhatsApp -->
             <a href="#" class="menu-item">
                 <span class="menu-icon">💬</span>
                 <span>WhatsApp</span>
             </a>
 
+
+            <!-- AI Assistant -->
             <a href="#" class="menu-item">
                 <span class="menu-icon">🤖</span>
                 <span>AI Assistant</span>
             </a>
 
+
+            <!-- Settings -->
             <a href="#" class="menu-item">
                 <span class="menu-icon">⚙️</span>
                 <span>Settings</span>
@@ -85,16 +112,21 @@
 
         </nav>
 
+
+        <!-- Sidebar Bottom -->
         <div class="sidebar-bottom">
 
             <div class="store-status">
+
                 <span class="status-dot"></span>
 
                 <div>
                     <strong>Store Online</strong>
                     <small>Data synced</small>
                 </div>
+
             </div>
+
 
             <div class="version">
                 General Store v1.0
@@ -105,43 +137,65 @@
     </aside>
 
 
+
     <!-- ================= MAIN AREA ================= -->
     <main class="main-content">
+
 
         <!-- ================= TOPBAR ================= -->
         <header class="topbar">
 
             <div class="topbar-left">
 
-                <button class="mobile-menu-btn" id="menuBtn">
+                <button
+                    class="mobile-menu-btn"
+                    id="menuBtn"
+                    type="button"
+                >
                     ☰
                 </button>
 
+
                 <div>
+
                     <h1>Dashboard</h1>
-                    <p id="todayDate">आजको व्यापारको अवस्था</p>
+
+                    <p id="todayDate">
+                        आजको व्यापारको अवस्था
+                    </p>
+
                 </div>
 
             </div>
 
 
+
             <div class="topbar-right">
+
 
                 <!-- Search -->
                 <div class="search-box">
+
                     <span>⌕</span>
+
                     <input
                         type="text"
                         id="searchInput"
                         placeholder="Product, customer, bill..."
                     >
+
                 </div>
 
+
                 <!-- Notification -->
-                <button class="icon-btn notification-btn">
+                <button
+                    class="icon-btn notification-btn"
+                    type="button"
+                >
                     🔔
                     <span class="notification-dot"></span>
                 </button>
+
 
                 <!-- Profile -->
                 <div class="profile">
@@ -151,8 +205,11 @@
                     </div>
 
                     <div class="profile-info">
+
                         <strong>Admin</strong>
+
                         <small>Owner</small>
+
                     </div>
 
                 </div>
@@ -160,6 +217,7 @@
             </div>
 
         </header>
+
 
 
         <!-- ================= DASHBOARD CONTENT ================= -->
@@ -170,27 +228,38 @@
             <div class="welcome-section">
 
                 <div>
-                    <h2>नमस्ते, Admin 👋</h2>
+
+                    <h2>
+                        नमस्ते, Admin 👋
+                    </h2>
 
                     <p>
                         आजको पसलको अवस्था यहाँबाट हेर्नुहोस्।
                     </p>
+
                 </div>
 
-                <button class="primary-btn">
+
+                <button
+                    class="primary-btn"
+                    type="button"
+                >
                     + New Sale
                 </button>
 
             </div>
 
 
+
             <!-- ================= MAIN STATS ================= -->
             <div class="stats-grid">
+
 
                 <!-- Today's Sales -->
                 <div class="stat-card">
 
                     <div class="stat-top">
+
                         <div class="stat-icon sales-icon">
                             🛒
                         </div>
@@ -198,18 +267,32 @@
                         <span class="stat-label">
                             आजको बिक्री
                         </span>
+
                     </div>
+
 
                     <div class="stat-value">
-                        Rs. <span id="todaySales">0</span>
+                        Rs.
+                        <span id="todaySales">
+                            0
+                        </span>
                     </div>
 
+
                     <div class="stat-bottom">
-                        <span class="positive">↑ 0%</span>
-                        <span>vs yesterday</span>
+
+                        <span class="positive">
+                            ↑ 0%
+                        </span>
+
+                        <span>
+                            vs yesterday
+                        </span>
+
                     </div>
 
                 </div>
+
 
 
                 <!-- Gross Profit -->
@@ -227,16 +310,29 @@
 
                     </div>
 
+
                     <div class="stat-value">
-                        Rs. <span id="grossProfit">0</span>
+                        Rs.
+                        <span id="grossProfit">
+                            0
+                        </span>
                     </div>
 
+
                     <div class="stat-bottom">
-                        <span class="positive">↑ 0%</span>
-                        <span>आज</span>
+
+                        <span class="positive">
+                            ↑ 0%
+                        </span>
+
+                        <span>
+                            आज
+                        </span>
+
                     </div>
 
                 </div>
+
 
 
                 <!-- Expenses -->
@@ -254,15 +350,25 @@
 
                     </div>
 
+
                     <div class="stat-value">
-                        Rs. <span id="expenses">0</span>
+                        Rs.
+                        <span id="expenses">
+                            0
+                        </span>
                     </div>
 
+
                     <div class="stat-bottom">
-                        <span>आजको खर्च</span>
+
+                        <span>
+                            आजको खर्च
+                        </span>
+
                     </div>
 
                 </div>
+
 
 
                 <!-- Net Profit -->
@@ -280,12 +386,21 @@
 
                     </div>
 
+
                     <div class="stat-value">
-                        Rs. <span id="netProfit">0</span>
+                        Rs.
+                        <span id="netProfit">
+                            0
+                        </span>
                     </div>
 
+
                     <div class="stat-bottom">
-                        <span class="positive">आज</span>
+
+                        <span class="positive">
+                            आज
+                        </span>
+
                     </div>
 
                 </div>
@@ -293,18 +408,29 @@
             </div>
 
 
-            <!-- ================= FINANCE CARDS ================= -->
+
+            <!-- ================= FINANCIAL OVERVIEW ================= -->
+
             <div class="section-title">
 
                 <div>
-                    <h3>Financial Overview</h3>
-                    <p>पसलको पैसा र बाँकी रकम</p>
+
+                    <h3>
+                        Financial Overview
+                    </h3>
+
+                    <p>
+                        पसलको पैसा र बाँकी रकम
+                    </p>
+
                 </div>
 
             </div>
 
 
+
             <div class="finance-grid">
+
 
                 <!-- Customer Receivable -->
                 <div class="finance-card">
@@ -314,18 +440,26 @@
                     </div>
 
                     <div>
-                        <span>Customer Receivable</span>
+
+                        <span>
+                            Customer Receivable
+                        </span>
 
                         <strong>
-                            Rs. <span id="customerReceivable">0</span>
+                            Rs.
+                            <span id="customerReceivable">
+                                0
+                            </span>
                         </strong>
 
                         <small>
                             ग्राहकबाट लिन बाँकी
                         </small>
+
                     </div>
 
                 </div>
+
 
 
                 <!-- Supplier Payable -->
@@ -336,18 +470,26 @@
                     </div>
 
                     <div>
-                        <span>Supplier Payable</span>
+
+                        <span>
+                            Supplier Payable
+                        </span>
 
                         <strong>
-                            Rs. <span id="supplierPayable">0</span>
+                            Rs.
+                            <span id="supplierPayable">
+                                0
+                            </span>
                         </strong>
 
                         <small>
                             Supplier लाई दिन बाँकी
                         </small>
+
                     </div>
 
                 </div>
+
 
 
                 <!-- Stock Value -->
@@ -358,18 +500,26 @@
                     </div>
 
                     <div>
-                        <span>Stock Value</span>
+
+                        <span>
+                            Stock Value
+                        </span>
 
                         <strong>
-                            Rs. <span id="stockValue">0</span>
+                            Rs.
+                            <span id="stockValue">
+                                0
+                            </span>
                         </strong>
 
                         <small>
                             हालको stock value
                         </small>
+
                     </div>
 
                 </div>
+
 
 
                 <!-- Cash / Bank / QR -->
@@ -380,15 +530,22 @@
                     </div>
 
                     <div>
-                        <span>Cash / Bank / QR</span>
+
+                        <span>
+                            Cash / Bank / QR
+                        </span>
 
                         <strong>
-                            Rs. <span id="availableBalance">0</span>
+                            Rs.
+                            <span id="availableBalance">
+                                0
+                            </span>
                         </strong>
 
                         <small>
                             उपलब्ध balance
                         </small>
+
                     </div>
 
                 </div>
@@ -396,28 +553,49 @@
             </div>
 
 
+
             <!-- ================= SALES OVERVIEW ================= -->
+
             <div class="dashboard-grid">
 
+
+                <!-- Sales -->
                 <div class="dashboard-card sales-overview">
 
                     <div class="card-header">
 
                         <div>
-                            <h3>Sales Overview</h3>
-                            <p>पछिल्लो 7 दिनको बिक्री</p>
+
+                            <h3>
+                                Sales Overview
+                            </h3>
+
+                            <p>
+                                पछिल्लो 7 दिनको बिक्री
+                            </p>
+
                         </div>
 
+
                         <select id="salesPeriod">
-                            <option>Last 7 Days</option>
-                            <option>Last 30 Days</option>
-                            <option>This Month</option>
+
+                            <option>
+                                Last 7 Days
+                            </option>
+
+                            <option>
+                                Last 30 Days
+                            </option>
+
+                            <option>
+                                This Month
+                            </option>
+
                         </select>
 
                     </div>
 
 
-                    <!-- Empty Chart Area -->
                     <div class="chart-area">
 
                         <div class="chart-empty">
@@ -441,20 +619,29 @@
                 </div>
 
 
-                <!-- ================= ATTENTION ================= -->
+
+                <!-- Attention -->
                 <div class="dashboard-card attention-card">
 
                     <div class="card-header">
 
                         <div>
-                            <h3>Attention Required</h3>
-                            <p>तुरुन्त हेर्नुपर्ने कुरा</p>
+
+                            <h3>
+                                Attention Required
+                            </h3>
+
+                            <p>
+                                तुरुन्त हेर्नुपर्ने कुरा
+                            </p>
+
                         </div>
 
                     </div>
 
 
                     <div class="attention-list">
+
 
                         <!-- Low Stock -->
                         <div class="attention-item">
@@ -464,17 +651,23 @@
                             </div>
 
                             <div class="attention-text">
-                                <strong>Low Stock</strong>
+
+                                <strong>
+                                    Low Stock
+                                </strong>
+
                                 <span id="lowStockCount">
                                     0 products
                                 </span>
+
                             </div>
 
-                            <button>
+                            <button type="button">
                                 View
                             </button>
 
                         </div>
+
 
 
                         <!-- Expiry -->
@@ -485,17 +678,23 @@
                             </div>
 
                             <div class="attention-text">
-                                <strong>Expiry Near</strong>
+
+                                <strong>
+                                    Expiry Near
+                                </strong>
+
                                 <span id="expiryCount">
                                     0 products
                                 </span>
+
                             </div>
 
-                            <button>
+                            <button type="button">
                                 View
                             </button>
 
                         </div>
+
 
 
                         <!-- Customer Due -->
@@ -506,17 +705,23 @@
                             </div>
 
                             <div class="attention-text">
-                                <strong>Credit Due</strong>
+
+                                <strong>
+                                    Credit Due
+                                </strong>
+
                                 <span id="creditDueCount">
                                     0 customers
                                 </span>
+
                             </div>
 
-                            <button>
+                            <button type="button">
                                 View
                             </button>
 
                         </div>
+
 
 
                         <!-- Supplier Due -->
@@ -527,13 +732,18 @@
                             </div>
 
                             <div class="attention-text">
-                                <strong>Supplier Payment</strong>
+
+                                <strong>
+                                    Supplier Payment
+                                </strong>
+
                                 <span id="supplierDueCount">
                                     0 suppliers
                                 </span>
+
                             </div>
 
-                            <button>
+                            <button type="button">
                                 View
                             </button>
 
@@ -546,17 +756,30 @@
             </div>
 
 
+
             <!-- ================= FAST MOVING PRODUCTS ================= -->
+
             <div class="dashboard-card">
 
                 <div class="card-header">
 
                     <div>
-                        <h3>Fast Moving Products</h3>
-                        <p>छिटो बिक्री हुने सामान</p>
+
+                        <h3>
+                            Fast Moving Products
+                        </h3>
+
+                        <p>
+                            छिटो बिक्री हुने सामान
+                        </p>
+
                     </div>
 
-                    <button class="text-btn">
+
+                    <button
+                        class="text-btn"
+                        type="button"
+                    >
                         View All →
                     </button>
 
@@ -582,69 +805,169 @@
             </div>
 
 
+
             <!-- ================= QUICK ACTIONS ================= -->
+
             <div class="section-title quick-title">
 
                 <div>
-                    <h3>Quick Actions</h3>
-                    <p>बारम्बार प्रयोग हुने काम</p>
+
+                    <h3>
+                        Quick Actions
+                    </h3>
+
+                    <p>
+                        बारम्बार प्रयोग हुने काम
+                    </p>
+
                 </div>
 
             </div>
 
 
+
             <div class="quick-actions">
 
-                <button class="quick-action">
+
+                <button
+                    class="quick-action"
+                    type="button"
+                >
+
                     <span>🛒</span>
-                    <strong>New Sale</strong>
-                    <small>नयाँ बिक्री</small>
+
+                    <strong>
+                        New Sale
+                    </strong>
+
+                    <small>
+                        नयाँ बिक्री
+                    </small>
+
                 </button>
 
-                <button class="quick-action">
+
+
+                <button
+                    class="quick-action"
+                    type="button"
+                >
+
                     <span>📦</span>
-                    <strong>Purchase</strong>
-                    <small>नयाँ खरीद</small>
+
+                    <strong>
+                        Purchase
+                    </strong>
+
+                    <small>
+                        नयाँ खरीद
+                    </small>
+
                 </button>
 
-                <button class="quick-action">
+
+
+                <button
+                    class="quick-action"
+                    type="button"
+                >
+
                     <span>👤</span>
-                    <strong>Customer Payment</strong>
-                    <small>ग्राहकबाट रकम</small>
+
+                    <strong>
+                        Customer Payment
+                    </strong>
+
+                    <small>
+                        ग्राहकबाट रकम
+                    </small>
+
                 </button>
 
-                <button class="quick-action">
+
+
+                <button
+                    class="quick-action"
+                    type="button"
+                >
+
                     <span>🏢</span>
-                    <strong>Supplier Payment</strong>
-                    <small>Supplier payment</small>
+
+                    <strong>
+                        Supplier Payment
+                    </strong>
+
+                    <small>
+                        Supplier payment
+                    </small>
+
                 </button>
 
-                <button class="quick-action">
+
+
+                <button
+                    class="quick-action"
+                    type="button"
+                >
+
                     <span>💸</span>
-                    <strong>Add Expense</strong>
-                    <small>खर्च राख्नुहोस्</small>
+
+                    <strong>
+                        Add Expense
+                    </strong>
+
+                    <small>
+                        खर्च राख्नुहोस्
+                    </small>
+
                 </button>
 
-                <button class="quick-action">
+
+
+                <button
+                    class="quick-action"
+                    type="button"
+                >
+
                     <span>🔧</span>
-                    <strong>Stock Adjustment</strong>
-                    <small>Stock मिलाउनुहोस्</small>
+
+                    <strong>
+                        Stock Adjustment
+                    </strong>
+
+                    <small>
+                        Stock मिलाउनुहोस्
+                    </small>
+
                 </button>
 
             </div>
 
 
+
             <!-- ================= RECENT ACTIVITY ================= -->
+
             <div class="dashboard-card">
 
                 <div class="card-header">
 
                     <div>
-                        <h3>Recent Activity</h3>
-                        <p>पछिल्ला कारोबारहरू</p>
+
+                        <h3>
+                            Recent Activity
+                        </h3>
+
+                        <p>
+                            पछिल्ला कारोबारहरू
+                        </p>
+
                     </div>
 
-                    <button class="text-btn">
+
+                    <button
+                        class="text-btn"
+                        type="button"
+                    >
                         View All →
                     </button>
 
@@ -670,7 +993,9 @@
             </div>
 
 
+
             <!-- ================= AI ASSISTANT ================= -->
+
             <div class="ai-card">
 
                 <div class="ai-content">
@@ -681,7 +1006,9 @@
 
                     <div>
 
-                        <h3>AI Shop Assistant</h3>
+                        <h3>
+                            AI Shop Assistant
+                        </h3>
 
                         <p>
                             "आजको व्यापार कस्तो भयो?",
@@ -695,7 +1022,10 @@
                 </div>
 
 
-                <button class="ai-btn">
+                <button
+                    class="ai-btn"
+                    type="button"
+                >
                     Ask AI →
                 </button>
 
@@ -705,7 +1035,9 @@
         </section>
 
 
+
         <!-- ================= FOOTER ================= -->
+
         <footer class="footer">
 
             <span>
@@ -721,7 +1053,9 @@
     </main>
 
 
+
     <!-- JavaScript -->
+
     <script src="script.js"></script>
 
 </body>
