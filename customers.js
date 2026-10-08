@@ -1,18 +1,13 @@
-const CUSTOMER_KEY = "gs_customers";
-
 document.addEventListener("DOMContentLoaded", function () {
 
-    // ==============================
-    // ELEMENTS
-    // ==============================
-
-    const customerForm = document.getElementById("customerForm");
-    const customerModal = document.getElementById("customerModal");
-    const customerModalTitle = document.getElementById("customerModalTitle");
+    const CUSTOMER_KEY = "gs_customers";
 
     const newCustomerBtn = document.getElementById("newCustomerBtn");
+    const customerModal = document.getElementById("customerModal");
     const closeCustomerModal = document.getElementById("closeCustomerModal");
     const cancelCustomerBtn = document.getElementById("cancelCustomerBtn");
+
+    const customerForm = document.getElementById("customerForm");
 
     const customerId = document.getElementById("customerId");
     const customerName = document.getElementById("customerName");
@@ -32,24 +27,26 @@ document.addEventListener("DOMContentLoaded", function () {
     const activeCustomers = document.getElementById("activeCustomers");
 
 
-    // ==============================
+    // ================================
     // STORAGE
-    // ==============================
+    // ================================
 
     function getCustomers() {
 
         try {
+            const data = localStorage.getItem(CUSTOMER_KEY);
 
-            return JSON.parse(
-                localStorage.getItem(CUSTOMER_KEY)
-            ) || [];
+            if (!data) {
+                return [];
+            }
+
+            const customers = JSON.parse(data);
+
+            return Array.isArray(customers) ? customers : [];
 
         } catch (error) {
 
-            console.error(
-                "Customer data error:",
-                error
-            );
+            console.error("Customer data error:", error);
 
             return [];
         }
@@ -65,31 +62,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    // ==============================
+    // ================================
     // HELPERS
-    // ==============================
+    // ================================
 
     function money(value) {
 
         const number = Number(value) || 0;
 
-        return "Rs. " + number.toLocaleString(
-            "en-IN",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }
-        );
+        return "Rs. " + number.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
 
 
     function numberValue(value) {
 
-        const number = parseFloat(value);
+        const number = Number(value);
 
-        return Number.isFinite(number)
-            ? number
-            : 0;
+        return Number.isFinite(number) ? number : 0;
     }
 
 
@@ -115,45 +107,47 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    // ==============================
+    // ================================
     // MODAL
-    // ==============================
+    // ================================
 
-    function openCustomerModal(customer) {
+    function openCustomerModal(customer = null) {
 
         if (!customerModal) return;
 
-        customerModal.classList.add("show");
+        customerForm.reset();
+
+        customerId.value = "";
+
+        customerOpeningBalance.value = "0";
+        customerBalanceType.value = "DUE";
+        customerActive.value = "true";
+
+        const title = document.getElementById("customerModalTitle");
 
         if (customer) {
 
-            if (customerModalTitle) {
-                customerModalTitle.textContent =
-                    "Edit Customer";
+            if (title) {
+                title.textContent = "Edit Customer";
             }
 
-            customerId.value =
-                customer.id || "";
+            customerId.value = customer.id || "";
+            customerName.value = customer.name || "";
+            customerPhone.value = customer.phone || "";
+            customerAddress.value = customer.address || "";
 
-            customerName.value =
-                customer.name || "";
+            const opening = Math.abs(
+                numberValue(customer.openingBalance)
+            );
 
-            customerPhone.value =
-                customer.phone || "";
-
-            customerAddress.value =
-                customer.address || "";
-
-            customerOpeningBalance.value =
-                Math.abs(
-                    Number(customer.openingBalance) || 0
-                );
+            customerOpeningBalance.value = opening;
 
             customerBalanceType.value =
-                customer.balanceType || "DUE";
+                customer.balanceType === "ADVANCE"
+                    ? "ADVANCE"
+                    : "DUE";
 
-            customerNote.value =
-                customer.note || "";
+            customerNote.value = customer.note || "";
 
             customerActive.value =
                 customer.active === false
@@ -162,21 +156,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } else {
 
-            if (customerModalTitle) {
-                customerModalTitle.textContent =
-                    "New Customer";
+            if (title) {
+                title.textContent = "New Customer";
             }
-
-            customerForm.reset();
-
-            customerId.value = "";
-
-            customerOpeningBalance.value = "0";
-
-            customerBalanceType.value = "DUE";
-
-            customerActive.value = "true";
         }
+
+        customerModal.classList.add("show");
+
+        setTimeout(function () {
+            customerName.focus();
+        }, 100);
     }
 
 
@@ -188,13 +177,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    // ==============================
+    // ================================
     // SUMMARY
-    // ==============================
+    // ================================
 
-    function updateSummary() {
-
-        const customers = getCustomers();
+    function updateSummary(customers) {
 
         let due = 0;
         let advance = 0;
@@ -202,263 +189,194 @@ document.addEventListener("DOMContentLoaded", function () {
 
         customers.forEach(function (customer) {
 
-            const balance =
-                Number(customer.currentBalance) || 0;
+            const balance = numberValue(
+                customer.currentBalance
+            );
 
             if (balance > 0) {
-
                 due += balance;
+            }
 
-            } else if (balance < 0) {
-
+            if (balance < 0) {
                 advance += Math.abs(balance);
             }
 
-
             if (customer.active !== false) {
-
                 active++;
             }
         });
 
 
-        if (totalCustomers) {
+        totalCustomers.textContent = customers.length;
 
-            totalCustomers.textContent =
-                customers.length;
-        }
+        totalCustomerDue.textContent = money(due);
 
+        totalCustomerAdvance.textContent = money(advance);
 
-        if (totalCustomerDue) {
-
-            totalCustomerDue.textContent =
-                money(due);
-        }
-
-
-        if (totalCustomerAdvance) {
-
-            totalCustomerAdvance.textContent =
-                money(advance);
-        }
-
-
-        if (activeCustomers) {
-
-            activeCustomers.textContent =
-                active;
-        }
+        activeCustomers.textContent = active;
     }
 
 
-    // ==============================
-    // RENDER CUSTOMERS
-    // ==============================
+    // ================================
+    // RENDER TABLE
+    // ================================
 
-    function renderCustomers(searchText) {
+    function renderCustomers(customers = getCustomers()) {
 
-        if (!customerTableBody) return;
+        updateSummary(customers);
 
-        const customers = getCustomers();
-
-        const search =
-            String(searchText || "")
+        const searchText =
+            customerSearch.value
                 .trim()
                 .toLowerCase();
 
 
-        let filtered = customers;
+        const filtered = customers.filter(function (customer) {
+
+            if (!searchText) {
+                return true;
+            }
+
+            const text = [
+
+                customer.name,
+                customer.phone,
+                customer.address,
+                customer.note,
+                customer.id
+
+            ]
+                .join(" ")
+                .toLowerCase();
+
+            return text.includes(searchText);
+        });
 
 
-        if (search) {
-
-            filtered = customers.filter(
-                function (customer) {
-
-                    const name =
-                        String(customer.name || "")
-                            .toLowerCase();
-
-                    const phone =
-                        String(customer.phone || "")
-                            .toLowerCase();
-
-                    const address =
-                        String(customer.address || "")
-                            .toLowerCase();
-
-                    return (
-                        name.includes(search) ||
-                        phone.includes(search) ||
-                        address.includes(search)
-                    );
-                }
-            );
-        }
-
-
-        if (filtered.length === 0) {
+        if (!filtered.length) {
 
             customerTableBody.innerHTML = `
                 <tr>
-                    <td
-                        colspan="7"
-                        class="empty-state"
-                    >
-                        ${
-                            search
-                                ? "Search गर्दा Customer भेटिएन।"
-                                : "अहिलेसम्म कुनै Customer छैन।"
-                        }
+                    <td colspan="8" class="customer-empty">
+                        No customers found.
                     </td>
                 </tr>
             `;
-
-            updateSummary();
 
             return;
         }
 
 
-        customerTableBody.innerHTML =
-            filtered.map(
-                function (customer) {
+        customerTableBody.innerHTML = filtered.map(function (customer) {
 
-                    const opening =
-                        Number(
-                            customer.openingBalance
-                        ) || 0;
+            const opening = numberValue(
+                customer.openingBalance
+            );
 
-                    const balance =
-                        Number(
-                            customer.currentBalance
-                        ) || 0;
+            const current = numberValue(
+                customer.currentBalance
+            );
 
+            const creditSale =
+                numberValue(customer.creditSaleTotal);
 
-                    let balanceType =
-                        "Clear";
-
-                    let balanceDisplay =
-                        money(0);
+            const collection =
+                numberValue(customer.paymentTotal);
 
 
-                    if (balance > 0) {
+            let currentText = money(Math.abs(current));
 
-                        balanceType = "Due";
-
-                        balanceDisplay =
-                            money(balance);
-
-                    } else if (balance < 0) {
-
-                        balanceType = "Advance";
-
-                        balanceDisplay =
-                            money(
-                                Math.abs(balance)
-                            );
-                    }
+            if (current > 0) {
+                currentText += " Due";
+            } else if (current < 0) {
+                currentText += " Advance";
+            } else {
+                currentText = money(0);
+            }
 
 
-                    return `
-                        <tr>
-
-                            <td>
-                                <strong>
-                                    ${escapeHTML(
-                                        customer.name || "-"
-                                    )}
-                                </strong>
-                            </td>
-
-                            <td>
-                                ${escapeHTML(
-                                    customer.phone || "-"
-                                )}
-                            </td>
-
-                            <td>
-                                ${money(opening)}
-                            </td>
-
-                            <td>
-                                ${balanceDisplay}
-                            </td>
-
-                            <td>
-                                ${balanceType}
-                            </td>
-
-                            <td>
-                                ${
-                                    customer.active !== false
-                                        ? "Active"
-                                        : "Inactive"
-                                }
-                            </td>
-
-                            <td>
-
-                                <button
-                                    type="button"
-                                    class="secondary-btn edit-customer-btn"
-                                    data-id="${escapeHTML(
-                                        customer.id
-                                    )}"
-                                >
-                                    Edit
-                                </button>
-
-                            </td>
-
-                        </tr>
-                    `;
-                }
-            ).join("");
+            const addressNote = [
+                customer.address || "",
+                customer.note || ""
+            ]
+                .filter(Boolean)
+                .join(" / ");
 
 
-        updateSummary();
+            return `
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${escapeHTML(customer.name)}
+                        </strong>
+                        ${
+                            customer.active === false
+                                ? `<small style="display:block;color:#999;">Inactive</small>`
+                                : ""
+                        }
+                    </td>
+
+                    <td>
+                        ${escapeHTML(customer.phone || "-")}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(addressNote || "-")}
+                    </td>
+
+                    <td>
+                        ${money(opening)}
+                    </td>
+
+                    <td>
+                        ${money(creditSale)}
+                    </td>
+
+                    <td>
+                        ${money(collection)}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${escapeHTML(currentText)}
+                        </strong>
+                    </td>
+
+                    <td>
+
+                        <button
+                            type="button"
+                            class="btn edit-customer-btn"
+                            data-id="${escapeHTML(customer.id)}"
+                        >
+                            Edit
+                        </button>
+
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
     }
 
 
-    // ==============================
+    // ================================
     // SAVE CUSTOMER
-    // ==============================
+    // ================================
 
-    function saveCustomer() {
+    customerForm.addEventListener("submit", function (event) {
 
-        if (!customerForm) return;
+        event.preventDefault();
 
 
         const name =
             customerName.value.trim();
 
-        const phone =
-            customerPhone.value.trim();
-
-        const address =
-            customerAddress.value.trim();
-
-        const openingBalance =
-            numberValue(
-                customerOpeningBalance.value
-            );
-
-        const balanceType =
-            customerBalanceType.value || "DUE";
-
-        const note =
-            customerNote.value.trim();
-
-        const active =
-            customerActive.value !== "false";
-
-
         if (!name) {
 
-            alert(
-                "Customer Name राख्नुहोस्।"
-            );
+            alert("Customer name is required.");
 
             customerName.focus();
 
@@ -466,347 +384,270 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
 
-        const customers =
-            getCustomers();
+        const customers = getCustomers();
 
 
-        const existingId =
-            customerId.value.trim();
+        const id =
+            customerId.value ||
+            generateCustomerId();
 
 
-        // ==========================
-        // EDIT EXISTING CUSTOMER
-        // ==========================
-
-        if (existingId) {
-
-            const index =
-                customers.findIndex(
-                    function (customer) {
-                        return customer.id === existingId;
-                    }
-                );
+        const openingAmount =
+            Math.abs(
+                numberValue(
+                    customerOpeningBalance.value
+                )
+            );
 
 
-            if (index === -1) {
-
-                alert(
-                    "Customer record भेटिएन।"
-                );
-
-                return;
-            }
+        const balanceType =
+            customerBalanceType.value === "ADVANCE"
+                ? "ADVANCE"
+                : "DUE";
 
 
-            const oldCustomer =
-                customers[index];
+        const openingSigned =
+            balanceType === "ADVANCE"
+                ? -openingAmount
+                : openingAmount;
 
 
-            /*
-             * Existing customer's current
-             * transaction balance should
-             * not be destroyed during edit.
-             *
-             * Opening balance is updated
-             * while current transaction
-             * balance is preserved.
-             */
-
-            const oldOpening =
-                Number(
-                    oldCustomer.openingBalance
-                ) || 0;
+        const existingIndex =
+            customers.findIndex(function (customer) {
+                return customer.id === id;
+            });
 
 
-            let newOpeningSigned =
-                openingBalance;
+        if (existingIndex === -1) {
 
+            const newCustomer = {
 
-            if (balanceType === "ADVANCE") {
+                id: id,
 
-                newOpeningSigned =
-                    -openingBalance;
-            }
+                name: name,
 
+                phone:
+                    customerPhone.value.trim(),
 
-            const transactionBalance =
-                (
-                    Number(
-                        oldCustomer.currentBalance
-                    ) || 0
-                ) -
-                oldOpening;
-
-
-            const newCurrentBalance =
-                newOpeningSigned +
-                transactionBalance;
-
-
-            customers[index] = {
-
-                ...oldCustomer,
-
-                name,
-                phone,
-                address,
+                address:
+                    customerAddress.value.trim(),
 
                 openingBalance:
-                    newOpeningSigned,
+                    openingSigned,
 
-                balanceType,
+                balanceType:
+                    balanceType,
 
                 currentBalance:
-                    newCurrentBalance,
+                    openingSigned,
 
-                note,
+                creditSaleTotal: 0,
 
-                active,
+                paymentTotal: 0,
+
+                note:
+                    customerNote.value.trim(),
+
+                active:
+                    customerActive.value !== "false",
+
+                createdAt:
+                    new Date().toISOString(),
 
                 updatedAt:
                     new Date().toISOString()
             };
 
 
-            saveCustomers(customers);
+            customers.push(newCustomer);
 
-            closeModal();
+        } else {
 
-            renderCustomers(
-                customerSearch
-                    ? customerSearch.value
-                    : ""
-            );
+            const oldCustomer =
+                customers[existingIndex];
 
-            alert(
-                "Customer update सफल भयो।"
-            );
 
-            return;
+            const oldOpening =
+                numberValue(
+                    oldCustomer.openingBalance
+                );
+
+
+            const oldCurrent =
+                numberValue(
+                    oldCustomer.currentBalance
+                );
+
+
+            /*
+             * Keep transaction balance while
+             * changing customer information.
+             */
+            const transactionBalance =
+                oldCurrent - oldOpening;
+
+
+            const newCurrentBalance =
+                openingSigned +
+                transactionBalance;
+
+
+            customers[existingIndex] = {
+
+                ...oldCustomer,
+
+                name: name,
+
+                phone:
+                    customerPhone.value.trim(),
+
+                address:
+                    customerAddress.value.trim(),
+
+                openingBalance:
+                    openingSigned,
+
+                balanceType:
+                    balanceType,
+
+                currentBalance:
+                    newCurrentBalance,
+
+                note:
+                    customerNote.value.trim(),
+
+                active:
+                    customerActive.value !== "false",
+
+                updatedAt:
+                    new Date().toISOString()
+            };
         }
 
 
-        // ==========================
-        // NEW CUSTOMER
-        // ==========================
-
-        let openingSigned =
-            openingBalance;
-
-
-        if (balanceType === "ADVANCE") {
-
-            openingSigned =
-                -openingBalance;
-        }
-
-
-        const newCustomer = {
-
-            id:
-                generateCustomerId(),
-
-            name,
-
-            phone,
-
-            address,
-
-            openingBalance:
-                openingSigned,
-
-            balanceType,
-
-            currentBalance:
-                openingSigned,
-
-            note,
-
-            active,
-
-            createdAt:
-                new Date().toISOString(),
-
-            updatedAt:
-                new Date().toISOString()
-        };
-
-
-        customers.push(
-            newCustomer
-        );
-
-
-        saveCustomers(
-            customers
-        );
-
+        saveCustomers(customers);
 
         closeModal();
 
-
-        renderCustomers(
-            customerSearch
-                ? customerSearch.value
-                : ""
-        );
-
+        renderCustomers(customers);
 
         alert(
-            "Customer सफलतापूर्वक save भयो।"
+            existingIndex === -1
+                ? "Customer saved successfully."
+                : "Customer updated successfully."
         );
-    }
+    });
 
 
-    // ==============================
-    // EDIT CUSTOMER
-    // ==============================
+    // ================================
+    // EDIT
+    // ================================
 
-    function editCustomer(id) {
+    customerTableBody.addEventListener(
+        "click",
+        function (event) {
 
-        const customers =
-            getCustomers();
-
-
-        const customer =
-            customers.find(
-                function (item) {
-                    return item.id === id;
-                }
-            );
-
-
-        if (!customer) {
-
-            alert(
-                "Customer record भेटिएन।"
-            );
-
-            return;
-        }
-
-
-        openCustomerModal(
-            customer
-        );
-    }
-
-
-    // ==============================
-    // EVENTS
-    // ==============================
-
-    if (newCustomerBtn) {
-
-        newCustomerBtn.addEventListener(
-            "click",
-            function () {
-
-                openCustomerModal();
-            }
-        );
-    }
-
-
-    if (closeCustomerModal) {
-
-        closeCustomerModal.addEventListener(
-            "click",
-            closeModal
-        );
-    }
-
-
-    if (cancelCustomerBtn) {
-
-        cancelCustomerBtn.addEventListener(
-            "click",
-            closeModal
-        );
-    }
-
-
-    if (customerModal) {
-
-        customerModal.addEventListener(
-            "click",
-            function (event) {
-
-                if (
-                    event.target ===
-                    customerModal
-                ) {
-                    closeModal();
-                }
-            }
-        );
-    }
-
-
-    if (customerForm) {
-
-        customerForm.addEventListener(
-            "submit",
-            function (event) {
-
-                event.preventDefault();
-
-                saveCustomer();
-            }
-        );
-    }
-
-
-    if (customerSearch) {
-
-        customerSearch.addEventListener(
-            "input",
-            function () {
-
-                renderCustomers(
-                    customerSearch.value
+            const button =
+                event.target.closest(
+                    ".edit-customer-btn"
                 );
+
+            if (!button) return;
+
+
+            const id =
+                button.dataset.id;
+
+
+            const customers =
+                getCustomers();
+
+
+            const customer =
+                customers.find(function (item) {
+                    return item.id === id;
+                });
+
+
+            if (!customer) {
+
+                alert("Customer not found.");
+
+                return;
             }
-        );
-    }
 
 
-    if (customerTableBody) {
-
-        customerTableBody.addEventListener(
-            "click",
-            function (event) {
-
-                const button =
-                    event.target.closest(
-                        ".edit-customer-btn"
-                    );
+            openCustomerModal(customer);
+        }
+    );
 
 
-                if (!button) return;
+    // ================================
+    // BUTTON EVENTS
+    // ================================
+
+    newCustomerBtn.addEventListener(
+        "click",
+        function () {
+
+            openCustomerModal();
+        }
+    );
 
 
-                const id =
-                    button.getAttribute(
-                        "data-id"
-                    );
+    closeCustomerModal.addEventListener(
+        "click",
+        closeModal
+    );
 
 
-                if (id) {
+    cancelCustomerBtn.addEventListener(
+        "click",
+        closeModal
+    );
 
-                    editCustomer(id);
-                }
+
+    customerModal.addEventListener(
+        "click",
+        function (event) {
+
+            if (event.target === customerModal) {
+                closeModal();
             }
-        );
-    }
+        }
+    );
 
 
-    // ==============================
-    // INITIALIZE
-    // ==============================
+    customerSearch.addEventListener(
+        "input",
+        function () {
+
+            renderCustomers(
+                getCustomers()
+            );
+        }
+    );
+
+
+    // ESC key closes modal
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape" &&
+                customerModal.classList.contains("show")
+            ) {
+                closeModal();
+            }
+        }
+    );
+
+
+    // ================================
+    // INITIAL LOAD
+    // ================================
 
     renderCustomers();
-
-    updateSummary();
 
 });
