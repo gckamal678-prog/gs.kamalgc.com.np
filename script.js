@@ -19,14 +19,15 @@ const quickActions = document.querySelectorAll(".quick-action");
 
 const primaryBtn = document.querySelector(".primary-btn");
 const aiBtn = document.querySelector(".ai-btn");
-const notificationBtn = document.querySelector(".notification-btn");
+const notificationBtn =
+    document.querySelector(".notification-btn");
 
 
 /* =====================================================
    MOBILE SIDEBAR
    ===================================================== */
 
-if (menuBtn) {
+if (menuBtn && sidebar && overlay) {
 
     menuBtn.addEventListener("click", function () {
 
@@ -39,7 +40,11 @@ if (menuBtn) {
 }
 
 
-if (overlay) {
+/* =====================================================
+   CLOSE MOBILE SIDEBAR
+   ===================================================== */
+
+if (overlay && sidebar) {
 
     overlay.addEventListener("click", function () {
 
@@ -53,22 +58,84 @@ if (overlay) {
 
 
 /* =====================================================
-   CLOSE SIDEBAR AFTER MENU CLICK
+   SIDEBAR NAVIGATION
    ===================================================== */
 
 menuItems.forEach(function (item) {
 
-    item.addEventListener("click", function () {
+    item.addEventListener("click", function (event) {
+
+        const link = this.getAttribute("href");
+
+
+        /*
+         * If the link is a real page,
+         * allow normal browser navigation.
+         *
+         * Example:
+         * inventory.html
+         * index.html
+         */
+
+        if (
+            link &&
+            link !== "#" &&
+            link !== ""
+        ) {
+
+            sidebar.classList.remove("open");
+
+            if (overlay) {
+                overlay.classList.remove("show");
+            }
+
+            return;
+        }
+
+
+        /*
+         * For modules that are not ready yet,
+         * prevent "#" from jumping to the top.
+         */
+
+        event.preventDefault();
+
 
         menuItems.forEach(function (menu) {
+
             menu.classList.remove("active");
+
         });
+
 
         this.classList.add("active");
 
-        sidebar.classList.remove("open");
 
-        overlay.classList.remove("show");
+        if (sidebar) {
+            sidebar.classList.remove("open");
+        }
+
+        if (overlay) {
+            overlay.classList.remove("show");
+        }
+
+
+        /*
+         * Temporary message for unfinished modules
+         */
+
+        const menuName =
+            this.querySelector("span:last-child");
+
+
+        if (menuName) {
+
+            alert(
+                menuName.textContent.trim() +
+                " module अर्को चरणमा तयार गरिनेछ।"
+            );
+
+        }
 
     });
 
@@ -81,29 +148,43 @@ menuItems.forEach(function (item) {
 
 function showTodayDate() {
 
-    const dateElement = document.getElementById("todayDate");
+    const dateElement =
+        document.getElementById("todayDate");
+
 
     if (!dateElement) {
         return;
     }
 
+
     const today = new Date();
 
+
     const options = {
+
         weekday: "long",
+
         year: "numeric",
+
         month: "long",
+
         day: "numeric"
+
     };
 
-    const dateText = today.toLocaleDateString(
-        "ne-NP",
-        options
-    );
 
-    dateElement.textContent = dateText;
+    const dateText =
+        today.toLocaleDateString(
+            "ne-NP",
+            options
+        );
+
+
+    dateElement.textContent =
+        dateText;
 
 }
+
 
 showTodayDate();
 
@@ -114,20 +195,29 @@ showTodayDate();
 
 if (searchInput) {
 
-    searchInput.addEventListener("keydown", function (event) {
+    searchInput.addEventListener(
+        "keydown",
+        function (event) {
 
-        if (event.key === "Enter") {
+            if (event.key !== "Enter") {
+                return;
+            }
+
 
             const searchValue =
                 searchInput.value.trim();
 
+
             if (searchValue === "") {
 
-                alert("कृपया खोज्नको लागि केही लेख्नुहोस्।");
+                alert(
+                    "कृपया खोज्नको लागि केही लेख्नुहोस्।"
+                );
 
                 return;
 
             }
+
 
             alert(
                 "Search system तयार हुँदैछ।\n\n" +
@@ -136,8 +226,7 @@ if (searchInput) {
             );
 
         }
-
-    });
+    );
 
 }
 
@@ -148,13 +237,16 @@ if (searchInput) {
 
 if (primaryBtn) {
 
-    primaryBtn.addEventListener("click", function () {
+    primaryBtn.addEventListener(
+        "click",
+        function () {
 
-        alert(
-            "New Sale module अर्को चरणमा तयार गरिनेछ।"
-        );
+            alert(
+                "New Sale module अर्को चरणमा तयार गरिनेछ।"
+            );
 
-    });
+        }
+    );
 
 }
 
@@ -165,21 +257,25 @@ if (primaryBtn) {
 
 quickActions.forEach(function (button) {
 
-    button.addEventListener("click", function () {
+    button.addEventListener(
+        "click",
+        function () {
 
-        const actionName =
-            this.querySelector("strong");
+            const actionName =
+                this.querySelector("strong");
 
-        if (actionName) {
 
-            alert(
-                actionName.textContent +
-                " module अर्को चरणमा तयार गरिनेछ।"
-            );
+            if (actionName) {
+
+                alert(
+                    actionName.textContent.trim() +
+                    " module अर्को चरणमा तयार गरिनेछ।"
+                );
+
+            }
 
         }
-
-    });
+    );
 
 });
 
@@ -190,13 +286,16 @@ quickActions.forEach(function (button) {
 
 if (aiBtn) {
 
-    aiBtn.addEventListener("click", function () {
+    aiBtn.addEventListener(
+        "click",
+        function () {
 
-        alert(
-            "AI Shop Assistant अर्को चरणमा तयार गरिनेछ।"
-        );
+            alert(
+                "AI Shop Assistant अर्को चरणमा तयार गरिनेछ।"
+            );
 
-    });
+        }
+    );
 
 }
 
@@ -207,19 +306,22 @@ if (aiBtn) {
 
 if (notificationBtn) {
 
-    notificationBtn.addEventListener("click", function () {
+    notificationBtn.addEventListener(
+        "click",
+        function () {
 
-        alert(
-            "अहिले कुनै नयाँ notification छैन।"
-        );
+            alert(
+                "अहिले कुनै नयाँ notification छैन।"
+            );
 
-    });
+        }
+    );
 
 }
 
 
 /* =====================================================
-   VIEW BUTTONS
+   ATTENTION VIEW BUTTONS
    ===================================================== */
 
 const viewButtons =
@@ -230,28 +332,34 @@ const viewButtons =
 
 viewButtons.forEach(function (button) {
 
-    button.addEventListener("click", function () {
+    button.addEventListener(
+        "click",
+        function () {
 
-        const parent =
-            this.closest(".attention-item");
+            const parent =
+                this.closest(".attention-item");
 
-        if (!parent) {
-            return;
+
+            if (!parent) {
+                return;
+            }
+
+
+            const title =
+                parent.querySelector("strong");
+
+
+            if (title) {
+
+                alert(
+                    title.textContent.trim() +
+                    " details अर्को चरणमा देखाइनेछ।"
+                );
+
+            }
+
         }
-
-        const title =
-            parent.querySelector("strong");
-
-        if (title) {
-
-            alert(
-                title.textContent +
-                " details अर्को चरणमा देखाइनेछ।"
-            );
-
-        }
-
-    });
+    );
 
 });
 
@@ -266,43 +374,59 @@ const salesPeriod =
 
 if (salesPeriod) {
 
-    salesPeriod.addEventListener("change", function () {
+    salesPeriod.addEventListener(
+        "change",
+        function () {
 
-        alert(
-            "Sales chart data system अर्को चरणमा जोडिनेछ।\n\n" +
-            "Selected: " +
-            this.value
-        );
+            alert(
+                "Sales chart data system अर्को चरणमा जोडिनेछ।\n\n" +
+                "Selected: " +
+                this.value
+            );
 
-    });
+        }
+    );
 
 }
 
 
 /* =====================================================
-   INITIAL DASHBOARD STATE
+   DASHBOARD INITIAL STATE
    ===================================================== */
 
 function initializeDashboard() {
 
     const values = [
+
         "todaySales",
+
         "grossProfit",
+
         "expenses",
+
         "netProfit",
+
         "customerReceivable",
+
         "supplierPayable",
+
         "stockValue",
+
         "availableBalance"
+
     ];
+
 
     values.forEach(function (id) {
 
         const element =
             document.getElementById(id);
 
+
         if (element) {
+
             element.textContent = "0";
+
         }
 
     });
