@@ -1,12 +1,11 @@
 /* =====================================================
-   GENERAL STORE MANAGEMENT SYSTEM
-   Dashboard JavaScript
-   ===================================================== */
-
+GENERAL STORE MANAGEMENT SYSTEM
+Dashboard JavaScript
+===================================================== */
 
 /* =====================================================
-   ELEMENTS
-   ===================================================== */
+ELEMENTS
+===================================================== */
 
 const sidebar = document.getElementById("sidebar");
 const menuBtn = document.getElementById("menuBtn");
@@ -19,428 +18,542 @@ const quickActions = document.querySelectorAll(".quick-action");
 
 const primaryBtn = document.querySelector(".primary-btn");
 const aiBtn = document.querySelector(".ai-btn");
-const notificationBtn =
-    document.querySelector(".notification-btn");
 
+const notificationBtn =
+document.querySelector(".notification-btn");
 
 /* =====================================================
-   MOBILE SIDEBAR
-   ===================================================== */
+MOBILE SIDEBAR
+===================================================== */
 
 if (menuBtn && sidebar && overlay) {
 
-    menuBtn.addEventListener("click", function () {
+menuBtn.addEventListener("click", function () {
 
-        sidebar.classList.add("open");
+    sidebar.classList.add("open");
+    overlay.classList.add("show");
 
-        overlay.classList.add("show");
-
-    });
+});
 
 }
 
-
 /* =====================================================
-   CLOSE MOBILE SIDEBAR
-   ===================================================== */
+CLOSE MOBILE SIDEBAR
+===================================================== */
 
 if (overlay && sidebar) {
 
-    overlay.addEventListener("click", function () {
+overlay.addEventListener("click", function () {
 
-        sidebar.classList.remove("open");
+    sidebar.classList.remove("open");
+    overlay.classList.remove("show");
 
-        overlay.classList.remove("show");
-
-    });
+});
 
 }
 
+/* =====================================================
+CLOSE SIDEBAR FUNCTION
+===================================================== */
+
+function closeMobileSidebar() {
+
+if (sidebar) {
+    sidebar.classList.remove("open");
+}
+
+if (overlay) {
+    overlay.classList.remove("show");
+}
+
+}
 
 /* =====================================================
-   SIDEBAR NAVIGATION
-   ===================================================== */
+REAL PAGE CHECK
+===================================================== */
+
+function isRealLink(link) {
+
+if (!link) {
+    return false;
+}
+
+if (link === "#") {
+    return false;
+}
+
+if (link.trim() === "") {
+    return false;
+}
+
+if (link.startsWith("javascript:")) {
+    return false;
+}
+
+return true;
+
+}
+
+/* =====================================================
+SIDEBAR NAVIGATION
+===================================================== */
 
 menuItems.forEach(function (item) {
 
-    item.addEventListener("click", function (event) {
+item.addEventListener("click", function (event) {
 
-        const link = this.getAttribute("href");
+    const link =
+        this.getAttribute("href");
 
 
-        /*
-         * If the link is a real page,
-         * allow normal browser navigation.
-         *
-         * Example:
-         * inventory.html
-         * index.html
-         */
+    /*
+     * REAL PAGE
+     *
+     * Example:
+     * index.html
+     * sale.html
+     * purchase.html
+     * inventory.html
+     * customers.html
+     * suppliers.html
+     * finance.html
+     * reports.html
+     * whatsapp.html
+     * ai.html
+     * settings.html
+     *
+     * Let the browser open the page normally.
+     */
 
-        if (
-            link &&
-            link !== "#" &&
-            link !== ""
-        ) {
+    if (isRealLink(link)) {
 
-            sidebar.classList.remove("open");
+        closeMobileSidebar();
 
-            if (overlay) {
-                overlay.classList.remove("show");
-            }
+        return;
 
+    }
+
+
+    /*
+     * FUTURE MODULE
+     *
+     * Only "#" links come here.
+     */
+
+    event.preventDefault();
+
+
+    const menuName =
+        this.querySelector("span:last-child");
+
+
+    if (menuName) {
+
+        alert(
+            menuName.textContent.trim() +
+            " module अर्को चरणमा तयार गरिनेछ।"
+        );
+
+    }
+
+
+    closeMobileSidebar();
+
+});
+
+});
+
+/* =====================================================
+TODAY DATE
+===================================================== */
+
+function showTodayDate() {
+
+const dateElement =
+    document.getElementById("todayDate");
+
+
+if (!dateElement) {
+    return;
+}
+
+
+const today = new Date();
+
+
+const options = {
+
+    weekday: "long",
+
+    year: "numeric",
+
+    month: "long",
+
+    day: "numeric"
+
+};
+
+
+const dateText =
+    today.toLocaleDateString(
+        "ne-NP",
+        options
+    );
+
+
+dateElement.textContent =
+    dateText;
+
+}
+
+showTodayDate();
+
+/* =====================================================
+SEARCH
+===================================================== */
+
+if (searchInput) {
+
+searchInput.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (event.key !== "Enter") {
             return;
         }
 
 
+        const searchValue =
+            searchInput.value.trim();
+
+
+        if (searchValue === "") {
+
+            alert(
+                "कृपया खोज्नको लागि केही लेख्नुहोस्।"
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Search system तयार हुँदैछ।\n\n" +
+            "तपाईंले खोज्नुभएको: " +
+            searchValue
+        );
+
+    }
+);
+
+}
+
+/* =====================================================
+TOP NEW SALE BUTTON
+===================================================== */
+
+if (primaryBtn) {
+
+primaryBtn.addEventListener(
+    "click",
+    function (event) {
+
         /*
-         * For modules that are not ready yet,
-         * prevent "#" from jumping to the top.
+         * If the button is actually an <a>
+         * with a real href, allow navigation.
+         */
+
+        const link =
+            this.getAttribute("href");
+
+
+        if (isRealLink(link)) {
+
+            return;
+
+        }
+
+
+        /*
+         * Current dashboard button is not linked yet.
+         */
+
+        event.preventDefault();
+
+        alert(
+            "New Sale module अर्को चरणमा तयार गरिनेछ।"
+        );
+
+    }
+);
+
+}
+
+/* =====================================================
+QUICK ACTIONS
+===================================================== */
+
+quickActions.forEach(function (action) {
+
+action.addEventListener(
+    "click",
+    function (event) {
+
+        /*
+         * IMPORTANT:
+         *
+         * If this Quick Action has a real href,
+         * do NOT show placeholder alert.
+         *
+         * Example:
+         * purchase.html
+         * inventory.html
+         * customers.html
+         */
+
+        const link =
+            this.getAttribute("href");
+
+
+        if (isRealLink(link)) {
+
+            return;
+
+        }
+
+
+        /*
+         * Future module using "#"
          */
 
         event.preventDefault();
 
 
-        menuItems.forEach(function (menu) {
-
-            menu.classList.remove("active");
-
-        });
+        const actionName =
+            this.querySelector("strong");
 
 
-        this.classList.add("active");
-
-
-        if (sidebar) {
-            sidebar.classList.remove("open");
-        }
-
-        if (overlay) {
-            overlay.classList.remove("show");
-        }
-
-
-        /*
-         * Temporary message for unfinished modules
-         */
-
-        const menuName =
-            this.querySelector("span:last-child");
-
-
-        if (menuName) {
+        if (actionName) {
 
             alert(
-                menuName.textContent.trim() +
+                actionName.textContent.trim() +
                 " module अर्को चरणमा तयार गरिनेछ।"
             );
 
         }
 
-    });
-
-});
-
-
-/* =====================================================
-   TODAY DATE
-   ===================================================== */
-
-function showTodayDate() {
-
-    const dateElement =
-        document.getElementById("todayDate");
-
-
-    if (!dateElement) {
-        return;
     }
-
-
-    const today = new Date();
-
-
-    const options = {
-
-        weekday: "long",
-
-        year: "numeric",
-
-        month: "long",
-
-        day: "numeric"
-
-    };
-
-
-    const dateText =
-        today.toLocaleDateString(
-            "ne-NP",
-            options
-        );
-
-
-    dateElement.textContent =
-        dateText;
-
-}
-
-
-showTodayDate();
-
-
-/* =====================================================
-   SEARCH
-   ===================================================== */
-
-if (searchInput) {
-
-    searchInput.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (event.key !== "Enter") {
-                return;
-            }
-
-
-            const searchValue =
-                searchInput.value.trim();
-
-
-            if (searchValue === "") {
-
-                alert(
-                    "कृपया खोज्नको लागि केही लेख्नुहोस्।"
-                );
-
-                return;
-
-            }
-
-
-            alert(
-                "Search system तयार हुँदैछ।\n\n" +
-                "तपाईंले खोज्नुभएको: " +
-                searchValue
-            );
-
-        }
-    );
-
-}
-
-
-/* =====================================================
-   NEW SALE BUTTON
-   ===================================================== */
-
-if (primaryBtn) {
-
-    primaryBtn.addEventListener(
-        "click",
-        function () {
-
-            alert(
-                "New Sale module अर्को चरणमा तयार गरिनेछ।"
-            );
-
-        }
-    );
-
-}
-
-
-/* =====================================================
-   QUICK ACTIONS
-   ===================================================== */
-
-quickActions.forEach(function (button) {
-
-    button.addEventListener(
-        "click",
-        function () {
-
-            const actionName =
-                this.querySelector("strong");
-
-
-            if (actionName) {
-
-                alert(
-                    actionName.textContent.trim() +
-                    " module अर्को चरणमा तयार गरिनेछ।"
-                );
-
-            }
-
-        }
-    );
+);
 
 });
 
-
 /* =====================================================
-   AI ASSISTANT
-   ===================================================== */
+AI ASSISTANT
+===================================================== */
 
 if (aiBtn) {
 
-    aiBtn.addEventListener(
-        "click",
-        function () {
+aiBtn.addEventListener(
+    "click",
+    function (event) {
 
-            alert(
-                "AI Shop Assistant अर्को चरणमा तयार गरिनेछ।"
-            );
+        const link =
+            this.getAttribute("href");
+
+
+        /*
+         * If AI page is connected,
+         * allow normal navigation.
+         */
+
+        if (isRealLink(link)) {
+
+            return;
 
         }
-    );
+
+
+        event.preventDefault();
+
+
+        alert(
+            "AI Shop Assistant अर्को चरणमा तयार गरिनेछ।"
+        );
+
+    }
+);
 
 }
 
-
 /* =====================================================
-   NOTIFICATION
-   ===================================================== */
+NOTIFICATION
+===================================================== */
 
 if (notificationBtn) {
 
-    notificationBtn.addEventListener(
-        "click",
-        function () {
+notificationBtn.addEventListener(
+    "click",
+    function () {
 
-            alert(
-                "अहिले कुनै नयाँ notification छैन।"
-            );
+        alert(
+            "अहिले कुनै नयाँ notification छैन।"
+        );
 
-        }
-    );
+    }
+);
 
 }
 
-
 /* =====================================================
-   ATTENTION VIEW BUTTONS
-   ===================================================== */
+ATTENTION VIEW BUTTONS
+===================================================== */
 
 const viewButtons =
-    document.querySelectorAll(
-        ".attention-item button"
-    );
-
+document.querySelectorAll(
+".attention-item button"
+);
 
 viewButtons.forEach(function (button) {
 
-    button.addEventListener(
-        "click",
-        function () {
+button.addEventListener(
+    "click",
+    function () {
 
-            const parent =
-                this.closest(".attention-item");
-
-
-            if (!parent) {
-                return;
-            }
+        const parent =
+            this.closest(".attention-item");
 
 
-            const title =
-                parent.querySelector("strong");
-
-
-            if (title) {
-
-                alert(
-                    title.textContent.trim() +
-                    " details अर्को चरणमा देखाइनेछ।"
-                );
-
-            }
-
+        if (!parent) {
+            return;
         }
-    );
-
-});
 
 
-/* =====================================================
-   SALES PERIOD
-   ===================================================== */
-
-const salesPeriod =
-    document.getElementById("salesPeriod");
+        const title =
+            parent.querySelector("strong");
 
 
-if (salesPeriod) {
-
-    salesPeriod.addEventListener(
-        "change",
-        function () {
+        if (title) {
 
             alert(
-                "Sales chart data system अर्को चरणमा जोडिनेछ।\n\n" +
-                "Selected: " +
-                this.value
+                title.textContent.trim() +
+                " details अर्को चरणमा देखाइनेछ।"
             );
 
         }
-    );
 
-}
+    }
+);
 
+});
 
 /* =====================================================
-   DASHBOARD INITIAL STATE
-   ===================================================== */
+ATTENTION PAGE LINKS
+===================================================== */
 
-function initializeDashboard() {
+const attentionLinks =
+document.querySelectorAll(
+".attention-item a"
+);
 
-    const values = [
+attentionLinks.forEach(function (link) {
 
-        "todaySales",
+link.addEventListener(
+    "click",
+    function () {
 
-        "grossProfit",
+        /*
+         * Real href → normal browser navigation.
+         */
 
-        "expenses",
-
-        "netProfit",
-
-        "customerReceivable",
-
-        "supplierPayable",
-
-        "stockValue",
-
-        "availableBalance"
-
-    ];
+        const href =
+            this.getAttribute("href");
 
 
-    values.forEach(function (id) {
+        if (isRealLink(href)) {
 
-        const element =
-            document.getElementById(id);
-
-
-        if (element) {
-
-            element.textContent = "0";
+            return;
 
         }
 
-    });
+    }
+);
+
+});
+
+/* =====================================================
+SALES PERIOD
+===================================================== */
+
+const salesPeriod =
+document.getElementById("salesPeriod");
+
+if (salesPeriod) {
+
+salesPeriod.addEventListener(
+    "change",
+    function () {
+
+        alert(
+            "Sales chart data system अर्को चरणमा जोडिनेछ.\n\n" +
+            "Selected: " +
+            this.value
+        );
+
+    }
+);
 
 }
 
+/* =====================================================
+DASHBOARD INITIAL STATE
+===================================================== */
+
+function initializeDashboard() {
+
+const values = [
+
+    "todaySales",
+
+    "grossProfit",
+
+    "expenses",
+
+    "netProfit",
+
+    "customerReceivable",
+
+    "supplierPayable",
+
+    "stockValue",
+
+    "availableBalance"
+
+];
+
+
+values.forEach(function (id) {
+
+    const element =
+        document.getElementById(id);
+
+
+    if (element) {
+
+        element.textContent = "0";
+
+    }
+
+});
+
+}
 
 initializeDashboard();
 
-
 /* =====================================================
-   CONSOLE MESSAGE
-   ===================================================== */
+CONSOLE MESSAGE
+===================================================== */
 
 console.log(
-    "General Store Management System loaded successfully."
+"General Store Management System loaded successfully."
 );
