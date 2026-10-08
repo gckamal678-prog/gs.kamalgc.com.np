@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - General Store</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #111827;
+            color: white;
+            padding: 18px 12px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px 12px 20px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #d1d5db;
+            text-decoration: none;
+            padding: 11px 12px;
+            margin: 4px 0;
+            border-radius: 8px;
+        }
+
+        .menu-item:hover,
+        .menu-item.active {
+            background: #1f2937;
+            color: white;
+        }
+
+        .menu-icon {
+            width: 24px;
+            text-align: center;
+        }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+            min-width: 0;
+        }
+
+        .topbar {
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .subtitle {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 18px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #2563eb;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 17px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .backup-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .backup-box {
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .backup-box h4 {
+            margin-top: 0;
+        }
+
+        .status {
+            display: none;
+            padding: 11px 13px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .note {
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 800px) {
+
+            .app {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 10px;
+                overflow-x: auto;
+            }
+
+            .brand {
+                padding: 8px 10px;
+            }
+
+            .menu-item {
+                display: inline-flex;
+                margin: 2px;
+            }
+
+            .main {
+                padding: 14px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: auto;
+            }
+
+            .backup-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+
+        <div class="brand">🏪 General Store</div>
+
+        <a href="index.html" class="menu-item">
+            <span class="menu-icon">🏠</span>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="sale.html" class="menu-item">
+            <span class="menu-icon">🧾</span>
+            <span>New Sale</span>
+        </a>
+
+        <a href="purchase.html" class="menu-item">
+            <span class="menu-icon">📦</span>
+            <span>Purchase</span>
+        </a>
+
+        <a href="inventory.html" class="menu-item">
+            <span class="menu-icon">📋</span>
+            <span>Inventory</span>
+        </a>
+
+        <a href="customers.html" class="menu-item">
+            <span class="menu-icon">👥</span>
+            <span>Customers</span>
+        </a>
+
+        <a href="suppliers.html" class="menu-item">
+            <span class="menu-icon">🚚</span>
+            <span>Suppliers</span>
+        </a>
+
+        <a href="finance.html" class="menu-item">
+            <span class="menu-icon">💰</span>
+            <span>Finance</span>
+        </a>
+
+        <a href="reports.html" class="menu-item">
+            <span class="menu-icon">📊</span>
+            <span>Reports</span>
+        </a>
+
+        <a href="whatsapp.html" class="menu-item">
+            <span class="menu-icon">💬</span>
+            <span>WhatsApp</span>
+        </a>
+
+        <a href="ai.html" class="menu-item">
+            <span class="menu-icon">🤖</span>
+            <span>AI Assistant</span>
+        </a>
+
+        <a href="settings.html" class="menu-item active">
+            <span class="menu-icon">⚙️</span>
+            <span>Settings</span>
+        </a>
+
+    </aside>
+
+
+    <main class="main">
+
+        <div class="topbar">
+
+            <h1 class="page-title">⚙️ Settings</h1>
+
+            <p class="subtitle">
+                Store profile तथा system settings
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>🏪 Store Profile</h3>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="storeName">Store Name</label>
+                    <input type="text" id="storeName"
+                        placeholder="General Store">
+                </div>
+
+                <div class="form-group">
+                    <label for="ownerName">Owner Name</label>
+                    <input type="text" id="ownerName"
+                        placeholder="Owner Name">
+                </div>
+
+                <div class="form-group">
+                    <label for="storePhone">Phone</label>
+                    <input type="tel" id="storePhone"
+                        placeholder="98XXXXXXXX">
+                </div>
+
+                <div class="form-group">
+                    <label for="storeEmail">Email</label>
+                    <input type="email" id="storeEmail"
+                        placeholder="example@email.com">
+                </div>
+
+                <div class="form-group full">
+                    <label for="storeAddress">Store Address</label>
+                    <textarea id="storeAddress"
+                        placeholder="Store address"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="taxType">Tax Type</label>
+
+                    <select id="taxType">
+                        <option value="NON_TAX">Non Tax</option>
+                        <option value="PAN">PAN</option>
+                        <option value="VAT">VAT</option>
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="taxNumber">PAN / VAT Number</label>
+                    <input type="text" id="taxNumber"
+                        placeholder="PAN / VAT Number">
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <button
+                    type="button"
+                    class="btn-primary"
+                    id="saveProfileBtn">
+                    💾 Save Profile
+                </button>
+
+            </div>
+
+            <div id="profileStatus" class="status"></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>💰 System Settings</h3>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="currency">Currency</label>
+
+                    <select id="currency">
+                        <option value="NPR">NPR - नेपाली रुपैयाँ</option>
+                        <option value="INR">INR - Indian Rupee</option>
+                        <option value="USD">USD - US Dollar</option>
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="dateFormat">Date Format</label>
+
+                    <select id="dateFormat">
+                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                        <option value="DD-MM-YYYY">DD-MM-YYYY</option>
+                        <option value="MM-DD-YYYY">MM-DD-YYYY</option>
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="invoicePrefix">Invoice Prefix</label>
+                    <input type="text" id="invoicePrefix"
+                        placeholder="INV">
+                </div>
+
+                <div class="form-group">
+                    <label for="purchasePrefix">Purchase Prefix</label>
+                    <input type="text" id="purchasePrefix"
+                        placeholder="PUR">
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <button
+                    type="button"
+                    class="btn-primary"
+                    id="saveSystemBtn">
+                    💾 Save Settings
+                </button>
+
+            </div>
+
+            <div id="systemStatus" class="status"></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>💾 Backup & Restore</h3>
+
+            <p class="note">
+                आफ्नो store को local data लाई एउटा JSON backup file मा save
+                गर्न वा पहिलेको backup restore गर्न सकिन्छ।
+            </p>
+
+            <div class="backup-grid">
+
+                <div class="backup-box">
+
+                    <h4>📥 Export Backup</h4>
+
+                    <p class="note">
+                        सबै मुख्य local data download गर्नुहोस्।
+                    </p>
+
+                    <button
+                        type="button"
+                        class="btn-success"
+                        id="exportBtn">
+                        Download Backup
+                    </button>
+
+                </div>
+
+
+                <div class="backup-box">
+
+                    <h4>📤 Restore Backup</h4>
+
+                    <p class="note">
+                        पहिले export गरिएको JSON file restore गर्नुहोस्।
+                    </p>
+
+                    <input
+                        type="file"
+                        id="restoreFile"
+                        accept=".json">
+
+                    <div style="margin-top:10px;">
+
+                        <button
+                            type="button"
+                            class="btn-primary"
+                            id="restoreBtn">
+                            Restore Data
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="backup-box">
+
+                    <h4>⚠️ Clear All Data</h4>
+
+                    <p class="note">
+                        सबै store data हट्छ। प्रयोग गर्नु अघि backup लिनुहोस्।
+                    </p>
+
+                    <button
+                        type="button"
+                        class="btn-danger"
+                        id="clearDataBtn">
+                        Clear All Data
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div id="backupStatus" class="status"></div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="settings.js"></script>
+
+</body>
+</html>
