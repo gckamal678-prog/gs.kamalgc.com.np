@@ -19,8 +19,7 @@ const quickActions = document.querySelectorAll(".quick-action");
 const primaryBtn = document.querySelector(".primary-btn");
 const aiBtn = document.querySelector(".ai-btn");
 
-const notificationBtn =
-document.querySelector(".notification-btn");
+const notificationBtn = document.querySelector(".notification-btn");
 
 /* =====================================================
 MOBILE SIDEBAR
@@ -78,15 +77,9 @@ if (!link) {
     return false;
 }
 
-if (link === "#") {
-    return false;
-}
+const trimmed = link.trim();
 
-if (link.trim() === "") {
-    return false;
-}
-
-if (link.startsWith("javascript:")) {
+if (trimmed === "" || trimmed === "#" || trimmed.startsWith("#") || trimmed.startsWith("javascript:")) {
     return false;
 }
 
@@ -102,9 +95,7 @@ menuItems.forEach(function (item) {
 
 item.addEventListener("click", function (event) {
 
-    const link =
-        this.getAttribute("href");
-
+    const link = this.getAttribute("href");
 
     /*
      * REAL PAGE
@@ -112,6 +103,7 @@ item.addEventListener("click", function (event) {
      * Example:
      * index.html
      * sale.html
+     * sales-return.html
      * purchase.html
      * inventory.html
      * customers.html
@@ -122,7 +114,7 @@ item.addEventListener("click", function (event) {
      * ai.html
      * settings.html
      *
-     * Let the browser open the page normally.
+     * Allow normal browser navigation between HTML files.
      */
 
     if (isRealLink(link)) {
@@ -133,19 +125,15 @@ item.addEventListener("click", function (event) {
 
     }
 
-
     /*
      * FUTURE MODULE
      *
-     * Only "#" links come here.
+     * Only "#" or empty links come here.
      */
 
     event.preventDefault();
 
-
-    const menuName =
-        this.querySelector("span:last-child");
-
+    const menuName = this.querySelector("span:last-child");
 
     if (menuName) {
 
@@ -155,7 +143,6 @@ item.addEventListener("click", function (event) {
         );
 
     }
-
 
     closeMobileSidebar();
 
@@ -169,17 +156,13 @@ TODAY DATE
 
 function showTodayDate() {
 
-const dateElement =
-    document.getElementById("todayDate");
-
+const dateElement = document.getElementById("todayDate");
 
 if (!dateElement) {
     return;
 }
 
-
 const today = new Date();
-
 
 const options = {
 
@@ -193,16 +176,12 @@ const options = {
 
 };
 
+const dateText = today.toLocaleDateString(
+    "ne-NP",
+    options
+);
 
-const dateText =
-    today.toLocaleDateString(
-        "ne-NP",
-        options
-    );
-
-
-dateElement.textContent =
-    dateText;
+dateElement.textContent = dateText;
 
 }
 
@@ -222,10 +201,7 @@ searchInput.addEventListener(
             return;
         }
 
-
-        const searchValue =
-            searchInput.value.trim();
-
+        const searchValue = searchInput.value.trim();
 
         if (searchValue === "") {
 
@@ -236,7 +212,6 @@ searchInput.addEventListener(
             return;
 
         }
-
 
         alert(
             "Search system तयार हुँदैछ।\n\n" +
@@ -264,20 +239,13 @@ primaryBtn.addEventListener(
          * with a real href, allow navigation.
          */
 
-        const link =
-            this.getAttribute("href");
-
+        const link = this.getAttribute("href");
 
         if (isRealLink(link)) {
 
             return;
 
         }
-
-
-        /*
-         * Current dashboard button is not linked yet.
-         */
 
         event.preventDefault();
 
@@ -291,7 +259,7 @@ primaryBtn.addEventListener(
 }
 
 /* =====================================================
-QUICK ACTIONS
+QUICK ACTIONS (INCLUDES SALES RETURN)
 ===================================================== */
 
 quickActions.forEach(function (action) {
@@ -304,17 +272,19 @@ action.addEventListener(
          * IMPORTANT:
          *
          * If this Quick Action has a real href,
-         * do NOT show placeholder alert.
+         * do NOT show placeholder alert and navigate normally.
          *
          * Example:
+         * sale.html
+         * sales-return.html
          * purchase.html
          * inventory.html
          * customers.html
+         * suppliers.html
+         * finance.html
          */
 
-        const link =
-            this.getAttribute("href");
-
+        const link = this.getAttribute("href");
 
         if (isRealLink(link)) {
 
@@ -322,17 +292,13 @@ action.addEventListener(
 
         }
 
-
         /*
          * Future module using "#"
          */
 
         event.preventDefault();
 
-
-        const actionName =
-            this.querySelector("strong");
-
+        const actionName = this.querySelector("strong");
 
         if (actionName) {
 
@@ -358,9 +324,7 @@ aiBtn.addEventListener(
     "click",
     function (event) {
 
-        const link =
-            this.getAttribute("href");
-
+        const link = this.getAttribute("href");
 
         /*
          * If AI page is connected,
@@ -373,9 +337,7 @@ aiBtn.addEventListener(
 
         }
 
-
         event.preventDefault();
-
 
         alert(
             "AI Shop Assistant अर्को चरणमा तयार गरिनेछ।"
@@ -409,10 +371,7 @@ notificationBtn.addEventListener(
 ATTENTION VIEW BUTTONS
 ===================================================== */
 
-const viewButtons =
-document.querySelectorAll(
-".attention-item button"
-);
+const viewButtons = document.querySelectorAll(".attention-item button");
 
 viewButtons.forEach(function (button) {
 
@@ -420,18 +379,13 @@ button.addEventListener(
     "click",
     function () {
 
-        const parent =
-            this.closest(".attention-item");
-
+        const parent = this.closest(".attention-item");
 
         if (!parent) {
             return;
         }
 
-
-        const title =
-            parent.querySelector("strong");
-
+        const title = parent.querySelector("strong");
 
         if (title) {
 
@@ -451,30 +405,27 @@ button.addEventListener(
 ATTENTION PAGE LINKS
 ===================================================== */
 
-const attentionLinks =
-document.querySelectorAll(
-".attention-item a"
-);
+const attentionLinks = document.querySelectorAll(".attention-item a");
 
 attentionLinks.forEach(function (link) {
 
 link.addEventListener(
     "click",
-    function () {
+    function (event) {
 
         /*
          * Real href → normal browser navigation.
          */
 
-        const href =
-            this.getAttribute("href");
-
+        const href = this.getAttribute("href");
 
         if (isRealLink(href)) {
 
             return;
 
         }
+
+        event.preventDefault();
 
     }
 );
@@ -485,8 +436,7 @@ link.addEventListener(
 SALES PERIOD
 ===================================================== */
 
-const salesPeriod =
-document.getElementById("salesPeriod");
+const salesPeriod = document.getElementById("salesPeriod");
 
 if (salesPeriod) {
 
@@ -531,12 +481,9 @@ const values = [
 
 ];
 
-
 values.forEach(function (id) {
 
-    const element =
-        document.getElementById(id);
-
+    const element = document.getElementById(id);
 
     if (element) {
 
