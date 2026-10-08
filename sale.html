@@ -5,8 +5,10 @@
     <title>New Sale - General Store</title>
     <link rel="stylesheet" href="style.css">
 </head><body><div class="app"><aside class="sidebar">
+
     <div class="sidebar-header">
         <div class="logo">GS</div>
+
         <div>
             <h2>General Store</h2>
             <p>Management System</p>
@@ -14,6 +16,7 @@
     </div>
 
     <nav class="sidebar-menu">
+
         <a href="index.html" class="menu-item">
             <span class="menu-icon">🏠</span>
             <span>Dashboard</span>
@@ -68,64 +71,117 @@
             <span class="menu-icon">⚙️</span>
             <span>Settings</span>
         </a>
+
     </nav>
+
 </aside>
+
 
 <main class="main-content">
 
     <header class="topbar">
+
         <div>
             <h1>New Sale</h1>
-            <p>Create a new sales transaction</p>
+            <p>Create and manage sales transactions</p>
         </div>
 
         <div class="topbar-actions">
+
             <a href="index.html" class="secondary-btn">
                 ← Dashboard
             </a>
+
         </div>
+
     </header>
 
+
     <section class="content">
+
+        <!-- SALES ENTRY -->
 
         <div class="sale-layout">
 
             <div class="card sale-form-card">
 
                 <div class="card-header">
+
                     <div>
                         <h2>Sales Entry</h2>
                         <p>Enter product and payment details</p>
                     </div>
+
                 </div>
+
 
                 <form id="saleForm">
 
                     <div class="form-grid">
 
                         <div class="form-group">
-                            <label for="saleDate">Sale Date</label>
-                            <input type="date" id="saleDate" required>
+
+                            <label for="saleDate">
+                                Sale Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="saleDate"
+                                required
+                            >
+
                         </div>
 
+
                         <div class="form-group">
-                            <label for="billNumber">Bill Number</label>
-                            <input type="text" id="billNumber" placeholder="Auto / manual">
+
+                            <label for="billNumber">
+                                Bill Number
+                            </label>
+
+                            <input
+                                type="text"
+                                id="billNumber"
+                                placeholder="Auto / manual"
+                            >
+
                         </div>
+
 
                         <div class="form-group full-width">
-                            <label for="saleProduct">Product</label>
-                            <select id="saleProduct" required>
-                                <option value="">Select Product</option>
+
+                            <label for="saleProduct">
+                                Product
+                            </label>
+
+                            <select
+                                id="saleProduct"
+                                required
+                            >
+
+                                <option value="">
+                                    Select Product
+                                </option>
+
                             </select>
 
-                            <small id="stockInfo" class="field-help">
+                            <small
+                                id="stockInfo"
+                                class="field-help"
+                            >
                                 Available stock: -
                             </small>
+
                         </div>
 
+
                         <div class="form-group">
-                            <label for="saleQty">Quantity</label>
+
+                            <label for="saleQty">
+                                Quantity
+                            </label>
+
                             <input
                                 type="number"
                                 id="saleQty"
@@ -134,10 +190,16 @@
                                 placeholder="0"
                                 required
                             >
+
                         </div>
 
+
                         <div class="form-group">
-                            <label for="saleRate">Sale Rate</label>
+
+                            <label for="saleRate">
+                                Sale Rate
+                            </label>
+
                             <input
                                 type="number"
                                 id="saleRate"
@@ -146,10 +208,16 @@
                                 placeholder="0.00"
                                 required
                             >
+
                         </div>
 
+
                         <div class="form-group">
-                            <label for="saleDiscount">Discount</label>
+
+                            <label for="saleDiscount">
+                                Discount
+                            </label>
+
                             <input
                                 type="number"
                                 id="saleDiscount"
@@ -157,29 +225,60 @@
                                 step="0.01"
                                 value="0"
                             >
+
                         </div>
 
+
                         <div class="form-group">
-                            <label for="customerName">Customer Name</label>
+
+                            <label for="customerName">
+                                Customer Name
+                            </label>
+
                             <input
                                 type="text"
                                 id="customerName"
-                                placeholder="Walk-in customer"
+                                placeholder="Walk-in Customer"
                             >
+
                         </div>
 
+
                         <div class="form-group">
-                            <label for="paymentMethod">Payment Method</label>
+
+                            <label for="paymentMethod">
+                                Payment Method
+                            </label>
+
                             <select id="paymentMethod">
-                                <option value="CASH">Cash</option>
-                                <option value="BANK">Bank</option>
-                                <option value="QR">QR</option>
-                                <option value="CREDIT">Credit</option>
+
+                                <option value="CASH">
+                                    Cash
+                                </option>
+
+                                <option value="BANK">
+                                    Bank
+                                </option>
+
+                                <option value="QR">
+                                    QR
+                                </option>
+
+                                <option value="CREDIT">
+                                    Credit
+                                </option>
+
                             </select>
+
                         </div>
 
+
                         <div class="form-group">
-                            <label for="paidAmount">Paid Amount</label>
+
+                            <label for="paidAmount">
+                                Paid Amount
+                            </label>
+
                             <input
                                 type="number"
                                 id="paidAmount"
@@ -187,108 +286,279 @@
                                 step="0.01"
                                 value="0"
                             >
+
                         </div>
 
+
                         <div class="form-group full-width">
-                            <label for="saleNote">Note</label>
+
+                            <label for="saleNote">
+                                Note
+                            </label>
+
                             <textarea
                                 id="saleNote"
                                 rows="3"
                                 placeholder="Optional note"
                             ></textarea>
+
                         </div>
 
                     </div>
+
 
                     <div class="sale-summary-box">
 
                         <div class="summary-row">
+
                             <span>Item Amount</span>
-                            <strong id="previewItemAmount">Rs. 0.00</strong>
+
+                            <strong id="previewItemAmount">
+                                Rs. 0.00
+                            </strong>
+
                         </div>
 
+
                         <div class="summary-row">
+
                             <span>Discount</span>
-                            <strong id="previewDiscount">Rs. 0.00</strong>
+
+                            <strong id="previewDiscount">
+                                Rs. 0.00
+                            </strong>
+
                         </div>
+
 
                         <div class="summary-row total-row">
+
                             <span>Total</span>
-                            <strong id="previewTotal">Rs. 0.00</strong>
+
+                            <strong id="previewTotal">
+                                Rs. 0.00
+                            </strong>
+
                         </div>
 
+
                         <div class="summary-row">
+
                             <span>Paid</span>
-                            <strong id="previewPaid">Rs. 0.00</strong>
+
+                            <strong id="previewPaid">
+                                Rs. 0.00
+                            </strong>
+
                         </div>
 
+
                         <div class="summary-row">
+
                             <span>Balance</span>
-                            <strong id="previewBalance">Rs. 0.00</strong>
+
+                            <strong id="previewBalance">
+                                Rs. 0.00
+                            </strong>
+
                         </div>
 
                     </div>
 
+
                     <div class="form-actions">
-                        <button type="reset" class="secondary-btn">
+
+                        <button
+                            type="reset"
+                            class="secondary-btn"
+                        >
                             Clear
                         </button>
 
-                        <button type="submit" class="primary-btn">
+
+                        <button
+                            type="submit"
+                            class="primary-btn"
+                        >
                             💾 Save Sale
                         </button>
+
                     </div>
 
                 </form>
 
             </div>
 
+
+            <!-- CURRENT SALE INFORMATION -->
+
             <div class="card sale-info-card">
 
                 <div class="card-header">
+
                     <div>
                         <h2>Sale Information</h2>
                         <p>Current transaction details</p>
                     </div>
+
                 </div>
+
 
                 <div class="info-list">
 
                     <div class="info-item">
+
                         <span>Product</span>
-                        <strong id="infoProduct">-</strong>
+
+                        <strong id="infoProduct">
+                            -
+                        </strong>
+
                     </div>
 
+
                     <div class="info-item">
+
                         <span>Unit</span>
-                        <strong id="infoUnit">-</strong>
+
+                        <strong id="infoUnit">
+                            -
+                        </strong>
+
                     </div>
 
+
                     <div class="info-item">
+
                         <span>Available Stock</span>
-                        <strong id="infoStock">-</strong>
+
+                        <strong id="infoStock">
+                            -
+                        </strong>
+
                     </div>
 
+
                     <div class="info-item">
+
                         <span>Sale Qty</span>
-                        <strong id="infoQty">0</strong>
+
+                        <strong id="infoQty">
+                            0
+                        </strong>
+
                     </div>
 
+
                     <div class="info-item">
+
                         <span>Payment</span>
-                        <strong id="infoPayment">CASH</strong>
+
+                        <strong id="infoPayment">
+                            CASH
+                        </strong>
+
                     </div>
 
                 </div>
+
 
                 <div class="notice-box">
+
                     <strong>Note</strong>
+
                     <p>
-                        अहिलेको चरणमा sale save गर्दा inventory stock
-                        स्वतः घट्नेछ। FIFO, return, exchange र customer
-                        offer अर्को चरणमा थपिनेछ।
+                        Sale save गर्दा inventory stock स्वतः घट्नेछ।
+                        FIFO, return, exchange र customer offer
+                        अर्को चरणमा थपिनेछ।
                     </p>
+
                 </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SALES HISTORY -->
+
+        <div class="card sales-history-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>Sales History</h2>
+
+                    <p>
+                        Saved sales transactions
+                    </p>
+
+                </div>
+
+
+                <div class="history-actions">
+
+                    <input
+                        type="search"
+                        id="saleSearch"
+                        placeholder="Search bill / customer / product..."
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Date</th>
+
+                            <th>Bill No.</th>
+
+                            <th>Customer</th>
+
+                            <th>Product</th>
+
+                            <th>Qty</th>
+
+                            <th>Total</th>
+
+                            <th>Paid</th>
+
+                            <th>Balance</th>
+
+                            <th>Payment</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="salesHistoryBody">
+
+                        <tr>
+
+                            <td
+                                colspan="10"
+                                class="empty-state"
+                            >
+                                No sales found
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
 
             </div>
 
