@@ -1,410 +1,218 @@
-<!DOCTYPE html><html lang="en">
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Return - General Store</title>
-    <link rel="stylesheet" href="style.css">
-</head><body><div class="app"><aside class="sidebar">
-
-    <div class="sidebar-header">
-        <div class="logo">GS</div>
-
-        <div>
-            <h2>General Store</h2>
-            <p>Management System</p>
-        </div>
-    </div>
-
-    <nav class="sidebar-menu">
-
-        <a href="index.html" class="menu-item">
-            <span class="menu-icon">🏠</span>
-            <span>Dashboard</span>
-        </a>
-
-        <a href="sale.html" class="menu-item">
-            <span class="menu-icon">🛒</span>
-            <span>New Sale</span>
-        </a>
-
-        <a href="sales-return.html" class="menu-item active">
-            <span class="menu-icon">↩️</span>
-            <span>Sales Return</span>
-        </a>
-
-        <a href="purchase.html" class="menu-item">
-            <span class="menu-icon">📦</span>
-            <span>Purchase</span>
-        </a>
-
-        <a href="inventory.html" class="menu-item">
-            <span class="menu-icon">📋</span>
-            <span>Inventory</span>
-        </a>
-
-        <a href="customers.html" class="menu-item">
-            <span class="menu-icon">👥</span>
-            <span>Customers</span>
-        </a>
-
-        <a href="suppliers.html" class="menu-item">
-            <span class="menu-icon">🚚</span>
-            <span>Suppliers</span>
-        </a>
-
-        <a href="finance.html" class="menu-item">
-            <span class="menu-icon">💰</span>
-            <span>Finance</span>
-        </a>
-
-        <a href="reports.html" class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span>Reports</span>
-        </a>
-
-        <a href="whatsapp.html" class="menu-item">
-            <span class="menu-icon">💬</span>
-            <span>WhatsApp</span>
-        </a>
-
-        <a href="ai.html" class="menu-item">
-            <span class="menu-icon">🤖</span>
-            <span>AI Assistant</span>
-        </a>
-
-        <a href="settings.html" class="menu-item">
-            <span class="menu-icon">⚙️</span>
-            <span>Settings</span>
-        </a>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Return | General Store</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .return-wrap{padding:24px;max-width:1500px;margin:auto}
+    .return-top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:22px}
+    .return-top h1{margin:0 0 6px;font-size:27px}
+    .return-top p{margin:0;color:#64748b}
+    .return-btn{border:0;border-radius:8px;padding:11px 17px;cursor:pointer;font-weight:600;font-size:14px}
+    .return-btn.primary{background:#2563eb;color:white}
+    .return-btn.secondary{background:#e2e8f0;color:#334155}
+    .return-btn.danger{background:#fee2e2;color:#991b1b}
+    .return-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}
+    .return-stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px;box-shadow:0 2px 8px #0f172a08}
+    .return-stat span{display:block;color:#64748b;font-size:13px;margin-bottom:9px}
+    .return-stat strong{font-size:23px;color:#0f172a;overflow-wrap:anywhere}
+    .return-panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:22px;box-shadow:0 2px 8px #0f172a08}
+    .return-panel h2{font-size:18px;margin:0 0 17px;color:#0f172a}
+    .return-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:15px}
+    .return-toolbar h2{margin:0}
+    .return-field label{display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:7px}
+    .return-field input,.return-field select,.return-field textarea{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:11px 12px;font:inherit;background:#fff;color:#0f172a}
+    .return-field textarea{min-height:80px;resize:vertical}
+    .return-field input:focus,.return-field select:focus,.return-field textarea:focus{outline:2px solid #bfdbfe;border-color:#2563eb}
+    .return-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .return-grid .wide{grid-column:span 2}
+    .return-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px}
+    .return-summary div span{display:block;font-size:13px;color:#64748b;margin-bottom:5px}
+    .return-summary strong{font-size:19px;color:#0f172a}
+    .return-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+    .return-table-wrap{width:100%;overflow-x:auto}
+    .return-table{width:100%;border-collapse:collapse;min-width:850px}
+    .return-table th,.return-table td{padding:13px 12px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:13px;white-space:nowrap}
+    .return-table th{background:#f8fafc;color:#475569;font-weight:700}
+    .return-table tbody tr:hover{background:#f8fafc}
+    .return-badge{display:inline-block;border-radius:20px;padding:5px 9px;font-size:11px;font-weight:700}
+    .return-badge.good{background:#dcfce7;color:#166534}
+    .return-badge.damaged{background:#fee2e2;color:#991b1b}
+    .return-muted{color:#64748b}
+    .return-empty{text-align:center!important;padding:28px!important;color:#64748b}
+    .return-notice{padding:12px 14px;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-size:13px;margin-bottom:16px}
+    .return-error{padding:12px 14px;border-radius:8px;background:#fef2f2;color:#b91c1c;margin-bottom:15px;display:none}
+    .return-error.show{display:block}
+    @media(max-width:900px){.return-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.return-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:600px){.return-wrap{padding:14px}.return-top h1{font-size:23px}.return-stats{gap:10px}.return-stat{padding:13px}.return-stat strong{font-size:19px}.return-panel{padding:14px}.return-grid{grid-template-columns:1fr}.return-grid .wide{grid-column:auto}.return-summary{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>General Store</h2>
+    <nav>
+      <a class="menu-item" href="index.html">Dashboard</a>
+      <a class="menu-item" href="sale.html">New Sale</a>
+      <a class="menu-item" href="purchase.html">Purchase</a>
+      <a class="menu-item" href="inventory.html">Inventory</a>
+      <a class="menu-item active" href="sales-return.html">Sales Return</a>
+      <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
+      <a class="menu-item" href="customers.html">Customers</a>
+      <a class="menu-item" href="suppliers.html">Suppliers</a>
+      <a class="menu-item" href="finance.html">Finance</a>
+      <a class="menu-item" href="reports.html">Reports</a>
+      <a class="menu-item" href="whatsapp.html">WhatsApp</a>
+      <a class="menu-item" href="ai.html">AI</a>
+      <a class="menu-item" href="settings.html">Settings</a>
     </nav>
+  </aside>
 
-</aside>
-
-
-<main class="main-content">
-
-    <header class="topbar">
-
+  <main class="main-content">
+    <div class="return-wrap">
+      <header class="return-top">
         <div>
-            <h1>Sales Return</h1>
-            <p>Return sold products and restore stock</p>
+          <h1>Sales Return</h1>
+          <p>बिक्री भएको सामान फिर्ता लिनुहोस् र Return History हेर्नुहोस्।</p>
+        </div>
+        <button type="button" class="return-btn primary" id="clearReturnBtn">＋ नयाँ Return</button>
+      </header>
+
+      <section class="return-stats">
+        <div class="return-stat">
+          <span>कुल Return</span>
+          <strong id="totalReturns">0</strong>
+        </div>
+        <div class="return-stat">
+          <span>कुल Return रकम</span>
+          <strong id="totalReturnAmount">Rs. 0.00</strong>
+        </div>
+        <div class="return-stat">
+          <span>Good Return</span>
+          <strong id="goodReturnCount">0</strong>
+        </div>
+        <div class="return-stat">
+          <span>Damaged Return</span>
+          <strong id="damagedReturnCount">0</strong>
+        </div>
+      </section>
+
+      <section class="return-panel" id="returnDetailsCard">
+        <div class="return-toolbar">
+          <h2>नयाँ Sales Return</h2>
+          <span class="return-muted">बिक्री बिल छानेर विवरण भर्नुहोस्</span>
         </div>
 
-        <div class="topbar-actions">
-
-            <a href="sale.html" class="secondary-btn">
-                ← Sales
-            </a>
-
+        <div id="returnError" class="return-error" role="alert"></div>
+        <div class="return-notice">
+          GOOD सामान मात्र स्टकमा फिर्ता थपिन्छ। DAMAGED सामान स्टकमा थपिँदैन।
         </div>
 
-    </header>
-
-
-    <section class="content">
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <div>
-                    <h2>Find Sale</h2>
-                    <p>
-                        Select a previous sale for return
-                    </p>
-                </div>
-
+        <form id="returnForm">
+          <div class="return-grid">
+            <div class="return-field wide">
+              <label for="returnSale">बिक्री बिल / सामान छान्नुहोस् *</label>
+              <select id="returnSale" required>
+                <option value="">पहिले बिक्री भएको बिल छान्नुहोस्</option>
+              </select>
             </div>
-
-
-            <div class="form-grid">
-
-                <div class="form-group full-width">
-
-                    <label for="returnSale">
-                        Sale / Bill
-                    </label>
-
-                    <select id="returnSale">
-
-                        <option value="">
-                            Select Sale
-                        </option>
-
-                    </select>
-
-                </div>
-
+            <div class="return-field">
+              <label for="returnBillNumber">बिल नम्बर</label>
+              <input id="returnBillNumber" readonly>
             </div>
+            <div class="return-field">
+              <label for="returnCustomer">ग्राहक</label>
+              <input id="returnCustomer" readonly>
+            </div>
+            <div class="return-field">
+              <label for="returnProduct">सामान</label>
+              <input id="returnProduct" readonly>
+            </div>
+            <div class="return-field">
+              <label for="soldQty">बिक्री भएको मात्रा</label>
+              <input id="soldQty" readonly>
+            </div>
+            <div class="return-field">
+              <label for="alreadyReturnedQty">पहिले फिर्ता भएको</label>
+              <input id="alreadyReturnedQty" readonly>
+            </div>
+            <div class="return-field">
+              <label for="returnQty">फिर्ता मात्रा *</label>
+              <input id="returnQty" type="number" min="0.001" step="any" required placeholder="मात्रा लेख्नुहोस्">
+            </div>
+            <div class="return-field">
+              <label for="returnCondition">सामानको अवस्था *</label>
+              <select id="returnCondition" required>
+                <option value="GOOD">GOOD — पुनः बिक्री गर्न मिल्ने</option>
+                <option value="DAMAGED">DAMAGED — बिग्रिएको</option>
+              </select>
+            </div>
+            <div class="return-field">
+              <label for="returnReason">फिर्ताको कारण *</label>
+              <select id="returnReason" required>
+                <option value="">कारण छान्नुहोस्</option>
+                <option value="Wrong Item">गलत सामान</option>
+                <option value="Damaged Item">सामान बिग्रिएको</option>
+                <option value="Expiry">म्याद सकिएको</option>
+                <option value="Customer Request">ग्राहकको अनुरोध</option>
+                <option value="Other">अन्य</option>
+              </select>
+            </div>
+            <div class="return-field wide">
+              <label for="returnNote">कैफियत</label>
+              <textarea id="returnNote" placeholder="थप विवरण (वैकल्पिक)"></textarea>
+            </div>
+          </div>
 
+          <div class="return-summary">
+            <div>
+              <span>फिर्ता गर्न बाँकी मात्रा</span>
+              <strong id="remainingReturnQty">—</strong>
+            </div>
+            <div>
+              <span>फिर्ता रकम (अनुमानित)</span>
+              <strong id="returnAmountPreview">Rs. 0.00</strong>
+            </div>
+          </div>
+
+          <div class="return-actions">
+            <button type="button" class="return-btn secondary" id="cancelReturnBtn">रद्द गर्नुहोस्</button>
+            <button type="submit" class="return-btn primary" id="saveReturnBtn">Return सुरक्षित गर्नुहोस्</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="return-panel">
+        <div class="return-toolbar">
+          <h2>Return History</h2>
+          <input id="returnSearch" type="search" placeholder="बिल, सामान वा ग्राहक खोज्नुहोस्..." style="max-width:320px;width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px">
         </div>
-
-
-        <div
-            class="card"
-            id="returnDetailsCard"
-            style="display:none;"
-        >
-
-            <div class="card-header">
-
-                <div>
-                    <h2>Return Details</h2>
-                    <p>
-                        Enter returned quantity and condition
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>Bill Number</label>
-
-                    <input
-                        type="text"
-                        id="returnBillNumber"
-                        readonly
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>Customer</label>
-
-                    <input
-                        type="text"
-                        id="returnCustomer"
-                        readonly
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>Product</label>
-
-                    <input
-                        type="text"
-                        id="returnProduct"
-                        readonly
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>Sold Quantity</label>
-
-                    <input
-                        type="number"
-                        id="soldQty"
-                        readonly
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>Already Returned</label>
-
-                    <input
-                        type="number"
-                        id="alreadyReturnedQty"
-                        readonly
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="returnQty">
-                        Return Quantity
-                    </label>
-
-                    <input
-                        type="number"
-                        id="returnQty"
-                        min="0.01"
-                        step="0.01"
-                        value="0"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="returnCondition">
-                        Condition
-                    </label>
-
-                    <select id="returnCondition">
-
-                        <option value="GOOD">
-                            Good / Saleable
-                        </option>
-
-                        <option value="DAMAGED">
-                            Damaged
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="returnReason">
-                        Return Reason
-                    </label>
-
-                    <input
-                        type="text"
-                        id="returnReason"
-                        placeholder="Customer return reason"
-                    >
-
-                </div>
-
-
-                <div class="form-group full-width">
-
-                    <label for="returnNote">
-                        Note
-                    </label>
-
-                    <textarea
-                        id="returnNote"
-                        rows="3"
-                        placeholder="Optional note"
-                    ></textarea>
-
-                </div>
-
-            </div>
-
-
-            <div class="sale-summary-box">
-
-                <div class="summary-row">
-
-                    <span>Return Qty</span>
-
-                    <strong id="returnQtyPreview">
-                        0
-                    </strong>
-
-                </div>
-
-
-                <div class="summary-row">
-
-                    <span>Return Amount</span>
-
-                    <strong id="returnAmountPreview">
-                        Rs. 0.00
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <div class="form-actions">
-
-                <button
-                    type="button"
-                    class="secondary-btn"
-                    id="clearReturnBtn"
-                >
-                    Clear
-                </button>
-
-                <button
-                    type="button"
-                    class="primary-btn"
-                    id="saveReturnBtn"
-                >
-                    ↩️ Save Return
-                </button>
-
-            </div>
-
+        <div class="return-table-wrap">
+          <table class="return-table">
+            <thead>
+              <tr>
+                <th>मिति</th>
+                <th>Return ID</th>
+                <th>बिल नम्बर</th>
+                <th>ग्राहक</th>
+                <th>सामान</th>
+                <th>मात्रा</th>
+                <th>अवस्था</th>
+                <th>रकम</th>
+                <th>कारण</th>
+              </tr>
+            </thead>
+            <tbody id="returnHistoryBody">
+              <tr><td colspan="9" class="return-empty">लोड हुँदैछ...</td></tr>
+            </tbody>
+          </table>
         </div>
+      </section>
+    </div>
+  </main>
 
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <div>
-                    <h2>Return History</h2>
-                    <p>
-                        Previously processed returns
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="table-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Date</th>
-                            <th>Return No.</th>
-                            <th>Bill No.</th>
-                            <th>Product</th>
-                            <th>Qty</th>
-                            <th>Condition</th>
-                            <th>Amount</th>
-                            <th>Reason</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody id="returnHistoryBody">
-
-                        <tr>
-
-                            <td
-                                colspan="8"
-                                class="empty-state"
-                            >
-                                No returns found
-                            </td>
-
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-    </section>
-
-</main>
-
-</div><script src="sales-return.js"></script></body>
+  <script src="sales-return.js"></script>
+</body>
 </html>
