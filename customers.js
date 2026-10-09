@@ -8,7 +8,9 @@
   let editingId = null;
   let initialized = false;
 
-  const $ = (id) => document.getElementById(id);
+  const $ = function (id) {
+    return document.getElementById(id);
+  };
 
   function readArray(key) {
     const raw = localStorage.getItem(key);
@@ -44,13 +46,15 @@
     return String(value == null ? "" : value).replace(
       /[&<>"']/g,
       function (char) {
-        return {
+        const entities = {
           "&": "&amp;",
           "<": "&lt;",
           ">": "&gt;",
           '"': "&quot;",
           "'": "&#39;"
-        }[char];
+        };
+
+        return entities[char];
       }
     );
   }
@@ -87,15 +91,11 @@
   }
 
   function getCustomerName(customer) {
-    return String(
-      customer.name || customer.customerName || ""
-    ).trim();
+    return String(customer.name || customer.customerName || "").trim();
   }
 
   function getSaleCustomerName(sale) {
-    return String(
-      sale.customerName || sale.customer || ""
-    ).trim();
+    return String(sale.customerName || sale.customer || "").trim();
   }
 
   function getSaleTotal(sale) {
@@ -107,8 +107,10 @@
       return Math.max(0, num(sale.balance));
     }
 
-    const paid = num(sale.paidAmount ?? sale.paid);
-    return Math.max(0, getSaleTotal(sale) - paid);
+    return Math.max(
+      0,
+      getSaleTotal(sale) - num(sale.paidAmount ?? sale.paid)
+    );
   }
 
   function getCustomerSales(customer, sales) {
@@ -124,64 +126,22 @@
         return true;
       }
 
-      const saleCustomer = getSaleCustomerName(sale).toLowerCase();
+      const saleName = getSaleCustomerName(sale).toLowerCase();
 
-      return Boolean(name && saleCustomer && name === saleCustomer);
+      return Boolean(name && saleName && name === saleName);
     });
   }
-
-  // HTML बाट सीधै बोलाउन मिल्ने फारम खोल्ने फङ्सन।
-  // HTML मा onclick="openCustomerForm()" राखिएको भए पनि काम गर्छ।
-  window.openCustomerForm = function () {
-    try {
-      const panel = $("customerFormCard");
-      const form = $("customerForm");
-
-      if (!panel || !form) {
-        alert(
-          "ग्राहक फारम भेटिएन। customers.html मा customerFormCard र customerForm ID जाँच गर्नुहोस्।"
-        );
-        return;
-      }
-
-      clearError();
-
-      editingId = null;
-      form.reset();
-
-      if ($("customerId")) $("customerId").value = "";
-      if ($("customerFormTitle")) {
-        $("customerFormTitle").textContent = "नयाँ ग्राहक विवरण";
-      }
-      if ($("customerOpeningBalance")) {
-        $("customerOpeningBalance").value = "0";
-      }
-
-      panel.classList.remove("customer-form-hidden");
-      panel.style.display = "block";
-
-      panel.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-
-      if ($("customerName")) $("customerName").focus();
-    } catch (error) {
-      console.error("Open customer form error:", error);
-      alert("ग्राहक फारम खोल्न सकिएन: " + error.message);
-    }
-  };
 
   function showForm(isEditing) {
     const panel = $("customerFormCard");
 
     if (!panel) {
-      showError("customerFormCard भेटिएन। HTML को ID जाँच गर्नुहोस्।");
+      showError("ग्राहक फारम भेटिएन।");
       return;
     }
 
     panel.classList.remove("customer-form-hidden");
-    panel.style.display = "block";
+    panel.style.removeProperty("display");
 
     if ($("customerFormTitle")) {
       $("customerFormTitle").textContent = isEditing
@@ -189,10 +149,7 @@
         : "नयाँ ग्राहक विवरण";
     }
 
-    panel.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
 
     if ($("customerName")) $("customerName").focus();
   }
@@ -203,7 +160,7 @@
 
     if (panel) {
       panel.classList.add("customer-form-hidden");
-      panel.style.display = "none";
+      panel.style.removeProperty("display");
     }
 
     if (form) form.reset();
@@ -217,13 +174,31 @@
     clearError();
   }
 
+  // HTML को बटनले यो फङ्सन बोलाउँछ।
+  window.resetCustomerFormForNew = function () {
+    editingId = null;
+
+    const form = $("customerForm");
+
+    if (form) form.reset();
+
+    if ($("customerId")) $("customerId").value = "";
+    if ($("customerOpeningBalance")) {
+      $("customerOpeningBalance").value = "0";
+    }
+
+    clearError();
+    showForm(false);
+  };
+
+  // पुरानो बिक्री र ग्राहक डेटा नबिगारी सूची देखाउने।
   function render() {
     const customers = getCustomers();
     const sales = getSales();
     const tbody = $("customersTableBody");
 
     if (!tbody) {
-      throw new Error("customersTableBody भेटिएन।");
+      throw new Error("ग्राहक सूचीको तालिका भेटिएन।");
     }
 
     const query = String(
@@ -233,12 +208,18 @@
     let totalSales = 0;
     let totalBalance = 0;
 
-    customers.forEach(function (customer) {
-      const matchedSales = getCustomerSales(customer, sales);
+    // ग्राहक नामबाट मिल्ने बिक्रीलाई एकपटक मात्र जोड्ने।
+    const assignedSales = new Set();
 
-      matchedSales.forEach(function (sale) {
-        totalSales += getSaleTotal(sale);
-        totalBalance += getSaleBalance(sale);
+    customers.forEach(function (customer) {
+      getCustomerSales(customer, sales).forEach(function (sale) {
+        const key = sale.id || sale.billNumber || sale;
+
+        if (!assignedSales.has(key)) {
+          assignedSales.add(key);
+          totalSales += getSaleTotal(sale);
+          totalBalance += getSaleBalance(sale);
+        }
       });
     });
 
@@ -255,7 +236,7 @@
     }
 
     const filtered = customers.filter(function (customer) {
-      const text = [
+      const searchText = [
         customer.name,
         customer.customerName,
         customer.phone,
@@ -263,7 +244,7 @@
         customer.address
       ].join(" ").toLowerCase();
 
-      return text.includes(query);
+      return searchText.includes(query);
     });
 
     if (!filtered.length) {
@@ -326,14 +307,12 @@
       editingId = String(customer.id);
 
       $("customerId").value = editingId;
-      $("customerName").value =
-        customer.name || customer.customerName || "";
+      $("customerName").value = customer.name || customer.customerName || "";
       $("customerPhone").value = customer.phone || "";
       $("customerEmail").value = customer.email || "";
       $("customerAddress").value = customer.address || "";
       $("customerNote").value = customer.note || "";
-      $("customerOpeningBalance").value =
-        num(customer.openingBalance);
+      $("customerOpeningBalance").value = num(customer.openingBalance);
 
       showForm(true);
     } catch (error) {
@@ -352,9 +331,7 @@
       const email = $("customerEmail").value.trim();
       const address = $("customerAddress").value.trim();
       const note = $("customerNote").value.trim();
-      const openingBalance = num(
-        $("customerOpeningBalance").value
-      );
+      const openingBalance = num($("customerOpeningBalance").value);
 
       if (!name) {
         showError("कृपया ग्राहकको नाम राख्नुहोस्।");
@@ -379,28 +356,25 @@
       });
 
       if (duplicate) {
-        showError(
-          "यही नाम र मोबाइल नम्बर भएको ग्राहक पहिल्यै छ।"
-        );
+        showError("यही नाम र मोबाइल नम्बर भएको ग्राहक पहिल्यै छ।");
         return;
       }
 
+      const wasEditing = Boolean(editingId);
       const now = new Date().toISOString();
 
-      if (editingId) {
+      if (wasEditing) {
         const index = customers.findIndex(function (customer) {
           return String(customer.id) === String(editingId);
         });
 
-        if (index < 0) {
+        if (index === -1) {
           showError("सम्पादन गर्न खोजिएको ग्राहक भेटिएन।");
           return;
         }
 
-        const oldCustomer = customers[index];
-
         customers[index] = {
-          ...oldCustomer,
+          ...customers[index],
           name: name,
           phone: phone,
           email: email,
@@ -425,24 +399,18 @@
         });
       }
 
-      // ग्राहक सूची मात्र अपडेट हुन्छ; बिक्री वा स्टक डेटा बदलिँदैन।
       writeArray(CUSTOMER_KEY, customers);
-
-      const wasEditing = Boolean(editingId);
 
       hideForm();
       render();
 
-      alert(
-        wasEditing
-          ? "ग्राहक विवरण अपडेट भयो।"
-          : "नयाँ ग्राहक सुरक्षित भयो।"
-      );
+      alert(wasEditing
+        ? "ग्राहक विवरण अपडेट भयो।"
+        : "नयाँ ग्राहक सुरक्षित भयो।");
     } catch (error) {
       console.error("Save customer error:", error);
-
       showError(
-        "ग्राहक सुरक्षित गर्न सकिएन। पुरानो डेटा हटाइएको छैन। विवरण: " +
+        "ग्राहक सुरक्षित गर्न सकिएन। पुरानो डेटा सुरक्षित राखिएको छ। विवरण: " +
         error.message
       );
     }
@@ -461,32 +429,31 @@
         return;
       }
 
-      const sales = getSales();
-      const linkedSales = getCustomerSales(customer, sales);
+      const linkedSales = getCustomerSales(customer, getSales());
 
       if (linkedSales.length > 0) {
         alert(
-          "यो ग्राहकको बिक्री इतिहास छ।\n\n" +
-          "बिक्री इतिहास सुरक्षित राख्न यो ग्राहक हटाउन मिल्दैन। " +
-          "आवश्यक परे सम्पादन गर्नुहोस्।"
+          "यो ग्राहकको बिक्री इतिहास छ। बिक्री इतिहास सुरक्षित राख्न " +
+          "यो ग्राहक हटाउन मिल्दैन। आवश्यक परे सम्पादन गर्नुहोस्।"
         );
         return;
       }
 
-      const confirmed = confirm(
+      if (!confirm(
         "के तपाईं " + getCustomerName(customer) +
         " लाई ग्राहक सूचीबाट हटाउन चाहनुहुन्छ?"
+      )) {
+        return;
+      }
+
+      writeArray(
+        CUSTOMER_KEY,
+        customers.filter(function (item) {
+          return String(item.id) !== String(id);
+        })
       );
 
-      if (!confirmed) return;
-
-      const updated = customers.filter(function (item) {
-        return String(item.id) !== String(id);
-      });
-
-      writeArray(CUSTOMER_KEY, updated);
       render();
-
       alert("ग्राहक सूचीबाट हटाइयो।");
     } catch (error) {
       console.error("Delete customer error:", error);
@@ -514,29 +481,21 @@
       "customersTableBody"
     ];
 
-    const missingIds = requiredIds.filter(function (id) {
+    const missing = requiredIds.filter(function (id) {
       return !$(id);
     });
 
-    if (missingIds.length) {
-      console.error("Customers HTML मा आवश्यक ID भेटिएन:", missingIds);
-
-      showError(
-        "customers.html मा आवश्यक ID भेटिएन: " +
-        missingIds.join(", ")
-      );
+    if (missing.length) {
+      showError("HTML मा आवश्यक ID भेटिएन: " + missing.join(", "));
       return;
     }
 
     $("newCustomerBtn").addEventListener("click", function (event) {
       event.preventDefault();
-      window.openCustomerForm();
+      window.resetCustomerFormForNew();
     });
 
-    $("cancelCustomerBtn").addEventListener("click", function () {
-      hideForm();
-    });
-
+    $("cancelCustomerBtn").addEventListener("click", hideForm);
     $("customerForm").addEventListener("submit", saveCustomer);
 
     $("customerSearch").addEventListener("input", function () {
@@ -568,10 +527,8 @@
       render();
     } catch (error) {
       console.error("Customer load error:", error);
-
       showError(
-        "ग्राहक डेटा लोड गर्न सकिएन। डेटा सुरक्षित राखिएको छ। विवरण: " +
-        error.message
+        "ग्राहक डेटा लोड गर्न सकिएन। विवरण: " + error.message
       );
     }
   }
