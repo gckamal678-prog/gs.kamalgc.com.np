@@ -1,568 +1,268 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="ne">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Sale - General Store</title>
-    <link rel="stylesheet" href="style.css">
-</head><body><div class="app"><aside class="sidebar">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sale Management | General Store</title>
+  <link rel="stylesheet" href="style.css">
 
-    <div class="sidebar-header">
-        <div class="logo">GS</div>
+  <style>
+    .sale-wrap{max-width:1400px;margin:auto;padding:20px}
+    .sale-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .sale-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
+    .sale-stat,.sale-panel{background:var(--card-bg,#fff);border:1px solid #e5e7eb;border-radius:14px;padding:16px}
+    .sale-stat span{display:block;color:#6b7280;font-size:13px}
+    .sale-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
+    .sale-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .sale-toolbar input{flex:1;min-width:0}
+    .sale-table-wrap{overflow-x:auto}
+    .sale-table{width:100%;border-collapse:collapse;min-width:900px}
+    .sale-table th,.sale-table td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}
+    .sale-table th{font-size:13px;color:#6b7280}
+    .sale-modal{display:none;position:fixed;inset:0;z-index:1000;background:#0008;overflow:auto;padding:20px}
+    .sale-modal.show{display:block}
+    .sale-dialog{background:var(--card-bg,#fff);width:min(1100px,100%);margin:20px auto;border-radius:16px;padding:22px}
+    .sale-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .sale-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .sale-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .sale-field label{font-size:13px;font-weight:600}
+    .sale-field input,.sale-field select,.sale-field textarea,.sale-toolbar input{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
+    .sale-field small{font-size:12px;color:#6b7280}
+    .sale-section{margin-top:20px}
+    .sale-section h3{margin-bottom:12px}
+    .sale-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px;margin:18px 0 0 auto}
+    .sale-summary div{display:flex;justify-content:space-between;gap:16px;padding:5px 0}
+    .sale-summary .grand{border-top:1px solid #d1d5db;padding-top:12px;font-size:18px;font-weight:700}
+    .sale-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .sale-btn{padding:10px 15px;border:1px solid #d1d5db;border-radius:9px;cursor:pointer;background:transparent;color:inherit}
+    .sale-btn.primary{background:#166534;color:#fff;border-color:#166534}
+    .sale-btn.danger{color:#b91c1c}
+    .sale-note{font-size:12px;color:#6b7280;margin-top:8px}
+    .sale-empty{text-align:center;padding:35px;color:#6b7280}
+    .sale-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+    .sale-info-item{padding:12px;border:1px solid #e5e7eb;border-radius:10px;min-width:0}
+    .sale-info-item span{display:block;font-size:12px;color:#6b7280}
+    .sale-info-item strong{display:block;margin-top:5px;overflow-wrap:anywhere}
+    .sale-notice{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:13px;margin-top:18px}
+    .sale-notice p{margin:6px 0 0;font-size:13px}
+    @media(max-width:800px){.sale-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.sale-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sale-wrap{padding:12px}.sale-dialog{padding:15px;margin:5px auto}}
+    @media(max-width:520px){.sale-grid{grid-template-columns:1fr}.sale-modal{padding:8px}.sale-summary{max-width:none}.sale-stat strong{font-size:17px}.sale-info-grid{grid-template-columns:1fr}}
+  </style>
+</head>
 
-        <div>
-            <h2>General Store</h2>
-            <p>Management System</p>
-        </div>
+<body>
+  <aside class="sidebar">
+    <h2>General Store</h2>
+    <nav>
+      <a class="menu-item" href="index.html">Dashboard</a>
+      <a class="menu-item active" href="sale.html">New Sale</a>
+      <a class="menu-item" href="purchase.html">Purchase</a>
+      <a class="menu-item" href="inventory.html">Inventory</a>
+      <a class="menu-item" href="sales-return.html">Sales Return</a>
+      <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
+      <a class="menu-item" href="customers.html">Customers</a>
+      <a class="menu-item" href="suppliers.html">Suppliers</a>
+      <a class="menu-item" href="finance.html">Finance</a>
+      <a class="menu-item" href="reports.html">Reports</a>
+      <a class="menu-item" href="whatsapp.html">WhatsApp</a>
+      <a class="menu-item" href="ai.html">AI Assistant</a>
+      <a class="menu-item" href="settings.html">Settings</a>
+    </nav>
+  </aside>
+
+  <main class="sale-wrap">
+    <div class="sale-top">
+      <div>
+        <h1>Sales Management</h1>
+        <p>बिक्री, भुक्तानी, बाँकी रकम र Sales History</p>
+      </div>
+      <button id="newSaleBtn" class="sale-btn primary" type="button">+ New Sale</button>
     </div>
 
-    <nav class="sidebar-menu">
-
-        <a href="index.html" class="menu-item">
-            <span class="menu-icon">🏠</span>
-            <span>Dashboard</span>
-        </a>
-
-        <a href="sale.html" class="menu-item active">
-            <span class="menu-icon">🛒</span>
-            <span>New Sale</span>
-        </a>
-
-        <a href="purchase.html" class="menu-item">
-            <span class="menu-icon">📦</span>
-            <span>Purchase</span>
-        </a>
-
-        <a href="inventory.html" class="menu-item">
-            <span class="menu-icon">📋</span>
-            <span>Inventory</span>
-        </a>
-
-        <a href="customers.html" class="menu-item">
-            <span class="menu-icon">👥</span>
-            <span>Customers</span>
-        </a>
-
-        <a href="suppliers.html" class="menu-item">
-            <span class="menu-icon">🚚</span>
-            <span>Suppliers</span>
-        </a>
-
-        <a href="finance.html" class="menu-item">
-            <span class="menu-icon">💰</span>
-            <span>Finance</span>
-        </a>
-
-        <a href="reports.html" class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span>Reports</span>
-        </a>
-
-        <a href="whatsapp.html" class="menu-item">
-            <span class="menu-icon">💬</span>
-            <span>WhatsApp</span>
-        </a>
-
-        <a href="ai.html" class="menu-item">
-            <span class="menu-icon">🤖</span>
-            <span>AI Assistant</span>
-        </a>
-
-        <a href="settings.html" class="menu-item">
-            <span class="menu-icon">⚙️</span>
-            <span>Settings</span>
-        </a>
-
-    </nav>
-
-</aside>
-
-
-<main class="main-content">
-
-    <header class="topbar">
-
-        <div>
-            <h1>New Sale</h1>
-            <p>Create and manage sales transactions</p>
-        </div>
-
-        <div class="topbar-actions">
-
-            <a href="index.html" class="secondary-btn">
-                ← Dashboard
-            </a>
-
-        </div>
-
-    </header>
-
-
-    <section class="content">
-
-        <!-- SALES ENTRY -->
-
-        <div class="sale-layout">
-
-            <div class="card sale-form-card">
-
-                <div class="card-header">
-
-                    <div>
-                        <h2>Sales Entry</h2>
-                        <p>Enter product and payment details</p>
-                    </div>
-
-                </div>
-
-
-                <form id="saleForm">
-
-                    <div class="form-grid">
-
-                        <div class="form-group">
-
-                            <label for="saleDate">
-                                Sale Date
-                            </label>
-
-                            <input
-                                type="date"
-                                id="saleDate"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="billNumber">
-                                Bill Number
-                            </label>
-
-                            <input
-                                type="text"
-                                id="billNumber"
-                                placeholder="Auto / manual"
-                            >
-
-                        </div>
-
-
-                        <div class="form-group full-width">
-
-                            <label for="saleProduct">
-                                Product
-                            </label>
-
-                            <select
-                                id="saleProduct"
-                                required
-                            >
-
-                                <option value="">
-                                    Select Product
-                                </option>
-
-                            </select>
-
-                            <small
-                                id="stockInfo"
-                                class="field-help"
-                            >
-                                Available stock: -
-                            </small>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="saleQty">
-                                Quantity
-                            </label>
-
-                            <input
-                                type="number"
-                                id="saleQty"
-                                min="0.01"
-                                step="0.01"
-                                placeholder="0"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="saleRate">
-                                Sale Rate
-                            </label>
-
-                            <input
-                                type="number"
-                                id="saleRate"
-                                min="0"
-                                step="0.01"
-                                placeholder="0.00"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="saleDiscount">
-                                Discount
-                            </label>
-
-                            <input
-                                type="number"
-                                id="saleDiscount"
-                                min="0"
-                                step="0.01"
-                                value="0"
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="customerName">
-                                Customer Name
-                            </label>
-
-                            <input
-                                type="text"
-                                id="customerName"
-                                placeholder="Walk-in Customer"
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="paymentMethod">
-                                Payment Method
-                            </label>
-
-                            <select id="paymentMethod">
-
-                                <option value="CASH">
-                                    Cash
-                                </option>
-
-                                <option value="BANK">
-                                    Bank
-                                </option>
-
-                                <option value="QR">
-                                    QR
-                                </option>
-
-                                <option value="CREDIT">
-                                    Credit
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="paidAmount">
-                                Paid Amount
-                            </label>
-
-                            <input
-                                type="number"
-                                id="paidAmount"
-                                min="0"
-                                step="0.01"
-                                value="0"
-                            >
-
-                        </div>
-
-
-                        <div class="form-group full-width">
-
-                            <label for="saleNote">
-                                Note
-                            </label>
-
-                            <textarea
-                                id="saleNote"
-                                rows="3"
-                                placeholder="Optional note"
-                            ></textarea>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="sale-summary-box">
-
-                        <div class="summary-row">
-
-                            <span>Item Amount</span>
-
-                            <strong id="previewItemAmount">
-                                Rs. 0.00
-                            </strong>
-
-                        </div>
-
-
-                        <div class="summary-row">
-
-                            <span>Discount</span>
-
-                            <strong id="previewDiscount">
-                                Rs. 0.00
-                            </strong>
-
-                        </div>
-
-
-                        <div class="summary-row total-row">
-
-                            <span>Total</span>
-
-                            <strong id="previewTotal">
-                                Rs. 0.00
-                            </strong>
-
-                        </div>
-
-
-                        <div class="summary-row">
-
-                            <span>Paid</span>
-
-                            <strong id="previewPaid">
-                                Rs. 0.00
-                            </strong>
-
-                        </div>
-
-
-                        <div class="summary-row">
-
-                            <span>Balance</span>
-
-                            <strong id="previewBalance">
-                                Rs. 0.00
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-actions">
-
-                        <button
-                            type="reset"
-                            class="secondary-btn"
-                        >
-                            Clear
-                        </button>
-
-
-                        <button
-                            type="submit"
-                            class="primary-btn"
-                        >
-                            💾 Save Sale
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-
-            <!-- CURRENT SALE INFORMATION -->
-
-            <div class="card sale-info-card">
-
-                <div class="card-header">
-
-                    <div>
-                        <h2>Sale Information</h2>
-                        <p>Current transaction details</p>
-                    </div>
-
-                </div>
-
-
-                <div class="info-list">
-
-                    <div class="info-item">
-
-                        <span>Product</span>
-
-                        <strong id="infoProduct">
-                            -
-                        </strong>
-
-                    </div>
-
-
-                    <div class="info-item">
-
-                        <span>Unit</span>
-
-                        <strong id="infoUnit">
-                            -
-                        </strong>
-
-                    </div>
-
-                    <div class="info-item">
-
-                        <span>Available Stock</span>
-
-                        <strong id="infoStock">
-                            -
-                        </strong>
-
-                    </div>
-
-
-                    <div class="info-item">
-
-                        <span>Sale Qty</span>
-
-                        <strong id="infoQty">
-                            0
-                        </strong>
-
-                    </div>
-
-                    <div class="info-item">
-
-                        <span>Payment</span>
-
-                        <strong id="infoPayment">
-                            CASH
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <div class="notice-box">
-
-                    <strong>Note</strong>
-
-                    <p>
-                        Sale save गर्दा inventory stock स्वतः घट्नेछ।
-                        FIFO, return, exchange र customer offer
-                        अर्को चरणमा थपिनेछ।
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div
-
-        <!-- SALES HISTORY -->
-
-        <div class="card sales-history-card">
-
-            <div class="card-header">
-
-                <div>
-
-                    <h2>Sales History</h2>
-
-                    <p>
-                        Saved sales transactions
-                    </p>
-
-                </div>
-
-
-                <div class="history-actions">
-
-                    <input
-                        type="search"
-                        id="saleSearch"
-                        placeholder="Search bill / customer / product..."
-                    >
-
-                </div>
-
-            </div>
-
-
-            <div class="table-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Date</th>
-
-                            <th>Bill No.</th>
-
-                            <th>Customer</th>
-
-                            <th>Product</th>
-
-                            <th>Qty</th>
-
-                            <th>Total</th>
-
-                            <th>Paid</th>
-
-                            <th>Balance</th>
-
-                            <th>Payment</th>
-
-                            <th>Action</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="salesHistoryBody">
-
-                        <tr>
-
-                            <td
-                                colspan="10"
-                                class="empty-state"
-                            >
-                                No sales found
-                            </td>
-
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
+    <section class="sale-stats">
+      <div class="sale-stat">
+        <span>कुल Sales Bills</span>
+        <strong id="totalSales">0</strong>
+      </div>
+      <div class="sale-stat">
+        <span>कुल बिक्री रकम</span>
+        <strong id="salesValue">Rs. 0.00</strong>
+      </div>
+      <div class="sale-stat">
+        <span>कुल प्राप्त रकम</span>
+        <strong id="salesPaidValue">Rs. 0.00</strong>
+      </div>
+      <div class="sale-stat">
+        <span>बाँकी रकम</span>
+        <strong id="salesBalanceValue">Rs. 0.00</strong>
+      </div>
     </section>
 
-</main>
+    <section class="sale-panel">
+      <div class="sale-toolbar">
+        <input id="saleSearch" type="search" placeholder="Bill No., Customer वा Product खोज्नुहोस्">
+      </div>
 
-</div><script src="sale.js"></script></body>
+      <div class="sale-table-wrap">
+        <table class="sale-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Bill No.</th>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Total</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Payment</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="salesHistoryBody">
+            <tr>
+              <td colspan="10" class="sale-empty">Sales विवरण लोड हुँदैछ...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="sale-modal" id="saleModal" aria-hidden="true">
+    <section class="sale-dialog">
+      <div class="sale-dialog-head">
+        <div>
+          <h2>New Sale</h2>
+          <p>Product, बिक्री र भुक्तानीको विवरण राख्नुहोस्।</p>
+        </div>
+        <button type="button" id="closeSaleModal" class="sale-btn" aria-label="Close">✕</button>
+      </div>
+
+      <form id="saleForm">
+        <div class="sale-grid">
+          <div class="sale-field">
+            <label for="saleDate">Sale Date *</label>
+            <input type="date" id="saleDate" required>
+          </div>
+
+          <div class="sale-field">
+            <label for="billNumber">Bill Number</label>
+            <input type="text" id="billNumber" placeholder="Auto / manual">
+          </div>
+
+          <div class="sale-field">
+            <label for="saleProduct">Product *</label>
+            <select id="saleProduct" required>
+              <option value="">Product छान्नुहोस्</option>
+            </select>
+            <small id="stockInfo">Available stock: -</small>
+          </div>
+
+          <div class="sale-field">
+            <label for="saleQty">Quantity *</label>
+            <input type="number" id="saleQty" min="0.01" step="0.01" placeholder="0" required>
+          </div>
+
+          <div class="sale-field">
+            <label for="saleRate">Sale Rate *</label>
+            <input type="number" id="saleRate" min="0.01" step="0.01" placeholder="0.00" required>
+          </div>
+
+          <div class="sale-field">
+            <label for="saleDiscount">Discount</label>
+            <input type="number" id="saleDiscount" min="0" step="0.01" value="0">
+          </div>
+
+          <div class="sale-field">
+            <label for="customerName">Customer Name</label>
+            <input type="text" id="customerName" placeholder="Cash Customer">
+          </div>
+
+          <div class="sale-field">
+            <label for="paymentMethod">Payment Method</label>
+            <select id="paymentMethod">
+              <option value="CASH">Cash</option>
+              <option value="BANK">Bank</option>
+              <option value="QR">QR</option>
+              <option value="CREDIT">Credit / पछि तिर्ने</option>
+            </select>
+          </div>
+
+          <div class="sale-field">
+            <label for="paidAmount">Paid Amount</label>
+            <input type="number" id="paidAmount" min="0" step="0.01" value="0">
+          </div>
+
+          <div class="sale-field" style="grid-column:1/-1">
+            <label for="saleNote">Notes</label>
+            <textarea id="saleNote" rows="3" maxlength="500" placeholder="ऐच्छिक टिप्पणी"></textarea>
+          </div>
+        </div>
+
+        <section class="sale-section">
+          <h3>Sale Information</h3>
+          <div class="sale-info-grid">
+            <div class="sale-info-item">
+              <span>Product</span>
+              <strong id="infoProduct">-</strong>
+            </div>
+            <div class="sale-info-item">
+              <span>Unit</span>
+              <strong id="infoUnit">-</strong>
+            </div>
+            <div class="sale-info-item">
+              <span>Available Stock</span>
+              <strong id="infoStock">0</strong>
+            </div>
+            <div class="sale-info-item">
+              <span>Sale Qty</span>
+              <strong id="infoQty">0</strong>
+            </div>
+            <div class="sale-info-item">
+              <span>Payment</span>
+              <strong id="infoPayment">CASH</strong>
+            </div>
+          </div>
+        </section>
+
+        <div class="sale-summary">
+          <div>
+            <span>Item Amount</span>
+            <strong id="previewItemAmount">Rs. 0.00</strong>
+          </div>
+          <div>
+            <span>Discount</span>
+            <strong id="previewDiscount">Rs. 0.00</strong>
+          </div>
+          <div class="grand">
+            <span>Total</span>
+            <strong id="previewTotal">Rs. 0.00</strong>
+          </div>
+          <div>
+            <span>Paid</span>
+            <strong id="previewPaid">Rs. 0.00</strong>
+          </div>
+          <div>
+            <span>Balance</span>
+            <strong id="previewBalance">Rs. 0.00</strong>
+          </div>
+        </div>
+
+        <div class="sale-notice">
+          <strong>ध्यान दिनुहोस्</strong>
+          <p>बिक्री Save गर्दा Product Stock घट्छ। FIFO Lot बाट Stock कटौती र लागत गणना अर्को चरणको JavaScript अपडेटपछि सक्रिय हुनेछ।</p>
+        </div>
+
+        <div class="sale-actions">
+          <button type="button" id="cancelSaleBtn" class="sale-btn">Cancel</button>
+          <button type="reset" class="sale-btn">Clear</button>
+          <button type="submit" class="sale-btn primary">Save Sale</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script src="sale.js"></script>
+</body>
 </html>
