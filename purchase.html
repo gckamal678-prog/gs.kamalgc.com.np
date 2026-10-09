@@ -1,885 +1,209 @@
+
 <!DOCTYPE html>
 <html lang="ne">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Purchase | General Store Management</title>
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purchase | General Store</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .purchase-wrap{max-width:1400px;margin:auto;padding:20px}
+    .purchase-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .purchase-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
+    .purchase-stat,.purchase-panel{background:var(--card-bg,#fff);border:1px solid #e5e7eb;border-radius:14px;padding:16px}
+    .purchase-stat span{display:block;color:#6b7280;font-size:13px}
+    .purchase-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
+    .purchase-toolbar{display:flex;gap:10px;margin-bottom:14px}
+    .purchase-toolbar input{flex:1;min-width:0}
+    .purchase-table-wrap{overflow-x:auto}
+    .purchase-table{width:100%;border-collapse:collapse;min-width:850px}
+    .purchase-table th,.purchase-table td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}
+    .purchase-table th{font-size:13px;color:#6b7280}
+    .purchase-modal{display:none;position:fixed;inset:0;z-index:1000;background:#0008;overflow:auto;padding:20px}
+    .purchase-modal.show{display:block}
+    .purchase-dialog{background:var(--card-bg,#fff);width:min(1100px,100%);margin:20px auto;border-radius:16px;padding:22px}
+    .purchase-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .purchase-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .purchase-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .purchase-field label{font-size:13px;font-weight:600}
+    .purchase-field input,.purchase-field select,.purchase-field textarea,.purchase-toolbar input{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
+    .purchase-section{margin-top:20px}
+    .purchase-section h3{margin-bottom:12px}
+    .purchase-items-wrap{overflow-x:auto}
+    .purchase-items{width:100%;min-width:900px;border-collapse:collapse}
+    .purchase-items th,.purchase-items td{padding:7px;border-bottom:1px solid #e5e7eb}
+    .purchase-items input,.purchase-items select{width:100%;min-width:75px;box-sizing:border-box;padding:8px;border:1px solid #d1d5db;border-radius:7px}
+    .purchase-items .item-product{min-width:180px}
+    .purchase-items .item-total{font-weight:600}
+    .purchase-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px;margin:18px 0 0 auto}
+    .purchase-summary div{display:flex;justify-content:space-between;gap:16px;padding:5px 0}
+    .purchase-summary .grand{border-top:1px solid #d1d5db;padding-top:12px;font-size:18px;font-weight:700}
+    .purchase-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .purchase-btn{padding:10px 15px;border:1px solid #d1d5db;border-radius:9px;cursor:pointer;background:transparent;color:inherit}
+    .purchase-btn.primary{background:#166534;color:#fff;border-color:#166534}
+    .purchase-btn.danger{color:#b91c1c}
+    .purchase-note{font-size:12px;color:#6b7280;margin-top:8px}
+    .purchase-empty{text-align:center;padding:35px;color:#6b7280}
+    @media(max-width:800px){.purchase-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.purchase-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.purchase-wrap{padding:12px}.purchase-dialog{padding:15px;margin:5px auto}}
+    @media(max-width:520px){.purchase-grid{grid-template-columns:1fr}.purchase-modal{padding:8px}.purchase-summary{max-width:none}.purchase-stat strong{font-size:17px}}
+  </style>
 </head>
-
 <body>
-
-    <!-- ================= SIDEBAR ================= -->
-
-    <aside class="sidebar">
-
-        <div class="logo-area">
-
-            <div class="logo-icon">
-                GS
-            </div>
-
-            <div>
-                <h2>General Store</h2>
-                <span>Management System</span>
-            </div>
-
-        </div>
-
-
-        <nav class="sidebar-menu">
-
-            <a href="index.html" class="menu-item">
-                <span class="menu-icon">⌂</span>
-                <span>Dashboard</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <span class="menu-icon">🛒</span>
-                <span>New Sale</span>
-            </a>
-
-            <a href="purchase.html" class="menu-item active">
-                <span class="menu-icon">📦</span>
-                <span>Purchase</span>
-            </a>
-
-            <a href="inventory.html" class="menu-item">
-                <span class="menu-icon">▣</span>
-                <span>Inventory</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <span class="menu-icon">👥</span>
-                <span>Customers</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <span class="menu-icon">🏢</span>
-                <span>Suppliers</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <span class="menu-icon">💰</span>
-                <span>Finance</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <span class="menu-icon">📊</span>
-                <span>Reports</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <span class="menu-icon">💬</span>
-                <span>WhatsApp</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <span class="menu-icon">🤖</span>
-                <span>AI Assistant</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <span class="menu-icon">⚙️</span>
-                <span>Settings</span>
-            </a>
-
-        </nav>
-
-
-        <div class="sidebar-bottom">
-
-            <div class="store-status">
-
-                <span class="status-dot"></span>
-
-                <div>
-                    <strong>Store Online</strong>
-                    <small>Data synced</small>
-                </div>
-
-            </div>
-
-            <div class="version">
-                General Store v1.0
-            </div>
-
-        </div>
-
-    </aside>
-
-
-    <!-- ================= MAIN ================= -->
-
-    <main class="main-content">
-
-
-        <!-- TOPBAR -->
-
-        <header class="topbar">
-
-            <div class="topbar-left">
-
-                <button
-                    class="mobile-menu-btn"
-                    id="purchaseMenuBtn"
-                    type="button"
-                >
-                    ☰
-                </button>
-
-                <div>
-
-                    <h1>Purchase</h1>
-
-                    <p>
-                        सामान खरिद तथा supplier व्यवस्थापन
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="topbar-right">
-
-                <div class="search-box">
-
-                    <span>⌕</span>
-
-                    <input
-                        type="text"
-                        id="purchaseSearch"
-                        placeholder="Purchase खोज्नुहोस्..."
-                    >
-
-                </div>
-
-
-                <button
-                    class="icon-btn"
-                    type="button"
-                >
-                    🔔
-                </button>
-
-
-                <div class="profile">
-
-                    <div class="profile-avatar">
-                        A
-                    </div>
-
-                    <div class="profile-info">
-
-                        <strong>Admin</strong>
-
-                        <small>
-                            Owner
-                        </small>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </header>
-
-
-        <!-- ================= CONTENT ================= -->
-
-        <section class="dashboard-content">
-
-
-            <!-- PAGE HEADER -->
-
-            <div class="welcome-section">
-
-                <div>
-
-                    <h2>
-                        Purchase Management
-                    </h2>
-
-                    <p>
-                        Supplier बाट आएको सामान र खरिद हिसाब राख्नुहोस्।
-                    </p>
-
-                </div>
-
-
-                <button
-                    class="primary-btn"
-                    id="newPurchaseBtn"
-                    type="button"
-                >
-                    + New Purchase
-                </button>
-
-            </div>
-
-
-            <!-- ================= SUMMARY ================= -->
-
-            <div class="stats-grid">
-
-
-                <div class="stat-card">
-
-                    <div class="stat-top">
-
-                        <div class="stat-icon sales-icon">
-                            📦
-                        </div>
-
-                        <span class="stat-label">
-                            Total Purchases
-                        </span>
-
-                    </div>
-
-                    <div class="stat-value">
-
-                        <span id="totalPurchases">
-                            0
-                        </span>
-
-                    </div>
-
-                    <div class="stat-bottom">
-                        <span>कुल purchase</span>
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-top">
-
-                        <div class="stat-icon profit-icon">
-                            💰
-                        </div>
-
-                        <span class="stat-label">
-                            Purchase Value
-                        </span>
-
-                    </div>
-
-                    <div class="stat-value">
-
-                        Rs.
-                        <span id="purchaseValue">
-                            0.00
-                        </span>
-
-                    </div>
-
-                    <div class="stat-bottom">
-                        <span>कुल खरिद रकम</span>
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-top">
-
-                        <div class="stat-icon expense-icon">
-                            💳
-                        </div>
-
-                        <span class="stat-label">
-                            Paid
-                        </span>
-
-                    </div>
-
-                    <div class="stat-value">
-
-                        Rs.
-                        <span id="paidValue">
-                            0.00
-                        </span>
-
-                    </div>
-
-                    <div class="stat-bottom">
-                        <span>भुक्तानी भएको</span>
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-top">
-
-                        <div class="stat-icon net-profit-icon">
-                            📋
-                        </div>
-
-                        <span class="stat-label">
-                            Payable
-                        </span>
-
-                    </div>
-
-                    <div class="stat-value">
-
-                        Rs.
-                        <span id="payableValue">
-                            0.00
-                        </span>
-
-                    </div>
-
-                    <div class="stat-bottom">
-                        <span>बाँकी तिर्नुपर्ने</span>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- ================= PURCHASE LIST ================= -->
-
-            <div class="dashboard-card">
-
-                <div class="card-header">
-
-                    <div>
-
-                        <h3>
-                            Purchase History
-                        </h3>
-
-                        <p>
-                            हालसम्म भएका खरिद कारोबार
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="inventory-table-wrapper">
-
-                    <table class="inventory-table">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    Date
-                                </th>
-
-                                <th>
-                                    Bill No.
-                                </th>
-
-                                <th>
-                                    Supplier
-                                </th>
-
-                                <th>
-                                    Tax Type
-                                </th>
-
-                                <th>
-                                    Items
-                                </th>
-
-                                <th>
-                                    Total
-                                </th>
-
-                                <th>
-                                    Paid
-                                </th>
-
-                                <th>
-                                    Balance
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody id="purchaseTableBody">
-
-                            <tr>
-
-                                <td
-                                    colspan="8"
-                                    class="empty-inventory"
-                                >
-
-                                    <div>
-                                        📦
-                                    </div>
-
-                                    <strong>
-                                        अहिलेसम्म Purchase छैन
-                                    </strong>
-
-                                    <span>
-                                        सुरु गर्न "New Purchase" थिच्नुहोस्।
-                                    </span>
-
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-
-            <!-- ================= PURCHASE INFO ================= -->
-
-            <div class="ai-card">
-
-                <div class="ai-content">
-
-                    <div class="ai-icon">
-                        💡
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Purchase & FIFO
-                        </h3>
-
-                        <p>
-                            Purchase save भएपछि सामानको stock बढ्नेछ।
-                            प्रत्येक purchase लाई छुट्टै lot को रूपमा
-                            राखेर पछि बिक्री गर्दा FIFO अनुसार पुरानो
-                            stock पहिले घटाइनेछ।
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- ================= FOOTER ================= -->
-
-        <footer class="footer">
-
-            <span>
-                © 2026 General Store Management System
-            </span>
-
-            <span>
-                Purchase v1.0
-            </span>
-
-        </footer>
-
-    </main>
-
-
-    <!-- ================= NEW PURCHASE MODAL ================= -->
-
-    <div
-        class="modal-overlay"
-        id="purchaseModal"
-    >
-
-        <div class="product-modal">
-
-
-            <!-- HEADER -->
-
-            <div class="modal-header">
-
-                <div>
-
-                    <h3>
-                        New Purchase
-                    </h3>
-
-                    <p>
-                        Supplier बाट आएको सामानको विवरण राख्नुहोस्।
-                    </p>
-
-                </div>
-
-
-                <button
-                    class="modal-close"
-                    id="closePurchaseModal"
-                    type="button"
-                >
-                    ×
-                </button>
-
-            </div>
-
-
-            <!-- FORM -->
-
-            <form id="purchaseForm">
-
-
-                <!-- ================= BASIC INFO ================= -->
-
-                <div class="form-grid">
-
-
-                    <div class="form-group">
-
-                        <label for="purchaseDate">
-                            Purchase Date *
-                        </label>
-
-                        <input
-                            type="date"
-                            id="purchaseDate"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="billNumber">
-                            Bill No. *
-                        </label>
-
-                        <input
-                            type="text"
-                            id="billNumber"
-                            placeholder="जस्तै: INV-001"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="form-group full">
-
-                        <label for="supplierName">
-                            Supplier Name *
-                        </label>
-
-                        <input
-                            type="text"
-                            id="supplierName"
-                            placeholder="Supplier को नाम"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="supplierTaxType">
-                            Supplier Tax Type
-                        </label>
-
-                        <select id="supplierTaxType">
-
-                            <option value="VAT">
-                                VAT
-                            </option>
-
-                            <option value="PAN">
-                                PAN
-                            </option>
-
-                            <option value="NON_TAX">
-                                Non Tax
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="supplierTaxNumber">
-                            PAN / VAT No.
-                        </label>
-
-                        <input
-                            type="text"
-                            id="supplierTaxNumber"
-                            placeholder="Tax number"
-                        >
-
-                    </div>
-
-
-                    <!-- ================= PRODUCT ================= -->
-
-                    <div class="form-group full">
-
-                        <label for="purchaseProduct">
-                            Product *
-                        </label>
-
-                        <select
-                            id="purchaseProduct"
-                            required
-                        >
-
-                            <option value="">
-                                पहिले Inventory मा Product बनाउनुहोस्
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="purchaseQty">
-                            Purchased Qty *
-                        </label>
-
-                        <input
-                            type="number"
-                            id="purchaseQty"
-                            min="0.01"
-                            step="0.01"
-                            placeholder="0"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="purchaseRate">
-                            Purchase Rate *
-                        </label>
-
-                        <input
-                            type="number"
-                            id="purchaseRate"
-                            min="0"
-                            step="0.01"
-                            placeholder="0.00"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="freeQty">
-                            Supplier Extra / Free Qty
-                        </label>
-
-                        <input
-                            type="number"
-                            id="freeQty"
-                            min="0"
-                            step="0.01"
-                            value="0"
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="purchaseDiscount">
-                            Discount
-                        </label>
-
-                        <input
-                            type="number"
-                            id="purchaseDiscount"
-                            min="0"
-                            step="0.01"
-                            value="0"
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="purchaseVat">
-                            VAT Amount
-                        </label>
-
-                        <input
-                            type="number"
-                            id="purchaseVat"
-                            min="0"
-                            step="0.01"
-                            value="0"
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="paymentMethod">
-                            Payment Method
-                        </label>
-
-                        <select id="paymentMethod">
-
-                            <option value="CASH">
-                                Cash
-                            </option>
-
-                            <option value="BANK">
-                                Bank
-                            </option>
-
-                            <option value="QR">
-                                QR
-                            </option>
-
-                            <option value="CREDIT">
-                                Credit
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="paidAmount">
-                            Paid Amount
-                        </label>
-
-                        <input
-                            type="number"
-                            id="paidAmount"
-                            min="0"
-                            step="0.01"
-                            value="0"
-                        >
-
-                    </div>
-
-
-                    <div class="form-group full">
-
-                        <label for="purchaseNote">
-                            Note
-                        </label>
-
-                        <input
-                            type="text"
-                            id="purchaseNote"
-                            placeholder="Optional note"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <!-- ================= PREVIEW ================= -->
-
-                <div class="purchase-total-box">
-
-                    <div>
-                        <span>Item Amount</span>
-                        <strong id="previewItemAmount">
-                            Rs. 0.00
-                        </strong>
-                    </div>
-
-                    <div>
-                        <span>Discount</span>
-                        <strong id="previewDiscount">
-                            Rs. 0.00
-                        </strong>
-                    </div>
-
-                    <div>
-                        <span>VAT</span>
-                        <strong id="previewVat">
-                            Rs. 0.00
-                        </strong>
-                    </div>
-
-                    <div>
-                        <span>Total</span>
-                        <strong id="previewTotal">
-                            Rs. 0.00
-                        </strong>
-                    </div>
-
-                    <div>
-                        <span>Balance</span>
-                        <strong id="previewBalance">
-                            Rs. 0.00
-                        </strong>
-                    </div>
-
-                </div>
-
-
-                <!-- BUTTONS -->
-
-                <div class="modal-actions">
-
-                    <button
-                        type="button"
-                        class="secondary-btn"
-                        id="cancelPurchaseBtn"
-                    >
-                        Cancel
-                    </button>
-
-
-                    <button
-                        type="submit"
-                        class="primary-btn"
-                    >
-                        Save Purchase
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
+  <aside class="sidebar">
+    <h2>General Store</h2>
+    <nav>
+      <a class="menu-item" href="index.html">Dashboard</a>
+      <a class="menu-item" href="sale.html">New Sale</a>
+      <a class="menu-item" href="purchase.html">Purchase</a>
+      <a class="menu-item" href="inventory.html">Inventory</a>
+      <a class="menu-item" href="sales-return.html">Sales Return</a>
+      <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
+      <a class="menu-item" href="customers.html">Customers</a>
+      <a class="menu-item" href="suppliers.html">Suppliers</a>
+      <a class="menu-item" href="finance.html">Finance</a>
+      <a class="menu-item" href="reports.html">Reports</a>
+      <a class="menu-item" href="whatsapp.html">WhatsApp</a>
+      <a class="menu-item" href="ai.html">AI</a>
+      <a class="menu-item" href="settings.html">Settings</a>
+    </nav>
+  </aside>
+
+  <main class="purchase-wrap">
+    <div class="purchase-top">
+      <div>
+        <h1>Purchase Management</h1>
+        <p>खरिद, स्टक, FIFO र Supplier Payable</p>
+      </div>
+      <button id="newPurchaseBtn" class="purchase-btn primary" type="button">+ New Purchase</button>
     </div>
 
+    <section class="purchase-stats">
+      <div class="purchase-stat"><span>कुल Purchase Bills</span><strong id="totalPurchases">0</strong></div>
+      <div class="purchase-stat"><span>कुल Purchase Value</span><strong id="purchaseValue">Rs. 0.00</strong></div>
+      <div class="purchase-stat"><span>कुल तिरेको रकम</span><strong id="paidValue">Rs. 0.00</strong></div>
+      <div class="purchase-stat"><span>बाँकी Payable</span><strong id="payableValue">Rs. 0.00</strong></div>
+    </section>
 
-    <!-- JAVASCRIPT -->
+    <section class="purchase-panel">
+      <div class="purchase-toolbar">
+        <input id="purchaseSearch" type="search" placeholder="Bill No., Supplier वा Product खोज्नुहोस्">
+      </div>
+      <div class="purchase-table-wrap">
+        <table class="purchase-table">
+          <thead>
+            <tr>
+              <th>Date</th><th>Bill No.</th><th>Supplier</th><th>Items</th>
+              <th>Total</th><th>Paid</th><th>Balance</th><th>Payment</th>
+            </tr>
+          </thead>
+          <tbody id="purchaseTableBody">
+            <tr><td colspan="8" class="purchase-empty">Purchase विवरण लोड हुँदैछ...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
-    <script src="purchase.js"></script>
+  <div class="purchase-modal" id="purchaseModal" aria-hidden="true">
+    <section class="purchase-dialog">
+      <div class="purchase-dialog-head">
+        <div>
+          <h2>New Purchase</h2>
+          <p>एउटै बिलमा धेरै Product थप्नुहोस्।</p>
+        </div>
+        <button type="button" id="closePurchaseModal" class="purchase-btn" aria-label="Close">✕</button>
+      </div>
 
+      <form id="purchaseForm">
+        <div class="purchase-grid">
+          <div class="purchase-field">
+            <label for="purchaseDate">Purchase Date *</label>
+            <input id="purchaseDate" type="date" required>
+          </div>
+          <div class="purchase-field">
+            <label for="billNumber">Supplier Bill Number *</label>
+            <input id="billNumber" required maxlength="80" placeholder="जस्तै INV-001">
+          </div>
+          <div class="purchase-field">
+            <label for="supplierName">Supplier *</label>
+            <select id="supplierName" required>
+              <option value="">Supplier छान्नुहोस्</option>
+            </select>
+          </div>
+          <div class="purchase-field">
+            <label for="supplierTaxType">Tax Type</label>
+            <select id="supplierTaxType">
+              <option value="VAT">VAT</option>
+              <option value="PAN">PAN</option>
+              <option value="NON_TAX">Non Tax</option>
+            </select>
+          </div>
+          <div class="purchase-field">
+            <label for="supplierTaxNumber">PAN/VAT Number</label>
+            <input id="supplierTaxNumber" readonly>
+          </div>
+          <div class="purchase-field">
+            <label for="paymentMethod">Payment Account</label>
+            <select id="paymentMethod">
+              <option value="CASH">Cash</option>
+              <option value="BANK">Bank</option>
+              <option value="QR">QR</option>
+              <option value="CREDIT">Credit / पछि तिर्ने</option>
+            </select>
+          </div>
+        </div>
+
+        <section class="purchase-section">
+          <div class="purchase-top">
+            <h3>सामानको विवरण</h3>
+            <button type="button" id="addPurchaseItemBtn" class="purchase-btn">+ Add Product</button>
+          </div>
+          <div class="purchase-items-wrap">
+            <table class="purchase-items">
+              <thead>
+                <tr>
+                  <th>Product</th><th>Qty</th><th>Free Qty</th><th>Rate</th>
+                  <th>Discount</th><th>Line Total</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="purchaseItemsBody"></tbody>
+            </table>
+          </div>
+          <p class="purchase-note">Rate खरिद गरिएको प्रत्येक Paid Unit को हो। Free Qty स्टकमा थपिन्छ, तर त्यसको अलग लागत जोडिँदैन।</p>
+        </section>
+
+        <div class="purchase-grid purchase-section">
+          <div class="purchase-field">
+            <label for="purchaseVat">VAT Amount (रु.)</label>
+            <input id="purchaseVat" type="number" min="0" step="0.01" value="0">
+          </div>
+          <div class="purchase-field">
+            <label for="paidAmount">अहिले तिरेको रकम (रु.)</label>
+            <input id="paidAmount" type="number" min="0" step="0.01" value="0">
+          </div>
+          <div class="purchase-field">
+            <label for="purchaseNote">Notes</label>
+            <input id="purchaseNote" maxlength="500" placeholder="ऐच्छिक टिप्पणी">
+          </div>
+        </div>
+
+        <div class="purchase-summary">
+          <div><span>Item Subtotal</span><strong id="previewItemAmount">Rs. 0.00</strong></div>
+          <div><span>Discount</span><strong id="previewDiscount">Rs. 0.00</strong></div>
+          <div><span>VAT</span><strong id="previewVat">Rs. 0.00</strong></div>
+          <div class="grand"><span>Grand Total</span><strong id="previewTotal">Rs. 0.00</strong></div>
+          <div><span>Paid</span><strong id="previewPaid">Rs. 0.00</strong></div>
+          <div><span>Balance</span><strong id="previewBalance">Rs. 0.00</strong></div>
+        </div>
+
+        <div class="purchase-actions">
+          <button type="button" id="cancelPurchaseBtn" class="purchase-btn">Cancel</button>
+          <button type="submit" class="purchase-btn primary">Save Purchase</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script src="purchase.js"></script>
 </body>
-
 </html>
