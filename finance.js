@@ -1,169 +1,203 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+    "use strict";
+
+    // =====================================
+    // CONFIGURATION
+    // =====================================
+
     const FINANCE_KEY = "gs_finance";
 
+    const VALID_TYPES = [
+        "INCOME",
+        "EXPENSE",
+        "PAYMENT"
+    ];
 
-    // ================================
-    // DOM
-    // ================================
+    const VALID_ACCOUNTS = [
+        "CASH",
+        "BANK",
+        "QR"
+    ];
 
-    const newFinanceBtn =
-        document.getElementById("newFinanceBtn");
-
-    const financeModal =
-        document.getElementById("financeModal");
-
-    const closeFinanceModal =
-        document.getElementById("closeFinanceModal");
-
-    const cancelFinanceBtn =
-        document.getElementById("cancelFinanceBtn");
-
-    const financeForm =
-        document.getElementById("financeForm");
-
-    const financeId =
-        document.getElementById("financeId");
-
-    const financeDate =
-        document.getElementById("financeDate");
-
-    const financeType =
-        document.getElementById("financeType");
-
-    const financeCategory =
-        document.getElementById("financeCategory");
-
-    const financeAccount =
-        document.getElementById("financeAccount");
-
-    const financeAmount =
-        document.getElementById("financeAmount");
-
-    const financeReference =
-        document.getElementById("financeReference");
-
-    const financeNote =
-        document.getElementById("financeNote");
-
-    const financeSearch =
-        document.getElementById("financeSearch");
-
-    const financeTableBody =
-        document.getElementById("financeTableBody");
+    const CATEGORY_LABELS = {
+        SALES: "Sales",
+        CUSTOMER_COLLECTION: "Customer Collection",
+        OTHER_INCOME: "Other Income",
+        PURCHASE_PAYMENT: "Purchase Payment",
+        SUPPLIER_PAYMENT: "Supplier Payment",
+        EXPENSE: "Expense",
+        WITHDRAWAL: "Cash Withdrawal",
+        OTHER: "Other"
+    };
 
 
-    // Summary
+    // =====================================
+    // DOM ELEMENTS
+    // =====================================
 
-    const cashBalance =
-        document.getElementById("cashBalance");
+    const $ = function (id) {
+        return document.getElementById(id);
+    };
 
-    const bankBalance =
-        document.getElementById("bankBalance");
+    const newFinanceBtn = $("newFinanceBtn");
+    const financeModal = $("financeModal");
+    const financeForm = $("financeForm");
 
-    const qrBalance =
-        document.getElementById("qrBalance");
+    const closeFinanceModal = $("closeFinanceModal");
+    const cancelFinanceBtn = $("cancelFinanceBtn");
+    const clearFinanceBtn = $("clearFinanceBtn");
 
-    const totalBalance =
-        document.getElementById("totalBalance");
+    const financeId = $("financeId");
+    const financeDate = $("financeDate");
+    const financeType = $("financeType");
+    const financeCategory = $("financeCategory");
+    const financeAccount = $("financeAccount");
+    const financeAmount = $("financeAmount");
+    const financeReference = $("financeReference");
+    const financeNote = $("financeNote");
 
-    const totalIncome =
-        document.getElementById("totalIncome");
+    const financeSearch = $("financeSearch");
+    const financeTableBody = $("financeTableBody");
 
-    const totalExpense =
-        document.getElementById("totalExpense");
+    const financeModalTitle = $("financeModalTitle");
+    const financeMessage = $("financeMessage");
+    const financeFormMessage = $("financeFormMessage");
 
-    const totalPayment =
-        document.getElementById("totalPayment");
+    const saveFinanceBtn = $("saveFinanceBtn");
 
-    const totalTransactions =
-        document.getElementById("totalTransactions");
+    const cashBalance = $("cashBalance");
+    const bankBalance = $("bankBalance");
+    const qrBalance = $("qrBalance");
+    const totalBalance = $("totalBalance");
+
+    const totalIncome = $("totalIncome");
+    const totalExpense = $("totalExpense");
+    const totalPayment = $("totalPayment");
+    const totalTransactions = $("totalTransactions");
 
 
-    // ================================
+    // =====================================
+    // CHECK REQUIRED ELEMENTS
+    // =====================================
+
+    const requiredElements = [
+        newFinanceBtn,
+        financeModal,
+        financeForm,
+        closeFinanceModal,
+        cancelFinanceBtn,
+        clearFinanceBtn,
+        financeId,
+        financeDate,
+        financeType,
+        financeCategory,
+        financeAccount,
+        financeAmount,
+        financeReference,
+        financeNote,
+        financeSearch,
+        financeTableBody,
+        financeModalTitle,
+        financeMessage,
+        financeFormMessage,
+        saveFinanceBtn,
+        cashBalance,
+        bankBalance,
+        qrBalance,
+        totalBalance,
+        totalIncome,
+        totalExpense,
+        totalPayment,
+        totalTransactions
+    ];
+
+    if (requiredElements.some(function (element) {
+        return !element;
+    })) {
+        console.error(
+            "Finance initialization failed. Check finance.html element IDs."
+        );
+        return;
+    }
+
+
+    // =====================================
     // STORAGE
-    // ================================
+    // =====================================
 
     function getTransactions() {
-
         try {
+            const raw = localStorage.getItem(FINANCE_KEY);
 
-            const data =
-                localStorage.getItem(
-                    FINANCE_KEY
-                );
-
-            if (!data) {
+            if (!raw) {
                 return [];
             }
 
-            const transactions =
-                JSON.parse(data);
+            const data = JSON.parse(raw);
 
-            return Array.isArray(
-                transactions
-            )
-                ? transactions
-                : [];
+            if (!Array.isArray(data)) {
+                console.error("Finance storage is not an array.");
+                return [];
+            }
+
+            return data.filter(function (item) {
+                return item &&
+                    typeof item === "object" &&
+                    !Array.isArray(item);
+            });
 
         } catch (error) {
-
-            console.error(
-                "Finance data error:",
-                error
-            );
-
+            console.error("Unable to read finance data:", error);
             return [];
         }
     }
 
 
-    function saveTransactions(
-        transactions
-    ) {
+    function saveTransactions(transactions) {
+        try {
+            localStorage.setItem(
+                FINANCE_KEY,
+                JSON.stringify(transactions)
+            );
 
-        localStorage.setItem(
-            FINANCE_KEY,
-            JSON.stringify(
-                transactions
-            )
-        );
+            return true;
+
+        } catch (error) {
+            console.error("Unable to save finance data:", error);
+
+            alert(
+                "Transaction save हुन सकेन। " +
+                "Browser storage full वा unavailable हुन सक्छ।"
+            );
+
+            return false;
+        }
     }
 
 
-    // ================================
+    // =====================================
     // HELPERS
-    // ================================
+    // =====================================
 
     function money(value) {
+        const number = Number(value) || 0;
 
-        const number =
-            Number(value) || 0;
-
-        return "Rs. " +
-            number.toLocaleString(
-                "en-IN",
-                {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }
-            );
+        return "Rs. " + number.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
 
 
     function numberValue(value) {
+        const number = Number(value);
 
-        const number =
-            Number(value);
-
-        return Number.isFinite(number)
-            ? number
-            : 0;
+        return Number.isFinite(number) ? number : 0;
     }
 
 
     function escapeHTML(value) {
-
         return String(value ?? "")
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -174,100 +208,125 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function generateId() {
+        if (window.crypto && window.crypto.randomUUID) {
+            return "FIN-" + window.crypto.randomUUID();
+        }
 
-        return (
-            "FIN-" +
+        return "FIN-" +
             Date.now() +
             "-" +
-            Math.floor(
-                Math.random() * 10000
-            )
-        );
+            Math.random().toString(36).slice(2, 11);
     }
 
 
     function today() {
+        const date = new Date();
 
-        const date =
-            new Date();
+        const year = date.getFullYear();
 
-        const year =
-            date.getFullYear();
+        const month = String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
 
-        const month =
-            String(
-                date.getMonth() + 1
-            ).padStart(2, "0");
+        const day = String(
+            date.getDate()
+        ).padStart(2, "0");
 
-        const day =
-            String(
-                date.getDate()
-            ).padStart(2, "0");
-
-        return (
-            year +
-            "-" +
-            month +
-            "-" +
-            day
-        );
+        return year + "-" + month + "-" + day;
     }
 
 
-    // ================================
-    // MODAL
-    // ================================
+    function categoryLabel(category) {
+        return CATEGORY_LABELS[category] ||
+            String(category || "Other")
+                .replace(/_/g, " ");
+    }
 
-    function openFinanceModal(
-        transaction = null
-    ) {
 
+    function accountLabel(account) {
+        const labels = {
+            CASH: "Cash",
+            BANK: "Bank",
+            QR: "QR"
+        };
+
+        return labels[account] || account || "-";
+    }
+
+
+    function typeLabel(type) {
+        const labels = {
+            INCOME: "Income",
+            EXPENSE: "Expense",
+            PAYMENT: "Payment"
+        };
+
+        return labels[type] || type || "-";
+    }
+
+
+    function showMessage(element, message, type) {
+        element.textContent = message;
+
+        element.className =
+            "finance-message show " + type;
+    }
+
+
+    function hideMessage(element) {
+        element.textContent = "";
+        element.className = "finance-message";
+    }
+
+
+    // =====================================
+    // MODAL OPEN
+    // =====================================
+
+    let previousFocus = null;
+
+    function openFinanceModal(transaction = null) {
+
+        previousFocus = document.activeElement;
+
+        // Reset before filling edit data.
         financeForm.reset();
 
+        hideMessage(financeFormMessage);
+
         financeId.value = "";
-
-        financeDate.value =
-            today();
-
-        financeType.value =
-            "INCOME";
-
-        financeCategory.value =
-            "SALES";
-
-        financeAccount.value =
-            "CASH";
-
-
-        const title =
-            document.getElementById(
-                "financeModalTitle"
-            );
-
+        financeDate.value = today();
+        financeType.value = "INCOME";
+        financeCategory.value = "SALES";
+        financeAccount.value = "CASH";
+        financeAmount.value = "";
+        financeReference.value = "";
+        financeNote.value = "";
 
         if (transaction) {
 
-            title.textContent =
-                "Edit Transaction";
+            financeModalTitle.textContent = "Edit Transaction";
 
-
-            financeId.value =
-                transaction.id || "";
+            financeId.value = transaction.id || "";
 
             financeDate.value =
                 transaction.date || today();
 
             financeType.value =
-                transaction.type || "INCOME";
+                VALID_TYPES.includes(transaction.type)
+                    ? transaction.type
+                    : "INCOME";
 
             financeCategory.value =
                 transaction.category || "OTHER";
 
             financeAccount.value =
-                transaction.account || "CASH";
+                VALID_ACCOUNTS.includes(transaction.account)
+                    ? transaction.account
+                    : "CASH";
 
             financeAmount.value =
-                transaction.amount || "";
+                transaction.amount ?? "";
 
             financeReference.value =
                 transaction.reference || "";
@@ -275,42 +334,58 @@ document.addEventListener("DOMContentLoaded", function () {
             financeNote.value =
                 transaction.note || "";
 
+            saveFinanceBtn.textContent = "Update Transaction";
+
         } else {
 
-            title.textContent =
-                "New Transaction";
+            financeModalTitle.textContent = "New Transaction";
+
+            saveFinanceBtn.textContent = "Save Transaction";
         }
 
+        // Show the modal.
+        financeModal.classList.add("show");
+        financeModal.setAttribute("aria-hidden", "false");
 
-        financeModal.classList.add(
-            "show"
-        );
+        document.body.classList.add("finance-modal-open");
 
-
-        setTimeout(
-            function () {
+        // Focus only after the modal is visible.
+        requestAnimationFrame(function () {
+            if (financeModal.classList.contains("show")) {
                 financeAmount.focus();
-            },
-            100
-        );
+            }
+        });
     }
 
 
-    function closeModal() {
+    // =====================================
+    // MODAL CLOSE
+    // =====================================
 
-        financeModal.classList.remove(
-            "show"
-        );
+    function closeFinanceModalFn() {
+
+        financeModal.classList.remove("show");
+        financeModal.setAttribute("aria-hidden", "true");
+
+        document.body.classList.remove("finance-modal-open");
+
+        hideMessage(financeFormMessage);
+
+        if (
+            previousFocus &&
+            typeof previousFocus.focus === "function" &&
+            document.contains(previousFocus)
+        ) {
+            previousFocus.focus();
+        }
     }
 
 
-    // ================================
-    // CALCULATE BALANCES
-    // ================================
+    // =====================================
+    // BALANCE CALCULATION
+    // =====================================
 
-    function calculateFinance(
-        transactions
-    ) {
+    function calculateFinance(transactions) {
 
         const accounts = {
             CASH: 0,
@@ -318,212 +393,129 @@ document.addEventListener("DOMContentLoaded", function () {
             QR: 0
         };
 
-
         let income = 0;
-
         let expense = 0;
-
         let payment = 0;
 
+        transactions.forEach(function (transaction) {
 
-        transactions.forEach(
-            function (transaction) {
+            const amount = numberValue(transaction.amount);
 
-                const amount =
-                    numberValue(
-                        transaction.amount
-                    );
+            const account = transaction.account;
 
-
-                const account =
-                    transaction.account;
-
-
-                if (
-                    transaction.type ===
-                    "INCOME"
-                ) {
-
-                    accounts[account] =
-                        (
-                            accounts[account] ||
-                            0
-                        ) + amount;
-
-                    income += amount;
-
-                }
-
-
-                else if (
-                    transaction.type ===
-                    "EXPENSE"
-                ) {
-
-                    accounts[account] =
-                        (
-                            accounts[account] ||
-                            0
-                        ) - amount;
-
-                    expense += amount;
-
-                }
-
-
-                else if (
-                    transaction.type ===
-                    "PAYMENT"
-                ) {
-
-                    accounts[account] =
-                        (
-                            accounts[account] ||
-                            0
-                        ) - amount;
-
-                    payment += amount;
-                }
-
+            if (
+                !VALID_ACCOUNTS.includes(account) ||
+                !VALID_TYPES.includes(transaction.type) ||
+                amount <= 0
+            ) {
+                return;
             }
-        );
 
+            if (transaction.type === "INCOME") {
+
+                accounts[account] += amount;
+                income += amount;
+
+            } else if (transaction.type === "EXPENSE") {
+
+                accounts[account] -= amount;
+                expense += amount;
+
+            } else if (transaction.type === "PAYMENT") {
+
+                accounts[account] -= amount;
+                payment += amount;
+            }
+        });
 
         return {
-            accounts,
-            income,
-            expense,
-            payment
+            accounts: accounts,
+            income: income,
+            expense: expense,
+            payment: payment
         };
     }
 
 
-    // ================================
-    // SUMMARY
-    // ================================
+    // =====================================
+    // SUMMARY UPDATE
+    // =====================================
 
-    function updateSummary(
-        transactions
-    ) {
+    function updateSummary(transactions) {
 
-        const result =
-            calculateFinance(
-                transactions
-            );
-
+        const result = calculateFinance(transactions);
 
         cashBalance.textContent =
-            money(
-                result.accounts.CASH
-            );
-
+            money(result.accounts.CASH);
 
         bankBalance.textContent =
-            money(
-                result.accounts.BANK
-            );
-
+            money(result.accounts.BANK);
 
         qrBalance.textContent =
-            money(
-                result.accounts.QR
-            );
+            money(result.accounts.QR);
 
-
-        const total =
+        totalBalance.textContent = money(
             result.accounts.CASH +
             result.accounts.BANK +
-            result.accounts.QR;
+            result.accounts.QR
+        );
 
+        totalIncome.textContent = money(result.income);
 
-        totalBalance.textContent =
-            money(total);
+        totalExpense.textContent = money(result.expense);
 
+        totalPayment.textContent = money(result.payment);
 
-        totalIncome.textContent =
-            money(result.income);
-
-
-        totalExpense.textContent =
-            money(result.expense);
-
-
-        totalPayment.textContent =
-            money(result.payment);
-
-
-        totalTransactions.textContent =
-            transactions.length;
+        totalTransactions.textContent = transactions.length;
     }
 
 
-    // ================================
-    // RENDER
-    // ================================
+    // =====================================
+    // RENDER TRANSACTION TABLE
+    // =====================================
 
     function renderTransactions(
         transactions = getTransactions()
     ) {
 
-        updateSummary(
-            transactions
-        );
+        updateSummary(transactions);
 
+        const searchText = financeSearch.value
+            .trim()
+            .toLowerCase();
 
-        const searchText =
-            financeSearch.value
-                .trim()
-                .toLowerCase();
+        const filtered = transactions
+            .slice()
+            .reverse()
+            .filter(function (transaction) {
 
+                if (!searchText) {
+                    return true;
+                }
 
-        const filtered =
-            transactions
-                .slice()
-                .reverse()
-                .filter(
-                    function (transaction) {
+                const searchableText = [
+                    transaction.date,
+                    typeLabel(transaction.type),
+                    transaction.type,
+                    categoryLabel(transaction.category),
+                    transaction.category,
+                    accountLabel(transaction.account),
+                    transaction.account,
+                    transaction.amount,
+                    transaction.reference,
+                    transaction.note
+                ]
+                    .join(" ")
+                    .toLowerCase();
 
-                        if (!searchText) {
-                            return true;
-                        }
-
-
-                        const text = [
-
-                            transaction.date,
-
-                            transaction.type,
-
-                            transaction.category,
-
-                            transaction.account,
-
-                            transaction.amount,
-
-                            transaction.reference,
-
-                            transaction.note
-
-                        ]
-                            .join(" ")
-                            .toLowerCase();
-
-
-                        return text.includes(
-                            searchText
-                        );
-                    }
-                );
-
+                return searchableText.includes(searchText);
+            });
 
         if (!filtered.length) {
 
             financeTableBody.innerHTML = `
                 <tr>
-                    <td
-                        colspan="7"
-                        class="finance-empty"
-                    >
+                    <td colspan="7" class="finance-empty">
                         No transactions found.
                     </td>
                 </tr>
@@ -532,441 +524,389 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        financeTableBody.innerHTML = filtered.map(
+            function (transaction) {
 
-        financeTableBody.innerHTML =
-            filtered.map(
-                function (transaction) {
+                const amount = numberValue(transaction.amount);
 
-                    const amount =
-                        numberValue(
-                            transaction.amount
-                        );
+                const isIncome = transaction.type === "INCOME";
 
+                const typeClass =
+                    isIncome
+                        ? "income"
+                        : transaction.type === "EXPENSE"
+                            ? "expense"
+                            : "payment";
 
-                    let amountText =
-                        money(amount);
+                const amountClass = isIncome
+                    ? "finance-positive"
+                    : "finance-negative";
 
+                const amountText =
+                    (isIncome ? "+ " : "- ") + money(amount);
 
-                    if (
-                        transaction.type ===
-                        "INCOME"
-                    ) {
+                const noteText =
+                    transaction.note ||
+                    transaction.reference ||
+                    "-";
 
-                        amountText =
-                            "+ " +
-                            amountText;
+                return `
+                    <tr>
+                        <td>${escapeHTML(transaction.date || "-")}</td>
 
-                    } else {
+                        <td>
+                            <span class="finance-type ${typeClass}">
+                                ${escapeHTML(typeLabel(transaction.type))}
+                            </span>
+                        </td>
 
-                        amountText =
-                            "- " +
-                            amountText;
-                    }
+                        <td>
+                            ${escapeHTML(categoryLabel(transaction.category))}
+                        </td>
 
+                        <td>
+                            ${escapeHTML(accountLabel(transaction.account))}
+                        </td>
 
-                    const typeText =
-                        transaction.type ===
-                        "INCOME"
-                            ? "Income"
-                            : transaction.type ===
-                              "EXPENSE"
-                                ? "Expense"
-                                : "Payment";
+                        <td>
+                            <strong class="${amountClass}">
+                                ${escapeHTML(amountText)}
+                            </strong>
+                        </td>
 
+                        <td>${escapeHTML(noteText)}</td>
 
-                    const categoryText =
-                        String(
-                            transaction.category ||
-                            "-"
-                        )
-                        .replace(
-                            /_/g,
-                            " "
-                        );
-
-
-                    return `
-
-                        <tr>
-
-                            <td>
-                                ${escapeHTML(
-                                    transaction.date
-                                )}
-                            </td>
-
-
-                            <td>
-                                <strong>
-                                    ${typeText}
-                                </strong>
-                            </td>
-
-
-                            <td>
-                                ${escapeHTML(
-                                    categoryText
-                                )}
-                            </td>
-
-
-                            <td>
-                                ${escapeHTML(
-                                    transaction.account ||
-                                    "-"
-                                )}
-                            </td>
-
-
-                            <td>
-                                <strong>
-                                    ${escapeHTML(
-                                        amountText
-                                    )}
-                                </strong>
-                            </td>
-
-
-                            <td>
-
-                                ${escapeHTML(
-                                    transaction.note ||
-                                    transaction.reference ||
-                                    "-"
-                                )}
-
-                            </td>
-
-
-                            <td>
-
+                        <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap">
                                 <button
                                     type="button"
-                                    class="btn edit-finance-btn"
-                                    data-id="${escapeHTML(
-                                        transaction.id
-                                    )}"
-                                >
+                                    class="finance-btn edit-finance-btn"
+                                    data-id="${escapeHTML(transaction.id)}">
                                     Edit
                                 </button>
 
                                 <button
                                     type="button"
-                                    class="btn delete-finance-btn"
-                                    data-id="${escapeHTML(
-                                        transaction.id
-                                    )}"
-                                >
+                                    class="finance-btn danger delete-finance-btn"
+                                    data-id="${escapeHTML(transaction.id)}">
                                     Delete
                                 </button>
-
-                            </td>
-
-                        </tr>
-
-                    `;
-                }
-            ).join("");
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        ).join("");
     }
 
 
-    // ================================
-    // SAVE
-    // ================================
+    // =====================================
+    // VALIDATE FORM
+    // =====================================
 
-    financeForm.addEventListener(
-        "submit",
-        function (event) {
+    function validateTransaction() {
 
-            event.preventDefault();
-
-
-            const amount =
-                numberValue(
-                    financeAmount.value
-                );
-
-
-            if (amount <= 0) {
-
-                alert(
-                    "Amount must be greater than 0."
-                );
-
-                financeAmount.focus();
-
-                return;
-            }
-
-
-            const transactions =
-                getTransactions();
-
-
-            const id =
-                financeId.value ||
-                generateId();
-
-
-            const existingIndex =
-                transactions.findIndex(
-                    function (item) {
-
-                        return item.id === id;
-                    }
-                );
-
-
-            const transaction = {
-
-                id: id,
-
-                date:
-                    financeDate.value,
-
-                type:
-                    financeType.value,
-
-                category:
-                    financeCategory.value,
-
-                account:
-                    financeAccount.value,
-
-                amount:
-                    amount,
-
-                reference:
-                    financeReference.value
-                        .trim(),
-
-                note:
-                    financeNote.value
-                        .trim(),
-
-                createdAt:
-                    existingIndex === -1
-                        ? new Date()
-                            .toISOString()
-                        : (
-                            transactions[
-                                existingIndex
-                            ].createdAt ||
-                            new Date()
-                                .toISOString()
-                        ),
-
-                updatedAt:
-                    new Date()
-                        .toISOString()
-            };
-
-
-            if (
-                existingIndex === -1
-            ) {
-
-                transactions.push(
-                    transaction
-                );
-
-            } else {
-
-                transactions[
-                    existingIndex
-                ] = transaction;
-            }
-
-
-            saveTransactions(
-                transactions
-            );
-
-
-            closeModal();
-
-
-            renderTransactions(
-                transactions
-            );
-
-
-            alert(
-                existingIndex === -1
-                    ? "Transaction saved successfully."
-                    : "Transaction updated successfully."
-            );
+        if (!financeDate.value) {
+            return "Please select the transaction date.";
         }
-    );
+
+        if (!VALID_TYPES.includes(financeType.value)) {
+            return "Please select a valid transaction type.";
+        }
+
+        if (!financeCategory.value) {
+            return "Please select a transaction category.";
+        }
+
+        if (!VALID_ACCOUNTS.includes(financeAccount.value)) {
+            return "Please select a valid account.";
+        }
+
+        const amount = Number(financeAmount.value);
+
+        if (
+            !Number.isFinite(amount) ||
+            amount <= 0 ||
+            financeAmount.value.trim() === ""
+        ) {
+            return "Amount must be greater than zero.";
+        }
+
+        if (amount > Number.MAX_SAFE_INTEGER) {
+            return "Amount is too large.";
+        }
+
+        return "";
+    }
 
 
-    // ================================
+    // =====================================
+    // SAVE / UPDATE TRANSACTION
+    // =====================================
+
+    financeForm.addEventListener("submit", function (event) {
+
+        event.preventDefault();
+
+        hideMessage(financeFormMessage);
+
+        const validationError = validateTransaction();
+
+        if (validationError) {
+
+            showMessage(
+                financeFormMessage,
+                validationError,
+                "error"
+            );
+
+            financeAmount.focus();
+
+            return;
+        }
+
+        const transactions = getTransactions();
+
+        const editingId = financeId.value.trim();
+
+        const existingIndex = editingId
+            ? transactions.findIndex(function (item) {
+                return item.id === editingId;
+            })
+            : -1;
+
+        // Prevent accidentally creating a duplicate when editing.
+        if (editingId && existingIndex === -1) {
+
+            showMessage(
+                financeFormMessage,
+                "This transaction was not found. Close and reopen the form.",
+                "error"
+            );
+
+            return;
+        }
+
+        const now = new Date().toISOString();
+
+        const oldTransaction =
+            existingIndex >= 0
+                ? transactions[existingIndex]
+                : null;
+
+        const transaction = {
+
+            id: oldTransaction
+                ? oldTransaction.id
+                : generateId(),
+
+            date: financeDate.value,
+
+            type: financeType.value,
+
+            category: financeCategory.value,
+
+            account: financeAccount.value,
+
+            amount: Number(
+                Number(financeAmount.value).toFixed(2)
+            ),
+
+            reference: financeReference.value.trim(),
+
+            note: financeNote.value.trim(),
+
+            createdAt: oldTransaction
+                ? oldTransaction.createdAt || now
+                : now,
+
+            updatedAt: now
+        };
+
+        if (existingIndex === -1) {
+
+            transactions.push(transaction);
+
+        } else {
+
+            transactions[existingIndex] = transaction;
+        }
+
+        // Close only after storage succeeds.
+        if (!saveTransactions(transactions)) {
+            return;
+        }
+
+        closeFinanceModalFn();
+
+        renderTransactions(transactions);
+
+        showMessage(
+            financeMessage,
+            existingIndex === -1
+                ? "Transaction saved successfully."
+                : "Transaction updated successfully.",
+            "success"
+        );
+    });
+
+
+    // =====================================
     // EDIT / DELETE
-    // ================================
+    // =====================================
 
-    financeTableBody.addEventListener(
-        "click",
-        function (event) {
+    financeTableBody.addEventListener("click", function (event) {
 
-            const editButton =
-                event.target.closest(
-                    ".edit-finance-btn"
-                );
+        const target = event.target;
 
+        if (!(target instanceof Element)) {
+            return;
+        }
 
-            const deleteButton =
-                event.target.closest(
-                    ".delete-finance-btn"
-                );
+        const editButton = target.closest(".edit-finance-btn");
 
+        const deleteButton = target.closest(".delete-finance-btn");
 
-            const transactions =
-                getTransactions();
+        if (!editButton && !deleteButton) {
+            return;
+        }
 
+        const transactions = getTransactions();
 
-            if (editButton) {
+        if (editButton) {
 
-                const transaction =
-                    transactions.find(
-                        function (item) {
+            const transaction = transactions.find(function (item) {
+                return item.id === editButton.dataset.id;
+            });
 
-                            return (
-                                item.id ===
-                                editButton.dataset.id
-                            );
-                        }
-                    );
+            if (!transaction) {
 
+                alert("Transaction not found.");
 
-                if (!transaction) {
-
-                    alert(
-                        "Transaction not found."
-                    );
-
-                    return;
-                }
-
-
-                openFinanceModal(
-                    transaction
-                );
+                renderTransactions();
 
                 return;
             }
 
+            openFinanceModal(transaction);
 
-            if (deleteButton) {
+            return;
+        }
 
-                const id =
-                    deleteButton.dataset.id;
+        if (deleteButton) {
 
+            const id = deleteButton.dataset.id;
 
-                const confirmed =
-                    confirm(
-                        "Delete this transaction?"
-                    );
+            const confirmed = confirm(
+                "Are you sure you want to delete this transaction?"
+            );
 
-
-                if (!confirmed) {
-                    return;
-                }
-
-
-                const updated =
-                    transactions.filter(
-                        function (item) {
-
-                            return item.id !== id;
-                        }
-                    );
-
-
-                saveTransactions(
-                    updated
-                );
-
-
-                renderTransactions(
-                    updated
-                );
+            if (!confirmed) {
+                return;
             }
 
+            const updated = transactions.filter(function (item) {
+                return item.id !== id;
+            });
+
+            if (!saveTransactions(updated)) {
+                return;
+            }
+
+            renderTransactions(updated);
+
+            showMessage(
+                financeMessage,
+                "Transaction deleted successfully.",
+                "success"
+            );
         }
-    );
+    });
 
 
-    // ================================
-    // BUTTON EVENTS
-    // ================================
+    // =====================================
+    // NEW TRANSACTION BUTTON
+    // =====================================
 
-    newFinanceBtn.addEventListener(
-        "click",
-        function () {
+    newFinanceBtn.addEventListener("click", function () {
+        openFinanceModal();
+    });
 
-            openFinanceModal();
-        }
-    );
 
+    // =====================================
+    // CLOSE BUTTONS
+    // =====================================
 
     closeFinanceModal.addEventListener(
         "click",
-        closeModal
+        closeFinanceModalFn
     );
-
 
     cancelFinanceBtn.addEventListener(
         "click",
-        closeModal
+        closeFinanceModalFn
     );
 
 
-    financeModal.addEventListener(
-        "click",
-        function (event) {
+    // =====================================
+    // CLEAR FORM
+    // =====================================
 
-            if (
-                event.target ===
-                financeModal
-            ) {
+    clearFinanceBtn.addEventListener("click", function (event) {
 
-                closeModal();
-            }
+        // Prevent the browser's default reset from clearing edit IDs.
+        event.preventDefault();
+
+        financeAmount.value = "";
+        financeReference.value = "";
+        financeNote.value = "";
+
+        hideMessage(financeFormMessage);
+
+        financeAmount.focus();
+    });
+
+
+    // =====================================
+    // CLICK OUTSIDE TO CLOSE
+    // =====================================
+
+    financeModal.addEventListener("click", function (event) {
+
+        if (event.target === financeModal) {
+            closeFinanceModalFn();
         }
-    );
+    });
 
 
-    financeSearch.addEventListener(
-        "input",
-        function () {
+    // =====================================
+    // ESCAPE KEY TO CLOSE
+    // =====================================
 
-            renderTransactions(
-                getTransactions()
-            );
+    document.addEventListener("keydown", function (event) {
+
+        if (
+            event.key === "Escape" &&
+            financeModal.classList.contains("show")
+        ) {
+            closeFinanceModalFn();
         }
-    );
+    });
 
 
-    document.addEventListener(
-        "keydown",
-        function (event) {
+    // =====================================
+    // SEARCH
+    // =====================================
 
-            if (
-                event.key === "Escape" &&
-                financeModal.classList.contains(
-                    "show"
-                )
-            ) {
+    financeSearch.addEventListener("input", function () {
 
-                closeModal();
-            }
-        }
-    );
+        renderTransactions(getTransactions());
+    });
 
 
-    // ================================
+    // =====================================
     // INITIAL LOAD
-    // ================================
+    // =====================================
 
     renderTransactions();
 
