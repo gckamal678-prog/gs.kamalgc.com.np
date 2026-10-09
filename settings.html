@@ -1,559 +1,650 @@
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - General Store</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#166534">
+  <title>Settings - General Store</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <style>
+    :root {
+      --primary: #166534;
+      --primary-hover: #14532d;
+      --bg: #f3f6f4;
+      --surface: #ffffff;
+      --surface-soft: #f8faf9;
+      --text: #1f2937;
+      --muted: #64748b;
+      --border: #dbe3dd;
+      --danger: #b91c1c;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --shadow: 0 3px 12px rgba(15, 23, 42, .05);
+      --font-family: Arial, sans-serif;
+      --font-size: 15px;
+    }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fa;
-            color: #1f2937;
-        }
+    body.dark-theme {
+      --bg: #111827;
+      --surface: #1f2937;
+      --surface-soft: #273449;
+      --text: #f3f4f6;
+      --muted: #c0cad8;
+      --border: #475569;
+      --success-bg: #123b2a;
+      --success-text: #bbf7d0;
+      --shadow: 0 3px 12px rgba(0, 0, 0, .15);
+    }
 
-        .app {
-            display: flex;
-            min-height: 100vh;
-        }
+    * { box-sizing: border-box; }
 
-        .sidebar {
-            width: 240px;
-            background: #111827;
-            color: white;
-            padding: 18px 12px;
-            flex-shrink: 0;
-        }
+    body {
+      margin: 0;
+      font-family: var(--font-family);
+      font-size: var(--font-size);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
 
-        .brand {
-            font-size: 20px;
-            font-weight: bold;
-            padding: 10px 12px 20px;
-        }
+    button, input, select, textarea {
+      font: inherit;
+    }
 
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #d1d5db;
-            text-decoration: none;
-            padding: 11px 12px;
-            margin: 4px 0;
-            border-radius: 8px;
-        }
+    .app { display: flex; min-height: 100vh; }
 
-        .menu-item:hover,
-        .menu-item.active {
-            background: #1f2937;
-            color: white;
-        }
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      padding: 18px 12px;
+      background: #111827;
+      color: #fff;
+    }
 
-        .menu-icon {
-            width: 24px;
-            text-align: center;
-        }
+    .brand {
+      padding: 10px 12px 20px;
+      font-size: 20px;
+      font-weight: 800;
+    }
 
-        .main {
-            flex: 1;
-            padding: 20px;
-            min-width: 0;
-        }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      margin: 4px 0;
+      border-radius: 8px;
+      color: #d1d5db;
+      text-decoration: none;
+    }
 
-        .topbar {
-            margin-bottom: 20px;
-        }
+    .menu-item:hover, .menu-item.active {
+      background: #1f2937;
+      color: white;
+    }
 
-        .page-title {
-            margin: 0;
-            font-size: 26px;
-        }
+    .menu-icon { width: 24px; text-align: center; }
 
-        .subtitle {
-            margin: 5px 0 0;
-            color: #6b7280;
-            font-size: 14px;
-        }
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 24px;
+    }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
 
-        .card h3 {
-            margin-top: 0;
-            margin-bottom: 18px;
-        }
+    .page-title { margin: 0; font-size: 27px; }
+    .subtitle { margin: 6px 0 0; color: var(--muted); }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-        }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+    }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+    .card h2, .card h3 { margin: 0 0 8px; }
+    .section-description { color: var(--muted); margin: 0 0 18px; }
 
-        .full {
-            grid-column: 1 / -1;
-        }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
 
-        label {
-            font-size: 14px;
-            font-weight: 600;
-        }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
 
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-        }
+    .full { grid-column: 1 / -1; }
 
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
+    label { font-weight: 600; font-size: .94em; }
 
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: #2563eb;
-        }
+    input, select, textarea {
+      width: 100%;
+      min-width: 0;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
 
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 18px;
-        }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(22, 101, 52, .12);
+    }
 
-        button {
-            border: none;
-            border-radius: 8px;
-            padding: 11px 17px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-        }
+    textarea { min-height: 100px; resize: vertical; }
 
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-        }
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
 
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
+    button, .button-link {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+    }
 
-        .btn-success {
-            background: #16a34a;
-            color: white;
-        }
+    button:disabled { opacity: .55; cursor: not-allowed; }
 
-        .btn-success:hover {
-            background: #15803d;
-        }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: var(--surface-soft); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: #b91c1c; color: #fff; }
+    .btn-danger:hover { background: #991b1b; }
+    .btn-light { background: #e5e7eb; color: #111827; }
 
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #111827;
-        }
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
 
-        .btn-danger {
-            background: #dc2626;
-            color: white;
-        }
+    .settings-nav {
+      position: sticky;
+      top: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px;
+    }
 
-        .backup-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
+    .settings-nav a {
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 7px;
+      margin: 2px 0;
+    }
 
-        .backup-box {
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 10px;
-            border: 1px solid #e5e7eb;
-        }
+    .settings-nav a:hover { background: var(--surface-soft); }
 
-        .backup-box h4 {
-            margin-top: 0;
-        }
+    .status {
+      display: none;
+      margin-top: 14px;
+      padding: 11px 13px;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
 
-        .status {
-            display: none;
-            padding: 11px 13px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 14px;
-        }
+    .status.success { display: block; background: var(--success-bg); color: var(--success-text); }
+    .status.error { display: block; background: #fee2e2; color: #991b1b; }
+    .status.info { display: block; background: #dbeafe; color: #1e40af; }
 
-        .status.success {
-            display: block;
-            background: #dcfce7;
-            color: #166534;
-        }
+    .note { color: var(--muted); font-size: .9em; line-height: 1.65; }
+    .warning {
+      padding: 12px;
+      border: 1px solid #fbbf24;
+      border-radius: 9px;
+      background: #fffbeb;
+      color: #92400e;
+      margin: 12px 0;
+    }
 
-        .status.error {
-            display: block;
-            background: #fee2e2;
-            color: #991b1b;
-        }
+    .dark-theme .warning { background: #422006; color: #fde68a; }
 
-        .note {
-            color: #6b7280;
-            font-size: 13px;
-            line-height: 1.6;
-        }
+    .tile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
 
-        @media (max-width: 800px) {
+    .tile {
+      min-width: 0;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-soft);
+    }
 
-            .app {
-                display: block;
-            }
+    .tile h3 { font-size: 1.05em; }
+    .tile p { color: var(--muted); }
 
-            .sidebar {
-                width: 100%;
-                padding: 10px;
-                overflow-x: auto;
-            }
+    .inline-control {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
 
-            .brand {
-                padding: 8px 10px;
-            }
+    .inline-control select { flex: 1; min-width: 140px; }
+    .security-status { font-weight: 700; }
+    .hidden { display: none !important; }
 
-            .menu-item {
-                display: inline-flex;
-                margin: 2px;
-            }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(15, 23, 42, .72);
+    }
 
-            .main {
-                padding: 14px;
-            }
+    .modal {
+      width: 100%;
+      max-width: 410px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 70px rgba(0, 0, 0, .25);
+    }
 
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
+    .modal h2 { margin: 0 0 8px; }
+    .modal p { color: var(--muted); }
+    .modal input { margin: 10px 0; text-align: center; letter-spacing: 8px; font-size: 22px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+    .modal-actions button { flex: 1; }
 
-            .full {
-                grid-column: auto;
-            }
+    .policy-content {
+      white-space: pre-wrap;
+      line-height: 1.75;
+      color: var(--muted);
+    }
 
-            .backup-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    @media (max-width: 950px) {
+      .settings-layout { grid-template-columns: 1fr; }
+      .settings-nav { position: static; display: flex; overflow-x: auto; gap: 4px; }
+      .settings-nav a { white-space: nowrap; }
+    }
+
+    @media (max-width: 800px) {
+      .app { display: block; }
+      .sidebar { width: 100%; padding: 10px; overflow-x: auto; }
+      .brand { padding: 8px 10px; }
+      .menu-item { display: inline-flex; margin: 2px; white-space: nowrap; }
+      .main { padding: 14px; }
+      .form-grid, .tile-grid { grid-template-columns: 1fr; }
+      .full { grid-column: auto; }
+      .topbar { display: block; }
+      .card { padding: 16px; }
+    }
+
+    @media (max-width: 420px) {
+      .main { padding: 10px; }
+      .actions button { flex: 1 1 100%; }
+    }
+  </style>
 </head>
 
 <body>
-
 <div class="app">
+  <aside class="sidebar">
+    <div class="brand">🏪 General Store</div>
+    <a href="index.html" class="menu-item"><span class="menu-icon">🏠</span>Dashboard</a>
+    <a href="sale.html" class="menu-item"><span class="menu-icon">🧾</span>New Sale</a>
+    <a href="purchase.html" class="menu-item"><span class="menu-icon">📦</span>Purchase</a>
+    <a href="inventory.html" class="menu-item"><span class="menu-icon">📋</span>Inventory</a>
+    <a href="customers.html" class="menu-item"><span class="menu-icon">👥</span>Customers</a>
+    <a href="suppliers.html" class="menu-item"><span class="menu-icon">🚚</span>Suppliers</a>
+    <a href="finance.html" class="menu-item"><span class="menu-icon">💰</span>Finance</a>
+    <a href="reports.html" class="menu-item"><span class="menu-icon">📊</span>Reports</a>
+    <a href="whatsapp.html" class="menu-item"><span class="menu-icon">💬</span>WhatsApp</a>
+    <a href="ai.html" class="menu-item"><span class="menu-icon">🤖</span>AI Assistant</a>
+    <a href="settings.html" class="menu-item active"><span class="menu-icon">⚙️</span>Settings</a>
+  </aside>
 
-    <aside class="sidebar">
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">⚙️ Settings Center</h1>
+        <p class="subtitle">पसलको विवरण, एपको रूप, सुरक्षा र डेटा व्यवस्थापन</p>
+      </div>
+    </header>
 
-        <div class="brand">🏪 General Store</div>
+    <div class="settings-layout">
+      <nav class="settings-nav" aria-label="Settings navigation">
+        <a href="#profile">🏪 Store Profile</a>
+        <a href="#system">🧾 System</a>
+        <a href="#appearance">🎨 Appearance</a>
+        <a href="#security">🔐 MPIN Security</a>
+        <a href="#feedback">💬 Feedback</a>
+        <a href="#policy">📜 Policy</a>
+        <a href="#backup">💾 Backup</a>
+        <a href="#about">ℹ️ About</a>
+      </nav>
 
-        <a href="index.html" class="menu-item">
-            <span class="menu-icon">🏠</span>
-            <span>Dashboard</span>
-        </a>
+      <div>
+        <section class="card" id="profile">
+          <h2>🏪 Store Profile</h2>
+          <p class="section-description">बिल र पसलसम्बन्धी विवरण।</p>
 
-        <a href="sale.html" class="menu-item">
-            <span class="menu-icon">🧾</span>
-            <span>New Sale</span>
-        </a>
-
-        <a href="purchase.html" class="menu-item">
-            <span class="menu-icon">📦</span>
-            <span>Purchase</span>
-        </a>
-
-        <a href="inventory.html" class="menu-item">
-            <span class="menu-icon">📋</span>
-            <span>Inventory</span>
-        </a>
-
-        <a href="customers.html" class="menu-item">
-            <span class="menu-icon">👥</span>
-            <span>Customers</span>
-        </a>
-
-        <a href="suppliers.html" class="menu-item">
-            <span class="menu-icon">🚚</span>
-            <span>Suppliers</span>
-        </a>
-
-        <a href="finance.html" class="menu-item">
-            <span class="menu-icon">💰</span>
-            <span>Finance</span>
-        </a>
-
-        <a href="reports.html" class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span>Reports</span>
-        </a>
-
-        <a href="whatsapp.html" class="menu-item">
-            <span class="menu-icon">💬</span>
-            <span>WhatsApp</span>
-        </a>
-
-        <a href="ai.html" class="menu-item">
-            <span class="menu-icon">🤖</span>
-            <span>AI Assistant</span>
-        </a>
-
-        <a href="settings.html" class="menu-item active">
-            <span class="menu-icon">⚙️</span>
-            <span>Settings</span>
-        </a>
-
-    </aside>
-
-
-    <main class="main">
-
-        <div class="topbar">
-
-            <h1 class="page-title">⚙️ Settings</h1>
-
-            <p class="subtitle">
-                Store profile तथा system settings
-            </p>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>🏪 Store Profile</h3>
-
+          <form id="profileForm">
             <div class="form-grid">
-
-                <div class="form-group">
-                    <label for="storeName">Store Name</label>
-                    <input type="text" id="storeName"
-                        placeholder="General Store">
-                </div>
-
-                <div class="form-group">
-                    <label for="ownerName">Owner Name</label>
-                    <input type="text" id="ownerName"
-                        placeholder="Owner Name">
-                </div>
-
-                <div class="form-group">
-                    <label for="storePhone">Phone</label>
-                    <input type="tel" id="storePhone"
-                        placeholder="98XXXXXXXX">
-                </div>
-
-                <div class="form-group">
-                    <label for="storeEmail">Email</label>
-                    <input type="email" id="storeEmail"
-                        placeholder="example@email.com">
-                </div>
-
-                <div class="form-group full">
-                    <label for="storeAddress">Store Address</label>
-                    <textarea id="storeAddress"
-                        placeholder="Store address"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="taxType">Tax Type</label>
-
-                    <select id="taxType">
-                        <option value="NON_TAX">Non Tax</option>
-                        <option value="PAN">PAN</option>
-                        <option value="VAT">VAT</option>
-                    </select>
-
-                </div>
-
-                <div class="form-group">
-                    <label for="taxNumber">PAN / VAT Number</label>
-                    <input type="text" id="taxNumber"
-                        placeholder="PAN / VAT Number">
-                </div>
-
+              <div class="form-group">
+                <label for="storeName">Store Name *</label>
+                <input id="storeName" maxlength="100" placeholder="General Store" required>
+              </div>
+              <div class="form-group">
+                <label for="ownerName">Owner Name</label>
+                <input id="ownerName" maxlength="100" placeholder="सञ्चालकको नाम">
+              </div>
+              <div class="form-group">
+                <label for="storePhone">Phone</label>
+                <input id="storePhone" type="tel" maxlength="25" placeholder="फोन नम्बर">
+              </div>
+              <div class="form-group">
+                <label for="storeEmail">Email</label>
+                <input id="storeEmail" type="email" maxlength="150" placeholder="example@email.com">
+              </div>
+              <div class="form-group full">
+                <label for="storeAddress">Store Address</label>
+                <textarea id="storeAddress" maxlength="500" placeholder="पसलको ठेगाना"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="taxType">Tax Type</label>
+                <select id="taxType">
+                  <option value="NON_TAX">Non Tax</option>
+                  <option value="PAN">PAN</option>
+                  <option value="VAT">VAT</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="taxNumber">PAN / VAT Number</label>
+                <input id="taxNumber" maxlength="50" placeholder="PAN / VAT नम्बर">
+              </div>
+              <div class="form-group full">
+                <label for="invoiceFooter">Invoice Footer / धन्यवाद सन्देश</label>
+                <input id="invoiceFooter" maxlength="250" placeholder="हाम्रो पसलमा आउनुभएकोमा धन्यवाद!">
+              </div>
             </div>
-
             <div class="actions">
-
-                <button
-                    type="button"
-                    class="btn-primary"
-                    id="saveProfileBtn">
-                    💾 Save Profile
-                </button>
-
+              <button class="btn-primary" type="submit">💾 Save Profile</button>
             </div>
+          </form>
+          <div id="profileStatus" class="status" role="status"></div>
+        </section>
 
-            <div id="profileStatus" class="status"></div>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>💰 System Settings</h3>
-
+        <section class="card" id="system">
+          <h2>🧾 System Preferences</h2>
+          <p class="section-description">मुद्रा, मिति र बिल नम्बरको प्राथमिकता।</p>
+          <form id="systemForm">
             <div class="form-grid">
-
-                <div class="form-group">
-                    <label for="currency">Currency</label>
-
-                    <select id="currency">
-                        <option value="NPR">NPR - नेपाली रुपैयाँ</option>
-                        <option value="INR">INR - Indian Rupee</option>
-                        <option value="USD">USD - US Dollar</option>
-                    </select>
-
-                </div>
-
-                <div class="form-group">
-                    <label for="dateFormat">Date Format</label>
-
-                    <select id="dateFormat">
-                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                        <option value="DD-MM-YYYY">DD-MM-YYYY</option>
-                        <option value="MM-DD-YYYY">MM-DD-YYYY</option>
-                    </select>
-
-                </div>
-
-                <div class="form-group">
-                    <label for="invoicePrefix">Invoice Prefix</label>
-                    <input type="text" id="invoicePrefix"
-                        placeholder="INV">
-                </div>
-
-                <div class="form-group">
-                    <label for="purchasePrefix">Purchase Prefix</label>
-                    <input type="text" id="purchasePrefix"
-                        placeholder="PUR">
-                </div>
-
+              <div class="form-group">
+                <label for="currency">Currency</label>
+                <select id="currency">
+                  <option value="NPR">NPR - नेपाली रुपैयाँ</option>
+                  <option value="INR">INR - Indian Rupee</option>
+                  <option value="USD">USD - US Dollar</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="dateFormat">Date Format</label>
+                <select id="dateFormat">
+                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                  <option value="DD-MM-YYYY">DD-MM-YYYY</option>
+                  <option value="MM-DD-YYYY">MM-DD-YYYY</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="invoicePrefix">Invoice Prefix</label>
+                <input id="invoicePrefix" maxlength="12" value="INV">
+              </div>
+              <div class="form-group">
+                <label for="purchasePrefix">Purchase Prefix</label>
+                <input id="purchasePrefix" maxlength="12" value="PUR">
+              </div>
+              <div class="form-group">
+                <label for="defaultPayment">Default Payment Method</label>
+                <select id="defaultPayment">
+                  <option value="Cash">Cash</option>
+                  <option value="Bank">Bank</option>
+                  <option value="Digital">Digital Wallet</option>
+                  <option value="Credit">Credit / उधारो</option>
+                </select>
+              </div>
             </div>
-
             <div class="actions">
-
-                <button
-                    type="button"
-                    class="btn-primary"
-                    id="saveSystemBtn">
-                    💾 Save Settings
-                </button>
-
+              <button class="btn-primary" type="submit">💾 Save System Settings</button>
             </div>
+          </form>
+          <div id="systemStatus" class="status" role="status"></div>
+          <p class="note">नोट: अन्य पेजमा मुद्रा, मिति र Prefix देखाउन ती पेजका JavaScript ले पनि यी सेटिङ पढ्नुपर्छ।</p>
+        </section>
 
-            <div id="systemStatus" class="status"></div>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>💾 Backup & Restore</h3>
-
-            <p class="note">
-                आफ्नो store को local data लाई एउटा JSON backup file मा save
-                गर्न वा पहिलेको backup restore गर्न सकिन्छ।
-            </p>
-
-            <div class="backup-grid">
-
-                <div class="backup-box">
-
-                    <h4>📥 Export Backup</h4>
-
-                    <p class="note">
-                        सबै मुख्य local data download गर्नुहोस्।
-                    </p>
-
-                    <button
-                        type="button"
-                        class="btn-success"
-                        id="exportBtn">
-                        Download Backup
-                    </button>
-
-                </div>
-
-
-                <div class="backup-box">
-
-                    <h4>📤 Restore Backup</h4>
-
-                    <p class="note">
-                        पहिले export गरिएको JSON file restore गर्नुहोस्।
-                    </p>
-
-                    <input
-                        type="file"
-                        id="restoreFile"
-                        accept=".json">
-
-                    <div style="margin-top:10px;">
-
-                        <button
-                            type="button"
-                            class="btn-primary"
-                            id="restoreBtn">
-                            Restore Data
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <div class="backup-box">
-
-                    <h4>⚠️ Clear All Data</h4>
-
-                    <p class="note">
-                        सबै store data हट्छ। प्रयोग गर्नु अघि backup लिनुहोस्।
-                    </p>
-
-                    <button
-                        type="button"
-                        class="btn-danger"
-                        id="clearDataBtn">
-                        Clear All Data
-                    </button>
-
-                </div>
-
+        <section class="card" id="appearance">
+          <h2>🎨 Appearance & Display</h2>
+          <p class="section-description">आफ्नो रुचिअनुसार एपको रूप परिवर्तन गर्नुहोस्।</p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="theme">Theme</label>
+              <select id="theme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
             </div>
+            <div class="form-group">
+              <label for="fontFamily">Font Family</label>
+              <select id="fontFamily">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="system-ui, sans-serif">System Default</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+                <option value="Tahoma, sans-serif">Tahoma</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="'Noto Sans Devanagari', 'Mangal', sans-serif">Noto Sans Devanagari / Mangal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="fontSize">Font Size</label>
+              <select id="fontSize">
+                <option value="13">Small - 13px</option>
+                <option value="15">Normal - 15px</option>
+                <option value="17">Large - 17px</option>
+                <option value="19">Extra Large - 19px</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" id="saveAppearanceBtn" class="btn-primary">🎨 Apply & Save</button>
+            <button type="button" id="resetAppearanceBtn" class="btn-secondary">Reset Appearance</button>
+          </div>
+          <div id="appearanceStatus" class="status" role="status"></div>
+          <p class="note">Font चयन यो पेजमा तुरुन्त लागू हुन्छ। अन्य HTML पेजमा पनि लागू गर्न साझा appearance script जोड्नुपर्छ। चयनहरू यस ब्राउजरमा सुरक्षित हुन्छन्।</p>
+        </section>
 
-            <div id="backupStatus" class="status"></div>
+        <section class="card" id="security">
+          <h2>🔐 MPIN & Security</h2>
+          <p class="section-description">एप खोल्दा र संवेदनशील काम गर्दा PIN प्रमाणीकरण।</p>
 
-        </div>
+          <div class="tile-grid">
+            <div class="tile">
+              <h3>MPIN Status</h3>
+              <p id="mpinStatusText" class="security-status">जाँच हुँदैछ…</p>
+              <p class="note">MPIN सक्षम भएपछि यो पेज खोल्दा PIN मागिनेछ। सबै पेजमा लक लागू गर्न साझा guard script पनि जोड्नुपर्छ।</p>
+            </div>
+            <div class="tile">
+              <h3>Auto Lock</h3>
+              <p class="note">यो सेटिङले हालको ब्राउजर ट्याबको निष्क्रिय समयपछि लक गर्न मद्दत गर्छ।</p>
+              <label for="autoLockMinutes">निष्क्रिय समय</label>
+              <select id="autoLockMinutes">
+                <option value="0">बन्द</option>
+                <option value="1">१ मिनेट</option>
+                <option value="5">५ मिनेट</option>
+                <option value="10">१० मिनेट</option>
+                <option value="15">१५ मिनेट</option>
+              </select>
+            </div>
+          </div>
 
-    </main>
+          <div class="actions">
+            <button type="button" id="enableMpinBtn" class="btn-primary">🔐 Set / Enable MPIN</button>
+            <button type="button" id="changeMpinBtn" class="btn-secondary">Change MPIN</button>
+            <button type="button" id="disableMpinBtn" class="btn-danger">Disable MPIN</button>
+            <button type="button" id="lockNowBtn" class="btn-secondary">Lock Now</button>
+          </div>
+          <div id="securityStatus" class="status" role="status"></div>
+          <div class="warning">
+            MPIN यस ब्राउजरमा स्थानीय सुरक्षा तह हो। यसले developer tools वा ब्राउजर डेटा सीधै परिवर्तन गर्न सक्ने व्यक्तिविरुद्ध पूर्ण सुरक्षा दिँदैन।
+          </div>
+        </section>
 
+        <section class="card" id="feedback">
+          <h2>💬 Feedback & Bug Report</h2>
+          <p class="section-description">सुझाव वा समस्या यस ब्राउजरमा रेकर्ड गर्नुहोस्।</p>
+          <form id="feedbackForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="feedbackType">Feedback Type</label>
+                <select id="feedbackType">
+                  <option value="Suggestion">सुझाव</option>
+                  <option value="Bug Report">Bug / समस्या</option>
+                  <option value="Design">Design सुधार</option>
+                  <option value="Other">अन्य</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="feedbackContact">सम्पर्क (ऐच्छिक)</label>
+                <input id="feedbackContact" maxlength="150" placeholder="फोन वा इमेल">
+              </div>
+              <div class="form-group full">
+                <label for="feedbackMessage">विवरण *</label>
+                <textarea id="feedbackMessage" maxlength="3000" required placeholder="आफ्नो सुझाव वा समस्या लेख्नुहोस्"></textarea>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn-primary">Save Feedback</button>
+              <button type="button" id="exportFeedbackBtn" class="btn-secondary">Export Feedback</button>
+            </div>
+          </form>
+          <div id="feedbackStatus" class="status" role="status"></div>
+          <p class="note">Feedback अहिले स्थानीय रूपमा मात्र सुरक्षित हुन्छ। स्वतः इमेल वा developer सम्म पुग्दैन। Export गरेर पठाउन सकिन्छ।</p>
+        </section>
+
+        <section class="card" id="policy">
+          <h2>📜 Privacy Policy & Terms</h2>
+          <p class="section-description">तपाईंको डेटा कहाँ राखिन्छ र एप कसरी प्रयोग गर्ने भन्ने जानकारी।</p>
+          <div class="tile-grid">
+            <div class="tile">
+              <h3>🔒 Privacy Policy</h3>
+              <div class="policy-content">• यो संस्करणले मुख्य डेटा यस ब्राउजरको localStorage मा राख्छ।
+• ब्राउजरको डेटा मेटिएमा स्टोरको रेकर्ड हराउन सक्छ।
+• Backup फाइलमा ग्राहक, सप्लायर र कारोबारका संवेदनशील विवरण हुन सक्छन्।
+• Backup सुरक्षित ठाउँमा राख्नुहोस् र अनधिकृत व्यक्तिसँग साझा नगर्नुहोस्।
+• Feedback पनि स्थानीय रूपमा सुरक्षित हुन्छ, जबसम्म तपाईंले आफैँ Export वा साझा गर्नुहुन्न।</div>
+            </div>
+            <div class="tile">
+              <h3>📋 Terms & Conditions</h3>
+              <div class="policy-content">• कारोबारका विवरण सही राख्ने जिम्मेवारी प्रयोगकर्ताको हो।
+• कर, PAN/VAT र बिलको अनुपालन स्थानीय नियमअनुसार जाँच गर्नुहोस्।
+• महत्त्वपूर्ण परिवर्तन गर्नुअघि Backup लिनुहोस्।
+• यो स्थानीय एप हो; यसमा स्वतः Cloud Sync वा server-side authentication छैन।
+• यो जानकारी सामान्य प्रयोगका लागि हो, कानुनी वा कर परामर्शको विकल्प होइन।</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="backup">
+          <h2>💾 Backup, Restore & Clear Data</h2>
+          <p class="section-description">डेटा सुरक्षित राख्नुहोस् र आवश्यक परे पुनःस्थापना गर्नुहोस्।</p>
+
+          <div class="tile-grid">
+            <div class="tile">
+              <h3>📥 Export Backup</h3>
+              <p>Store data को JSON फाइल डाउनलोड गर्नुहोस्।</p>
+              <button type="button" id="exportBtn" class="btn-primary">Download Backup</button>
+            </div>
+            <div class="tile">
+              <h3>📤 Restore Backup</h3>
+              <p>पहिले Export गरिएको JSON फाइलबाट डेटा फर्काउनुहोस्।</p>
+              <div class="form-group">
+                <label for="restoreFile">Backup JSON File</label>
+                <input type="file" id="restoreFile" accept=".json,application/json">
+              </div>
+              <div class="actions">
+                <button type="button" id="restoreBtn" class="btn-primary">Restore Data</button>
+              </div>
+            </div>
+            <div class="tile">
+              <h3>⚠️ Clear Store Data</h3>
+              <p>बिक्री, खरिद, स्टक, ग्राहक, सप्लायर र Finance डेटा हट्नेछ। Settings र MPIN सुरक्षित रहनेछन्।</p>
+              <button type="button" id="clearDataBtn" class="btn-danger">Clear Store Data</button>
+            </div>
+          </div>
+          <div id="backupStatus" class="status" role="status"></div>
+          <p class="note">Restore गर्दा हालको स्टोर डेटा प्रतिस्थापन हुन सक्छ। पहिले Backup लिनुहोस्।</p>
+          <p class="note" id="lastBackupText">अन्तिम Backup: अहिलेसम्म रेकर्ड छैन।</p>
+        </section>
+
+        <section class="card" id="about">
+          <h2>ℹ️ About General Store</h2>
+          <p>General Store Management System</p>
+          <p class="note">Version: 1.1.0 · Local browser edition</p>
+          <p class="note">Store data: Browser localStorage · Cloud sync: उपलब्ध छैन</p>
+          <div class="actions">
+            <button type="button" id="showStorageBtn" class="btn-secondary">Check Local Data</button>
+          </div>
+          <div id="aboutStatus" class="status" role="status"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MPIN Lock Modal -->
+<div id="mpinOverlay" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="mpinModalTitle">
+  <div class="modal">
+    <h2 id="mpinModalTitle">🔐 App Locked</h2>
+    <p id="mpinModalDescription">एप खोल्न आफ्नो MPIN राख्नुहोस्।</p>
+    <form id="mpinUnlockForm">
+      <label for="mpinInput">MPIN</label>
+      <input id="mpinInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="current-password" required>
+      <div id="mpinError" class="status error" role="alert"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary">Unlock</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="settings.js"></script>
-
 </body>
 </html>
