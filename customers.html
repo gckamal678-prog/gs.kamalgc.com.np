@@ -1,50 +1,60 @@
-
 <!DOCTYPE html>
 <html lang="ne">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customers | General Store</title>
+  <title>Customer Management | General Store</title>
   <link rel="stylesheet" href="style.css">
+
   <style>
-    .customer-wrap{padding:24px;max-width:1500px;margin:auto;color:#1e293b}
-    .customer-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
-    .customer-top h1{font-size:26px;margin:0 0 6px}
-    .customer-top p{color:#64748b;margin:0}
-    .customer-btn{border:0;border-radius:8px;padding:10px 15px;font-size:14px;cursor:pointer;font-weight:600}
-    .customer-btn.primary{background:#2563eb;color:white}
-    .customer-btn.secondary{background:#e2e8f0;color:#1e293b}
-    .customer-btn.danger{background:#fee2e2;color:#991b1b}
-    .customer-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:22px}
-    .customer-stat,.customer-panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px;box-shadow:0 2px 6px #0f172a08}
-    .customer-stat span{display:block;color:#64748b;font-size:13px;margin-bottom:8px}
-    .customer-stat strong{font-size:24px;overflow-wrap:anywhere}
-    .customer-panel{margin-bottom:22px}
-    .customer-panel h2{font-size:18px;margin:0 0 16px}
-    .customer-form-hidden{display:none!important}
-    .customer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
-    .customer-field{display:flex;flex-direction:column;gap:7px;min-width:0}
-    .customer-field.full{grid-column:1/-1}
-    .customer-field label{font-size:13px;font-weight:600;color:#475569}
-    .customer-field input,.customer-field textarea,.customer-field select{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:11px;font:inherit;background:white;color:#1e293b}
-    .customer-field textarea{min-height:75px;resize:vertical}
-    .customer-form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
-    .customer-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:15px}
-    .customer-search{box-sizing:border-box;width:min(100%,380px);padding:11px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}
+    .customer-wrap{max-width:1400px;margin:auto;padding:20px}
+    .customer-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .customer-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
+    .customer-stat,.customer-panel{background:var(--card-bg,#fff);border:1px solid #e5e7eb;border-radius:14px;padding:16px}
+    .customer-stat span{display:block;color:#6b7280;font-size:13px}
+    .customer-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
+    .customer-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .customer-toolbar input{flex:1;min-width:0;width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
     .customer-table-wrap{overflow-x:auto}
-    .customer-table{border-collapse:collapse;width:100%;min-width:760px}
-    .customer-table th,.customer-table td{text-align:left;padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:middle}
-    .customer-table th{background:#f8fafc;color:#475569;white-space:nowrap}
-    .customer-table td{overflow-wrap:anywhere}
-    .customer-actions{display:flex;gap:7px;flex-wrap:wrap}
-    .customer-actions button{border:0;border-radius:6px;padding:7px 9px;cursor:pointer;font-weight:600}
-    .customer-edit{background:#dbeafe;color:#1d4ed8}
-    .customer-delete{background:#fee2e2;color:#991b1b}
-    .customer-error{display:none;background:#fef2f2;color:#991b1b;padding:12px;border-radius:8px;margin-bottom:15px;white-space:pre-wrap}
-    .customer-note{font-size:12px;color:#64748b;margin-top:10px;line-height:1.6}
-    @media(max-width:800px){.customer-wrap{padding:14px}.customer-stats{grid-template-columns:1fr}.customer-grid{grid-template-columns:1fr}.customer-field.full{grid-column:auto}.customer-top h1{font-size:22px}}
+    .customer-table{width:100%;border-collapse:collapse;min-width:850px}
+    .customer-table th,.customer-table td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}
+    .customer-table th{font-size:13px;color:#6b7280}
+    .customer-modal{display:none;position:fixed;inset:0;z-index:1000;background:#0008;overflow:auto;padding:20px}
+    .customer-modal.show{display:block}
+    .customer-dialog{background:var(--card-bg,#fff);width:min(900px,100%);margin:20px auto;border-radius:16px;padding:22px;box-sizing:border-box}
+    .customer-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .customer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .customer-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .customer-field label{font-size:13px;font-weight:600}
+    .customer-field input,.customer-field textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
+    .customer-field small{font-size:12px;color:#6b7280}
+    .customer-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .customer-btn{padding:10px 15px;border:1px solid #d1d5db;border-radius:9px;cursor:pointer;background:transparent;color:inherit}
+    .customer-btn.primary{background:#166534;color:#fff;border-color:#166534}
+    .customer-btn.danger{color:#b91c1c}
+    .customer-error{display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:12px;margin-bottom:14px;overflow-wrap:anywhere}
+    .customer-note{font-size:12px;color:#6b7280;margin-top:8px}
+    .customer-empty{text-align:center;padding:35px;color:#6b7280}
+    .customer-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px;margin:18px 0 0 auto}
+    .customer-summary div{display:flex;justify-content:space-between;gap:16px;padding:5px 0}
+    .customer-summary .grand{border-top:1px solid #d1d5db;padding-top:12px;font-size:18px;font-weight:700}
+    .customer-form-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .customer-info{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:13px;margin-top:18px}
+    .customer-info p{margin:6px 0 0;font-size:13px}
+    @media(max-width:800px){
+      .customer-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .customer-wrap{padding:12px}
+      .customer-dialog{padding:15px;margin:5px auto}
+    }
+    @media(max-width:520px){
+      .customer-grid{grid-template-columns:1fr}
+      .customer-modal{padding:8px}
+      .customer-summary{max-width:none}
+      .customer-stat strong{font-size:17px}
+    }
   </style>
 </head>
+
 <body>
   <aside class="sidebar">
     <h2>General Store</h2>
@@ -55,26 +65,26 @@
       <a class="menu-item" href="inventory.html">Inventory</a>
       <a class="menu-item" href="sales-return.html">Sales Return</a>
       <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
-      <a class="menu-item" href="customers.html">Customers</a>
+      <a class="menu-item active" href="customers.html">Customers</a>
       <a class="menu-item" href="suppliers.html">Suppliers</a>
       <a class="menu-item" href="finance.html">Finance</a>
       <a class="menu-item" href="reports.html">Reports</a>
       <a class="menu-item" href="whatsapp.html">WhatsApp</a>
-      <a class="menu-item" href="ai.html">AI</a>
+      <a class="menu-item" href="ai.html">AI Assistant</a>
       <a class="menu-item" href="settings.html">Settings</a>
     </nav>
   </aside>
 
   <main class="customer-wrap">
-    <header class="customer-top">
+    <div class="customer-top">
       <div>
-        <h1>Customers / ग्राहक</h1>
-        <p>ग्राहक विवरण, सम्पर्क र बाँकी रकम व्यवस्थापन</p>
+        <h1>Customer Management</h1>
+        <p>ग्राहक विवरण, बिक्री, प्राप्त रकम र बाँकी रकम</p>
       </div>
-      <button type="button" class="customer-btn primary" id="newCustomerBtn">＋ नयाँ ग्राहक</button>
-    </header>
-
-    <div id="customerError" class="customer-error" role="alert"></div>
+      <button id="newCustomerBtn" class="customer-btn primary" type="button">
+        + New Customer
+      </button>
+    </div>
 
     <section class="customer-stats">
       <div class="customer-stat">
@@ -82,69 +92,27 @@
         <strong id="totalCustomers">0</strong>
       </div>
       <div class="customer-stat">
-        <span>ग्राहकबाट बिक्री रकम</span>
+        <span>कुल बिक्री रकम</span>
         <strong id="customerSalesTotal">रु. 0.00</strong>
       </div>
       <div class="customer-stat">
-        <span>बिक्रीमा बाँकी रकम</span>
+        <span>कुल प्राप्त रकम</span>
+        <strong id="customerPaidTotal">रु. 0.00</strong>
+      </div>
+      <div class="customer-stat">
+        <span>बाँकी बिक्री रकम</span>
         <strong id="customerBalanceTotal">रु. 0.00</strong>
       </div>
     </section>
 
-    <section class="customer-panel customer-form-hidden" id="customerFormCard">
-      <h2 id="customerFormTitle">नयाँ ग्राहक विवरण</h2>
-
-      <form id="customerForm">
-        <input type="hidden" id="customerId">
-
-        <div class="customer-grid">
-          <div class="customer-field">
-            <label for="customerName">ग्राहकको नाम *</label>
-            <input id="customerName" type="text" maxlength="120" required>
-          </div>
-
-          <div class="customer-field">
-            <label for="customerPhone">मोबाइल नम्बर</label>
-            <input id="customerPhone" type="tel" maxlength="30">
-          </div>
-
-          <div class="customer-field">
-            <label for="customerEmail">इमेल</label>
-            <input id="customerEmail" type="email" maxlength="120">
-          </div>
-
-          <div class="customer-field">
-            <label for="customerOpeningBalance">सुरुको बाँकी रकम (रु.)</label>
-            <input id="customerOpeningBalance" type="number" min="0" step="0.01" value="0">
-          </div>
-
-          <div class="customer-field full">
-            <label for="customerAddress">ठेगाना</label>
-            <textarea id="customerAddress" maxlength="500"></textarea>
-          </div>
-
-          <div class="customer-field full">
-            <label for="customerNote">कैफियत</label>
-            <textarea id="customerNote" maxlength="1000"></textarea>
-          </div>
-        </div>
-
-        <p class="customer-note">
-          नोट: सुरुवाती बाँकी रकम ग्राहकको पुरानो हिसाबका लागि हो।
-          यसलाई नयाँ बिक्री वा नगद प्राप्ति भनेर आफैँले लेखा खातामा थपिँदैन।
-        </p>
-
-        <div class="customer-form-actions">
-          <button type="button" class="customer-btn secondary" id="cancelCustomerBtn">रद्द गर्नुहोस्</button>
-          <button type="submit" class="customer-btn primary" id="saveCustomerBtn">ग्राहक सुरक्षित गर्नुहोस्</button>
-        </div>
-      </form>
-    </section>
-
     <section class="customer-panel">
       <div class="customer-toolbar">
-        <h2 style="margin:0">ग्राहक सूची</h2>
-        <input class="customer-search" id="customerSearch" type="search" placeholder="नाम, मोबाइल वा ठेगाना खोज्नुहोस्...">
+        <input
+          id="customerSearch"
+          type="search"
+          placeholder="ग्राहकको नाम, मोबाइल, इमेल वा ठेगाना खोज्नुहोस्"
+          aria-label="ग्राहक खोज्नुहोस्"
+        >
       </div>
 
       <div class="customer-table-wrap">
@@ -155,18 +123,123 @@
               <th>ग्राहकको नाम</th>
               <th>मोबाइल</th>
               <th>ठेगाना</th>
-              <th>बिक्री रकम</th>
-              <th>बिक्रीको बाँकी</th>
+              <th>कुल बिक्री</th>
+              <th>बाँकी रकम</th>
               <th>कार्य</th>
             </tr>
           </thead>
           <tbody id="customersTableBody">
-            <tr><td colspan="7" style="text-align:center">डेटा लोड हुँदैछ...</td></tr>
+            <tr>
+              <td colspan="7" class="customer-empty">ग्राहक विवरण लोड हुँदैछ...</td>
+            </tr>
           </tbody>
         </table>
       </div>
     </section>
   </main>
+
+  <div class="customer-modal" id="customerFormCard" aria-hidden="true">
+    <section class="customer-dialog">
+      <div class="customer-dialog-head">
+        <div>
+          <h2 id="customerFormTitle">नयाँ ग्राहक विवरण</h2>
+          <p>ग्राहकको व्यक्तिगत विवरण भर्नुहोस्।</p>
+        </div>
+        <button
+          type="button"
+          id="closeCustomerModal"
+          class="customer-btn"
+          aria-label="बन्द गर्नुहोस्"
+        >✕</button>
+      </div>
+
+      <div id="customerError" class="customer-error" role="alert"></div>
+
+      <form id="customerForm">
+        <input type="hidden" id="customerId">
+
+        <div class="customer-grid">
+          <div class="customer-field">
+            <label for="customerName">ग्राहकको नाम *</label>
+            <input
+              type="text"
+              id="customerName"
+              maxlength="120"
+              placeholder="पूरा नाम"
+              required
+            >
+          </div>
+
+          <div class="customer-field">
+            <label for="customerPhone">मोबाइल नम्बर</label>
+            <input
+              type="tel"
+              id="customerPhone"
+              maxlength="30"
+              placeholder="मोबाइल नम्बर"
+            >
+          </div>
+
+          <div class="customer-field">
+            <label for="customerEmail">इमेल</label>
+            <input
+              type="email"
+              id="customerEmail"
+              maxlength="150"
+              placeholder="example@email.com"
+            >
+          </div>
+
+          <div class="customer-field">
+            <label for="customerOpeningBalance">सुरुको बाँकी रकम</label>
+            <input
+              type="number"
+              id="customerOpeningBalance"
+              min="0"
+              step="0.01"
+              value="0"
+            >
+            <small>यो रकम बिक्रीको कुल रकममा स्वतः जोडिँदैन।</small>
+          </div>
+
+          <div class="customer-field" style="grid-column:1/-1">
+            <label for="customerAddress">ठेगाना</label>
+            <input
+              type="text"
+              id="customerAddress"
+              maxlength="250"
+              placeholder="ग्राहकको ठेगाना"
+            >
+          </div>
+
+          <div class="customer-field" style="grid-column:1/-1">
+            <label for="customerNote">टिप्पणी</label>
+            <textarea
+              id="customerNote"
+              rows="3"
+              maxlength="500"
+              placeholder="ऐच्छिक टिप्पणी"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="customer-info">
+          <strong>ध्यान दिनुहोस्</strong>
+          <p>ग्राहकको बिक्री इतिहास सुरक्षित राखिनेछ। बिक्री इतिहास भएको ग्राहकलाई गल्तीले हटाउनबाट रोकिएको छ।</p>
+        </div>
+
+        <div class="customer-form-actions">
+          <button type="button" id="cancelCustomerBtn" class="customer-btn">
+            Cancel
+          </button>
+          <button type="reset" class="customer-btn">Clear</button>
+          <button type="submit" class="customer-btn primary">
+            Save Customer
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
 
   <script src="customers.js"></script>
 </body>
