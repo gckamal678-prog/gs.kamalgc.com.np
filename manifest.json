@@ -1,0 +1,28 @@
+
+{
+  "id": "./index.html",
+  "name": "General Store Management System",
+  "short_name": "General Store",
+  "description": "General Store Management and Billing System",
+  "lang": "ne",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#071b35",
+  "theme_color": "#071b35",
+  "icons": [
+    {
+      "src": "./gs192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./gs512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
