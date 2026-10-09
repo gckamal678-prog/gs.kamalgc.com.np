@@ -5,23 +5,14 @@
   const SALE_KEY = "gs_sales";
 
   let editingId = null;
-  let initialized = false;
 
-  const $ = function (id) {
-    return document.getElementById(id);
-  };
+  const $ = id => document.getElementById(id);
 
   function readArray(key) {
     const raw = localStorage.getItem(key);
-
     if (raw === null) return [];
-
     const value = JSON.parse(raw);
-
-    if (!Array.isArray(value)) {
-      throw new Error(key + " को डेटा सूचीको रूपमा छैन।");
-    }
-
+    if (!Array.isArray(value)) throw new Error(key + " को डेटा सूची होइन।");
     return value;
   }
 
@@ -30,8 +21,8 @@
   }
 
   function num(value) {
-    const result = Number(value);
-    return Number.isFinite(result) ? result : 0;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
   }
 
   function money(value) {
@@ -42,23 +33,13 @@
   }
 
   function escapeHTML(value) {
-    return String(value == null ? "" : value).replace(
-      /[&<>"']/g,
-      function (char) {
-        return {
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;"
-        }[char];
-      }
-    );
+    return String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    })[ch]);
   }
 
-  function showError(message) {
+  function error(message) {
     const box = $("customerError");
-
     if (box) {
       box.textContent = message;
       box.style.display = "block";
@@ -69,257 +50,141 @@
 
   function clearError() {
     const box = $("customerError");
-
     if (box) {
       box.textContent = "";
       box.style.display = "none";
     }
   }
 
-  function getCustomers() {
-    return readArray(CUSTOMER_KEY);
+  function customerName(c) {
+    return String(c.name || c.customerName || "").trim();
   }
 
-  function getSales() {
-    return readArray(SALE_KEY).filter(function (sale) {
-      return sale && !sale.voided && !sale.isVoid;
+  function saleName(s) {
+    return String(s.customerName || s.customer || "").trim();
+  }
+
+  function salesList() {
+    return readArray(SALE_KEY).filter(s => s && !s.voided && !s.isVoid);
+  }
+
+  function saleTotal(s) {
+    return num(s.total ?? s.amount);
+  }
+
+  function saleBalance(s) {
+    if (s.balance !== undefined && s.balance !== null) {
+      return Math.max(0, num(s.balance));
+    }
+    return Math.max(0, saleTotal(s) - num(s.paidAmount ?? s.paid));
+  }
+
+  function salePaid(s) {
+    if (s.paidAmount !== undefined && s.paidAmount !== null) {
+      return Math.max(0, num(s.paidAmount));
+    }
+    if (s.paid !== undefined && s.paid !== null) {
+      return Math.max(0, num(s.paid));
+    }
+    return Math.max(0, saleTotal(s) - saleBalance(s));
+  }
+
+  function customerSales(c, sales) {
+    const id = String(c.id || "");
+    const name = customerName(c).toLowerCase();
+
+    return sales.filter(s => {
+      if (s.customerId && id && String(s.customerId) === id) return true;
+      const n = saleName(s).toLowerCase();
+      return Boolean(name && n && name === n);
     });
-  }
-
-  function getCustomerName(customer) {
-    return String(customer.name || customer.customerName || "").trim();
-  }
-
-  function getSaleCustomerName(sale) {
-    return String(sale.customerName || sale.customer || "").trim();
-  }
-
-  function getSaleTotal(sale) {
-    return num(sale.total ?? sale.amount);
-  }
-
-  function getSalePaid(sale) {
-    if (sale.paidAmount !== undefined && sale.paidAmount !== null) {
-      return Math.max(0, num(sale.paidAmount));
-    }
-
-    if (sale.paid !== undefined && sale.paid !== null) {
-      return Math.max(0, num(sale.paid));
-    }
-
-    return Math.max(0, getSaleTotal(sale) - getSaleBalance(sale));
-  }
-
-  function getSaleBalance(sale) {
-    if (sale.balance !== undefined && sale.balance !== null) {
-      return Math.max(0, num(sale.balance));
-    }
-
-    return Math.max(
-      0,
-      getSaleTotal(sale) - num(sale.paidAmount ?? sale.paid)
-    );
-  }
-
-  function getCustomerSales(customer, sales) {
-    const customerId = String(customer.id || "");
-    const name = getCustomerName(customer).toLowerCase();
-
-    return sales.filter(function (sale) {
-      if (
-        sale.customerId &&
-        customerId &&
-        String(sale.customerId) === customerId
-      ) {
-        return true;
-      }
-
-      const saleName = getSaleCustomerName(sale).toLowerCase();
-
-      return Boolean(name && saleName && name === saleName);
-    });
-  }
-
-  function openModal() {
-    const modal = $("customerFormCard");
-
-    if (!modal) {
-      showError("ग्राहक फारम भेटिएन।");
-      return;
-    }
-
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-
-    if ($("customerName")) {
-      $("customerName").focus();
-    }
-  }
-
-  function closeModal() {
-    const modal = $("customerFormCard");
-
-    if (modal) {
-      modal.classList.remove("show");
-      modal.setAttribute("aria-hidden", "true");
-    }
-
-    document.body.style.removeProperty("overflow");
-  }
-
-  function resetCustomerFormForNew() {
-    editingId = null;
-
-    $("customerForm").reset();
-    $("customerId").value = "";
-    $("customerOpeningBalance").value = "0";
-    $("customerFormTitle").textContent = "नयाँ ग्राहक विवरण";
-
-    clearError();
-    openModal();
-  }
-
-  function hideForm() {
-    $("customerForm").reset();
-    $("customerId").value = "";
-    $("customerOpeningBalance").value = "0";
-
-    editingId = null;
-
-    clearError();
-    closeModal();
   }
 
   function render() {
-    const customers = getCustomers();
-    const sales = getSales();
+    const customers = readArray(CUSTOMER_KEY);
+    const sales = salesList();
     const tbody = $("customersTableBody");
+    const query = $("customerSearch").value.trim().toLowerCase();
 
-    if (!tbody) {
-      throw new Error("ग्राहक सूचीको तालिका भेटिएन।");
-    }
+    let total = 0;
+    let paid = 0;
+    let balance = 0;
+    const counted = new Set();
 
-    const query = String($("customerSearch").value || "")
-      .trim()
-      .toLowerCase();
-
-    let totalSales = 0;
-    let totalPaid = 0;
-    let totalBalance = 0;
-
-    const assignedSales = new Set();
-
-    customers.forEach(function (customer) {
-      getCustomerSales(customer, sales).forEach(function (sale) {
-        const key = sale.id
-          ? "id:" + sale.id
-          : sale.billNumber
-            ? "bill:" + sale.billNumber
-            : sale;
-
-        if (!assignedSales.has(key)) {
-          assignedSales.add(key);
-          totalSales += getSaleTotal(sale);
-          totalPaid += getSalePaid(sale);
-          totalBalance += getSaleBalance(sale);
+    customers.forEach(c => {
+      customerSales(c, sales).forEach(s => {
+        const key = s.id ? "id:" + s.id :
+          s.billNumber ? "bill:" + s.billNumber : s;
+        if (!counted.has(key)) {
+          counted.add(key);
+          total += saleTotal(s);
+          paid += salePaid(s);
+          balance += saleBalance(s);
         }
       });
     });
 
     $("totalCustomers").textContent = customers.length;
-    $("customerSalesTotal").textContent = money(totalSales);
-    $("customerPaidTotal").textContent = money(totalPaid);
-    $("customerBalanceTotal").textContent = money(totalBalance);
+    $("customerSalesTotal").textContent = money(total);
+    $("customerPaidTotal").textContent = money(paid);
+    $("customerBalanceTotal").textContent = money(balance);
 
-    const filtered = customers.filter(function (customer) {
-      const searchText = [
-        customer.name,
-        customer.customerName,
-        customer.phone,
-        customer.email,
-        customer.address
-      ].join(" ").toLowerCase();
-
-      return searchText.includes(query);
-    });
+    const filtered = customers.filter(c =>
+      [
+        c.name, c.customerName, c.phone, c.email, c.address
+      ].join(" ").toLowerCase().includes(query)
+    );
 
     if (!filtered.length) {
       tbody.innerHTML =
         '<tr><td colspan="7" class="customer-empty">' +
-        (query
-          ? "खोजिएको ग्राहक भेटिएन।"
-          : "अहिलेसम्म ग्राहक थपिएको छैन।") +
+        (query ? "खोजिएको ग्राहक भेटिएन।" : "अहिलेसम्म ग्राहक थपिएको छैन।") +
         "</td></tr>";
       return;
     }
 
-    tbody.innerHTML = filtered.map(function (customer, index) {
-      const matchedSales = getCustomerSales(customer, sales);
+    tbody.innerHTML = filtered.map((c, i) => {
+      const linked = customerSales(c, sales);
+      const amount = linked.reduce((sum, s) => sum + saleTotal(s), 0);
+      const due = linked.reduce((sum, s) => sum + saleBalance(s), 0);
 
-      const salesTotal = matchedSales.reduce(function (sum, sale) {
-        return sum + getSaleTotal(sale);
-      }, 0);
-
-      const balanceTotal = matchedSales.reduce(function (sum, sale) {
-        return sum + getSaleBalance(sale);
-      }, 0);
-
-      return (
-        "<tr>" +
-          "<td>" + (index + 1) + "</td>" +
-          "<td><strong>" +
-            escapeHTML(getCustomerName(customer) || "नाम छैन") +
-          "</strong></td>" +
-          "<td>" + escapeHTML(customer.phone || "—") + "</td>" +
-          "<td>" + escapeHTML(customer.address || "—") + "</td>" +
-          "<td>" + money(salesTotal) + "</td>" +
-          "<td>" + money(balanceTotal) + "</td>" +
-          '<td><div class="customer-actions">' +
-            '<button type="button" class="customer-btn" data-edit="' +
-              escapeHTML(customer.id) +
-            '">सम्पादन</button>' +
-            '<button type="button" class="customer-btn danger" data-delete="' +
-              escapeHTML(customer.id) +
-            '">हटाउनुहोस्</button>' +
-          "</div></td>" +
-        "</tr>"
-      );
+      return "<tr>" +
+        "<td>" + (i + 1) + "</td>" +
+        "<td><strong>" + escapeHTML(customerName(c) || "नाम छैन") + "</strong></td>" +
+        "<td>" + escapeHTML(c.phone || "—") + "</td>" +
+        "<td>" + escapeHTML(c.address || "—") + "</td>" +
+        "<td>" + money(amount) + "</td>" +
+        "<td>" + money(due) + "</td>" +
+        '<td><div class="customer-actions">' +
+        '<button type="button" class="customer-btn" data-edit="' +
+        escapeHTML(c.id) + '">सम्पादन</button>' +
+        '<button type="button" class="customer-btn danger" data-delete="' +
+        escapeHTML(c.id) + '">हटाउनुहोस्</button>' +
+        "</div></td></tr>";
     }).join("");
   }
 
   function editCustomer(id) {
     try {
-      const customers = getCustomers();
+      const c = readArray(CUSTOMER_KEY).find(x => String(x.id) === String(id));
+      if (!c) return error("ग्राहक भेटिएन।");
 
-      const customer = customers.find(function (item) {
-        return String(item.id) === String(id);
-      });
-
-      if (!customer) {
-        showError("सम्पादन गर्न खोजिएको ग्राहक भेटिएन।");
-        return;
-      }
-
-      editingId = String(customer.id);
-
+      editingId = String(c.id);
       $("customerId").value = editingId;
-      $("customerName").value =
-        customer.name || customer.customerName || "";
-      $("customerPhone").value = customer.phone || "";
-      $("customerEmail").value = customer.email || "";
-      $("customerAddress").value = customer.address || "";
-      $("customerNote").value = customer.note || "";
-      $("customerOpeningBalance").value =
-        num(customer.openingBalance);
-
+      $("customerName").value = c.name || c.customerName || "";
+      $("customerPhone").value = c.phone || "";
+      $("customerEmail").value = c.email || "";
+      $("customerAddress").value = c.address || "";
+      $("customerNote").value = c.note || "";
+      $("customerOpeningBalance").value = num(c.openingBalance);
       $("customerFormTitle").textContent = "ग्राहक विवरण सम्पादन";
-
       clearError();
-      openModal();
-    } catch (error) {
-      console.error("Edit customer error:", error);
-      showError("ग्राहक विवरण खोल्न सकिएन: " + error.message);
+
+      $("customerFormCard").classList.add("show");
+      $("customerFormCard").setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    } catch (e) {
+      error("ग्राहक खोल्न सकिएन: " + e.message);
     }
   }
 
@@ -335,66 +200,36 @@
       const note = $("customerNote").value.trim();
       const openingBalance = num($("customerOpeningBalance").value);
 
-      if (!name) {
-        showError("कृपया ग्राहकको नाम राख्नुहोस्।");
-        $("customerName").focus();
-        return;
-      }
+      if (!name) return error("ग्राहकको नाम राख्नुहोस्।");
+      if (openingBalance < 0) return error("सुरुको बाँकी रकम ऋणात्मक हुन मिल्दैन।");
 
-      if (openingBalance < 0) {
-        showError("सुरुको बाँकी रकम ऋणात्मक हुन मिल्दैन।");
-        return;
-      }
+      const customers = readArray(CUSTOMER_KEY);
 
-      const customers = getCustomers();
+      const duplicate = customers.find(c =>
+        String(c.id) !== String(editingId || "") &&
+        customerName(c).toLowerCase() === name.toLowerCase() &&
+        phone !== "" && String(c.phone || "").trim() === phone
+      );
 
-      const duplicate = customers.find(function (customer) {
-        return (
-          String(customer.id) !== String(editingId || "") &&
-          getCustomerName(customer).toLowerCase() === name.toLowerCase() &&
-          phone !== "" &&
-          String(customer.phone || "").trim() === phone
-        );
-      });
+      if (duplicate) return error("यही नाम र मोबाइल नम्बर भएको ग्राहक पहिल्यै छ।");
 
-      if (duplicate) {
-        showError("यही नाम र मोबाइल नम्बर भएको ग्राहक पहिल्यै छ।");
-        return;
-      }
-
-      const wasEditing = Boolean(editingId);
       const now = new Date().toISOString();
+      const wasEditing = Boolean(editingId);
 
       if (wasEditing) {
-        const index = customers.findIndex(function (customer) {
-          return String(customer.id) === String(editingId);
-        });
-
-        if (index === -1) {
-          showError("सम्पादन गर्न खोजिएको ग्राहक भेटिएन।");
-          return;
-        }
+        const index = customers.findIndex(c => String(c.id) === editingId);
+        if (index < 0) return error("सम्पादन गर्ने ग्राहक भेटिएन।");
 
         customers[index] = {
           ...customers[index],
-          name: name,
-          phone: phone,
-          email: email,
-          address: address,
-          note: note,
-          openingBalance: openingBalance,
+          name, phone, email, address, note, openingBalance,
           updatedAt: now
         };
       } else {
         customers.push({
           id: "CUST-" + Date.now() + "-" +
             Math.random().toString(36).slice(2, 7).toUpperCase(),
-          name: name,
-          phone: phone,
-          email: email,
-          address: address,
-          note: note,
-          openingBalance: openingBalance,
+          name, phone, email, address, note, openingBalance,
           active: true,
           createdAt: now,
           updatedAt: now
@@ -403,166 +238,70 @@
 
       writeArray(CUSTOMER_KEY, customers);
 
-      hideForm();
-      render();
+      window.closeCustomerPopup();
+      $("customerForm").reset();
+      $("customerId").value = "";
+      $("customerOpeningBalance").value = "0";
+      editingId = null;
 
-      alert(wasEditing
-        ? "ग्राहक विवरण अपडेट भयो।"
-        : "नयाँ ग्राहक सुरक्षित भयो।");
-    } catch (error) {
-      console.error("Save customer error:", error);
-      showError(
-        "ग्राहक सुरक्षित गर्न सकिएन। पुरानो डेटा सुरक्षित राखिएको छ। विवरण: " +
-        error.message
-      );
+      render();
+      alert(wasEditing ? "ग्राहक विवरण अपडेट भयो।" : "नयाँ ग्राहक सुरक्षित भयो।");
+    } catch (e) {
+      error("ग्राहक सुरक्षित गर्न सकिएन: " + e.message);
     }
   }
 
   function deleteCustomer(id) {
     try {
-      const customers = getCustomers();
+      const customers = readArray(CUSTOMER_KEY);
+      const c = customers.find(x => String(x.id) === String(id));
+      if (!c) return error("ग्राहक भेटिएन।");
 
-      const customer = customers.find(function (item) {
-        return String(item.id) === String(id);
-      });
-
-      if (!customer) {
-        showError("ग्राहक रेकर्ड भेटिएन।");
+      if (customerSales(c, salesList()).length) {
+        alert("यो ग्राहकको बिक्री इतिहास छ। इतिहास सुरक्षित राख्न ग्राहक हटाउन मिल्दैन।");
         return;
       }
 
-      const linkedSales = getCustomerSales(customer, getSales());
+      if (!confirm("के " + customerName(c) + " लाई हटाउन चाहनुहुन्छ?")) return;
 
-      if (linkedSales.length > 0) {
-        alert(
-          "यो ग्राहकको बिक्री इतिहास छ। बिक्री इतिहास सुरक्षित राख्न " +
-          "यो ग्राहक हटाउन मिल्दैन। आवश्यक परे सम्पादन गर्नुहोस्।"
-        );
-        return;
-      }
-
-      if (!confirm(
-        "के तपाईं " + getCustomerName(customer) +
-        " लाई ग्राहक सूचीबाट हटाउन चाहनुहुन्छ?"
-      )) {
-        return;
-      }
-
-      writeArray(
-        CUSTOMER_KEY,
-        customers.filter(function (item) {
-          return String(item.id) !== String(id);
-        })
-      );
-
+      writeArray(CUSTOMER_KEY, customers.filter(x => String(x.id) !== String(id)));
       render();
-      alert("ग्राहक सूचीबाट हटाइयो।");
-    } catch (error) {
-      console.error("Delete customer error:", error);
-      showError("ग्राहक हटाउन सकिएन: " + error.message);
+      alert("ग्राहक हटाइयो।");
+    } catch (e) {
+      error("ग्राहक हटाउन सकिएन: " + e.message);
     }
   }
 
   function init() {
-    if (initialized) return;
-    initialized = true;
-
-    const requiredIds = [
-      "newCustomerBtn",
-      "customerFormCard",
-      "customerForm",
-      "customerId",
-      "customerName",
-      "customerPhone",
-      "customerEmail",
-      "customerAddress",
-      "customerNote",
-      "customerOpeningBalance",
-      "cancelCustomerBtn",
-      "closeCustomerModal",
-      "customerSearch",
-      "customersTableBody",
-      "totalCustomers",
-      "customerSalesTotal",
-      "customerPaidTotal",
-      "customerBalanceTotal",
-      "customerFormTitle",
-      "customerError"
-    ];
-
-    const missing = requiredIds.filter(function (id) {
-      return !$(id);
-    });
-
-    if (missing.length) {
-      alert("HTML मा आवश्यक ID भेटिएन: " + missing.join(", "));
-      return;
-    }
-
-    $("newCustomerBtn").addEventListener(
-      "click",
-      resetCustomerFormForNew
-    );
-
-    $("cancelCustomerBtn").addEventListener("click", hideForm);
-    $("closeCustomerModal").addEventListener("click", hideForm);
     $("customerForm").addEventListener("submit", saveCustomer);
-
-    $("customerForm").addEventListener("reset", function () {
-      window.setTimeout(function () {
-        if (!editingId && $("customerOpeningBalance")) {
-          $("customerOpeningBalance").value = "0";
-        }
-      }, 0);
-    });
-
-    $("customerFormCard").addEventListener("click", function (event) {
-      if (event.target === $("customerFormCard")) {
-        hideForm();
-      }
-    });
-
-    document.addEventListener("keydown", function (event) {
-      if (
-        event.key === "Escape" &&
-        $("customerFormCard").classList.contains("show")
-      ) {
-        hideForm();
-      }
-    });
 
     $("customerSearch").addEventListener("input", function () {
       try {
         render();
-      } catch (error) {
-        showError("ग्राहक सूची देखाउन सकिएन: " + error.message);
+      } catch (e) {
+        error("ग्राहक सूची लोड गर्न सकिएन: " + e.message);
       }
     });
 
     $("customersTableBody").addEventListener("click", function (event) {
       const target = event.target;
-
       if (!(target instanceof Element)) return;
 
-      const editButton = target.closest("[data-edit]");
-      const deleteButton = target.closest("[data-delete]");
+      const edit = target.closest("[data-edit]");
+      const del = target.closest("[data-delete]");
 
-      if (editButton) {
-        editCustomer(editButton.getAttribute("data-edit"));
-      } else if (deleteButton) {
-        deleteCustomer(deleteButton.getAttribute("data-delete"));
-      }
+      if (edit) editCustomer(edit.getAttribute("data-edit"));
+      if (del) deleteCustomer(del.getAttribute("data-delete"));
     });
 
     try {
       render();
-    } catch (error) {
-      console.error("Customer load error:", error);
-      showError("ग्राहक डेटा लोड गर्न सकिएन: " + error.message);
+    } catch (e) {
+      error("ग्राहक विवरण लोड गर्न सकिएन: " + e.message);
     }
   }
 
-  window.resetCustomerFormForNew = resetCustomerFormForNew;
+  window.submitCustomerForm = saveCustomer;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
