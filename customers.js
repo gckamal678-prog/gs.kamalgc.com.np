@@ -1,4 +1,3 @@
-
 "use strict";
 
 (function () {
@@ -46,15 +45,13 @@
     return String(value == null ? "" : value).replace(
       /[&<>"']/g,
       function (char) {
-        const entities = {
+        return {
           "&": "&amp;",
           "<": "&lt;",
           ">": "&gt;",
           '"': "&quot;",
           "'": "&#39;"
-        };
-
-        return entities[char];
+        }[char];
       }
     );
   }
@@ -65,7 +62,6 @@
     if (box) {
       box.textContent = message;
       box.style.display = "block";
-      box.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } else {
       alert(message);
     }
@@ -102,6 +98,18 @@
     return num(sale.total ?? sale.amount);
   }
 
+  function getSalePaid(sale) {
+    if (sale.paidAmount !== undefined && sale.paidAmount !== null) {
+      return Math.max(0, num(sale.paidAmount));
+    }
+
+    if (sale.paid !== undefined && sale.paid !== null) {
+      return Math.max(0, num(sale.paid));
+    }
+
+    return Math.max(0, getSaleTotal(sale) - getSaleBalance(sale));
+  }
+
   function getSaleBalance(sale) {
     if (sale.balance !== undefined && sale.balance !== null) {
       return Math.max(0, num(sale.balance));
@@ -132,66 +140,57 @@
     });
   }
 
-  function showForm(isEditing) {
-    const panel = $("customerFormCard");
+  function openModal() {
+    const modal = $("customerFormCard");
 
-    if (!panel) {
+    if (!modal) {
       showError("ग्राहक फारम भेटिएन।");
       return;
     }
 
-    panel.classList.remove("customer-form-hidden");
-    panel.style.removeProperty("display");
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
 
-    if ($("customerFormTitle")) {
-      $("customerFormTitle").textContent = isEditing
-        ? "ग्राहक विवरण सम्पादन"
-        : "नयाँ ग्राहक विवरण";
+    if ($("customerName")) {
+      $("customerName").focus();
+    }
+  }
+
+  function closeModal() {
+    const modal = $("customerFormCard");
+
+    if (modal) {
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden", "true");
     }
 
-    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.body.style.removeProperty("overflow");
+  }
 
-    if ($("customerName")) $("customerName").focus();
+  function resetCustomerFormForNew() {
+    editingId = null;
+
+    $("customerForm").reset();
+    $("customerId").value = "";
+    $("customerOpeningBalance").value = "0";
+    $("customerFormTitle").textContent = "नयाँ ग्राहक विवरण";
+
+    clearError();
+    openModal();
   }
 
   function hideForm() {
-    const panel = $("customerFormCard");
-    const form = $("customerForm");
-
-    if (panel) {
-      panel.classList.add("customer-form-hidden");
-      panel.style.removeProperty("display");
-    }
-
-    if (form) form.reset();
-
-    if ($("customerId")) $("customerId").value = "";
-    if ($("customerOpeningBalance")) {
-      $("customerOpeningBalance").value = "0";
-    }
+    $("customerForm").reset();
+    $("customerId").value = "";
+    $("customerOpeningBalance").value = "0";
 
     editingId = null;
+
     clearError();
+    closeModal();
   }
 
-  // HTML को बटनले यो फङ्सन बोलाउँछ।
-  window.resetCustomerFormForNew = function () {
-    editingId = null;
-
-    const form = $("customerForm");
-
-    if (form) form.reset();
-
-    if ($("customerId")) $("customerId").value = "";
-    if ($("customerOpeningBalance")) {
-      $("customerOpeningBalance").value = "0";
-    }
-
-    clearError();
-    showForm(false);
-  };
-
-  // पुरानो बिक्री र ग्राहक डेटा नबिगारी सूची देखाउने।
   function render() {
     const customers = getCustomers();
     const sales = getSales();
@@ -201,39 +200,37 @@
       throw new Error("ग्राहक सूचीको तालिका भेटिएन।");
     }
 
-    const query = String(
-      $("customerSearch") ? $("customerSearch").value : ""
-    ).trim().toLowerCase();
+    const query = String($("customerSearch").value || "")
+      .trim()
+      .toLowerCase();
 
     let totalSales = 0;
+    let totalPaid = 0;
     let totalBalance = 0;
 
-    // ग्राहक नामबाट मिल्ने बिक्रीलाई एकपटक मात्र जोड्ने।
     const assignedSales = new Set();
 
     customers.forEach(function (customer) {
       getCustomerSales(customer, sales).forEach(function (sale) {
-        const key = sale.id || sale.billNumber || sale;
+        const key = sale.id
+          ? "id:" + sale.id
+          : sale.billNumber
+            ? "bill:" + sale.billNumber
+            : sale;
 
         if (!assignedSales.has(key)) {
           assignedSales.add(key);
           totalSales += getSaleTotal(sale);
+          totalPaid += getSalePaid(sale);
           totalBalance += getSaleBalance(sale);
         }
       });
     });
 
-    if ($("totalCustomers")) {
-      $("totalCustomers").textContent = customers.length;
-    }
-
-    if ($("customerSalesTotal")) {
-      $("customerSalesTotal").textContent = money(totalSales);
-    }
-
-    if ($("customerBalanceTotal")) {
-      $("customerBalanceTotal").textContent = money(totalBalance);
-    }
+    $("totalCustomers").textContent = customers.length;
+    $("customerSalesTotal").textContent = money(totalSales);
+    $("customerPaidTotal").textContent = money(totalPaid);
+    $("customerBalanceTotal").textContent = money(totalBalance);
 
     const filtered = customers.filter(function (customer) {
       const searchText = [
@@ -249,7 +246,7 @@
 
     if (!filtered.length) {
       tbody.innerHTML =
-        '<tr><td colspan="7" style="text-align:center;padding:20px;">' +
+        '<tr><td colspan="7" class="customer-empty">' +
         (query
           ? "खोजिएको ग्राहक भेटिएन।"
           : "अहिलेसम्म ग्राहक थपिएको छैन।") +
@@ -279,10 +276,10 @@
           "<td>" + money(salesTotal) + "</td>" +
           "<td>" + money(balanceTotal) + "</td>" +
           '<td><div class="customer-actions">' +
-            '<button type="button" class="customer-edit" data-edit="' +
+            '<button type="button" class="customer-btn" data-edit="' +
               escapeHTML(customer.id) +
             '">सम्पादन</button>' +
-            '<button type="button" class="customer-delete" data-delete="' +
+            '<button type="button" class="customer-btn danger" data-delete="' +
               escapeHTML(customer.id) +
             '">हटाउनुहोस्</button>' +
           "</div></td>" +
@@ -307,14 +304,19 @@
       editingId = String(customer.id);
 
       $("customerId").value = editingId;
-      $("customerName").value = customer.name || customer.customerName || "";
+      $("customerName").value =
+        customer.name || customer.customerName || "";
       $("customerPhone").value = customer.phone || "";
       $("customerEmail").value = customer.email || "";
       $("customerAddress").value = customer.address || "";
       $("customerNote").value = customer.note || "";
-      $("customerOpeningBalance").value = num(customer.openingBalance);
+      $("customerOpeningBalance").value =
+        num(customer.openingBalance);
 
-      showForm(true);
+      $("customerFormTitle").textContent = "ग्राहक विवरण सम्पादन";
+
+      clearError();
+      openModal();
     } catch (error) {
       console.error("Edit customer error:", error);
       showError("ग्राहक विवरण खोल्न सकिएन: " + error.message);
@@ -477,8 +479,15 @@
       "customerNote",
       "customerOpeningBalance",
       "cancelCustomerBtn",
+      "closeCustomerModal",
       "customerSearch",
-      "customersTableBody"
+      "customersTableBody",
+      "totalCustomers",
+      "customerSalesTotal",
+      "customerPaidTotal",
+      "customerBalanceTotal",
+      "customerFormTitle",
+      "customerError"
     ];
 
     const missing = requiredIds.filter(function (id) {
@@ -486,17 +495,41 @@
     });
 
     if (missing.length) {
-      showError("HTML मा आवश्यक ID भेटिएन: " + missing.join(", "));
+      alert("HTML मा आवश्यक ID भेटिएन: " + missing.join(", "));
       return;
     }
 
-    $("newCustomerBtn").addEventListener("click", function (event) {
-      event.preventDefault();
-      window.resetCustomerFormForNew();
-    });
+    $("newCustomerBtn").addEventListener(
+      "click",
+      resetCustomerFormForNew
+    );
 
     $("cancelCustomerBtn").addEventListener("click", hideForm);
+    $("closeCustomerModal").addEventListener("click", hideForm);
     $("customerForm").addEventListener("submit", saveCustomer);
+
+    $("customerForm").addEventListener("reset", function () {
+      window.setTimeout(function () {
+        if (!editingId && $("customerOpeningBalance")) {
+          $("customerOpeningBalance").value = "0";
+        }
+      }, 0);
+    });
+
+    $("customerFormCard").addEventListener("click", function (event) {
+      if (event.target === $("customerFormCard")) {
+        hideForm();
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (
+        event.key === "Escape" &&
+        $("customerFormCard").classList.contains("show")
+      ) {
+        hideForm();
+      }
+    });
 
     $("customerSearch").addEventListener("input", function () {
       try {
@@ -521,17 +554,15 @@
       }
     });
 
-    hideForm();
-
     try {
       render();
     } catch (error) {
       console.error("Customer load error:", error);
-      showError(
-        "ग्राहक डेटा लोड गर्न सकिएन। विवरण: " + error.message
-      );
+      showError("ग्राहक डेटा लोड गर्न सकिएन: " + error.message);
     }
   }
+
+  window.resetCustomerFormForNew = resetCustomerFormForNew;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
