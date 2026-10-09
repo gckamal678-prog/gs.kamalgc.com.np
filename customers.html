@@ -1,246 +1,196 @@
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Management | General Store</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Management | General Store</title>
+<link rel="stylesheet" href="style.css">
 
-  <style>
-    .customer-wrap{max-width:1400px;margin:auto;padding:20px}
-    .customer-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-    .customer-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
-    .customer-stat,.customer-panel{background:var(--card-bg,#fff);border:1px solid #e5e7eb;border-radius:14px;padding:16px}
-    .customer-stat span{display:block;color:#6b7280;font-size:13px}
-    .customer-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
-    .customer-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-    .customer-toolbar input{flex:1;min-width:0;width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
-    .customer-table-wrap{overflow-x:auto}
-    .customer-table{width:100%;border-collapse:collapse;min-width:850px}
-    .customer-table th,.customer-table td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}
-    .customer-table th{font-size:13px;color:#6b7280}
-    .customer-modal{display:none;position:fixed;inset:0;z-index:1000;background:#0008;overflow:auto;padding:20px}
-    .customer-modal.show{display:block}
-    .customer-dialog{background:var(--card-bg,#fff);width:min(900px,100%);margin:20px auto;border-radius:16px;padding:22px;box-sizing:border-box}
-    .customer-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
-    .customer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-    .customer-field{display:flex;flex-direction:column;gap:6px;min-width:0}
-    .customer-field label{font-size:13px;font-weight:600}
-    .customer-field input,.customer-field textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
-    .customer-field small{font-size:12px;color:#6b7280}
-    .customer-actions{display:flex;gap:6px;flex-wrap:wrap}
-    .customer-btn{padding:10px 15px;border:1px solid #d1d5db;border-radius:9px;cursor:pointer;background:transparent;color:inherit}
-    .customer-btn.primary{background:#166534;color:#fff;border-color:#166534}
-    .customer-btn.danger{color:#b91c1c}
-    .customer-error{display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:12px;margin-bottom:14px;overflow-wrap:anywhere}
-    .customer-note{font-size:12px;color:#6b7280;margin-top:8px}
-    .customer-empty{text-align:center;padding:35px;color:#6b7280}
-    .customer-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px;margin:18px 0 0 auto}
-    .customer-summary div{display:flex;justify-content:space-between;gap:16px;padding:5px 0}
-    .customer-summary .grand{border-top:1px solid #d1d5db;padding-top:12px;font-size:18px;font-weight:700}
-    .customer-form-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
-    .customer-info{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:13px;margin-top:18px}
-    .customer-info p{margin:6px 0 0;font-size:13px}
-    @media(max-width:800px){
-      .customer-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .customer-wrap{padding:12px}
-      .customer-dialog{padding:15px;margin:5px auto}
-    }
-    @media(max-width:520px){
-      .customer-grid{grid-template-columns:1fr}
-      .customer-modal{padding:8px}
-      .customer-summary{max-width:none}
-      .customer-stat strong{font-size:17px}
-    }
-  </style>
+<style>
+.customer-wrap{max-width:1400px;margin:auto;padding:20px}
+.customer-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.customer-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
+.customer-stat,.customer-panel{background:var(--card-bg,#fff);border:1px solid #e5e7eb;border-radius:14px;padding:16px}
+.customer-stat span{display:block;color:#6b7280;font-size:13px}
+.customer-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
+.customer-toolbar{display:flex;gap:10px;margin-bottom:14px}
+.customer-toolbar input{flex:1;min-width:0;width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
+.customer-table-wrap{overflow-x:auto}
+.customer-table{width:100%;border-collapse:collapse;min-width:850px}
+.customer-table th,.customer-table td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}
+.customer-table th{font-size:13px;color:#6b7280}
+.customer-btn{padding:10px 15px;border:1px solid #d1d5db;border-radius:9px;cursor:pointer;background:transparent;color:inherit}
+.customer-btn.primary{background:#166534;color:#fff;border-color:#166534}
+.customer-btn.danger{color:#b91c1c}
+.customer-actions{display:flex;gap:6px;flex-wrap:wrap}
+.customer-empty{text-align:center;padding:35px;color:#6b7280}
+.customer-error{display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:12px;margin-bottom:14px;overflow-wrap:anywhere}
+.customer-modal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);overflow-y:auto;padding:20px;box-sizing:border-box}
+.customer-modal.show{display:block!important}
+.customer-dialog{background:var(--card-bg,#fff);color:var(--text-color,inherit);width:min(900px,100%);margin:20px auto;border-radius:16px;padding:22px;box-sizing:border-box;box-shadow:0 15px 50px #0003}
+.customer-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.customer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.customer-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.customer-field label{font-size:13px;font-weight:600}
+.customer-field input,.customer-field textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
+.customer-info{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:13px;margin-top:18px}
+.customer-info p{margin:6px 0 0;font-size:13px}
+.customer-form-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
+@media(max-width:800px){.customer-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.customer-wrap{padding:12px}.customer-dialog{padding:15px;margin:5px auto}}
+@media(max-width:520px){.customer-grid{grid-template-columns:1fr}.customer-modal{padding:8px}.customer-stat strong{font-size:17px}}
+</style>
 </head>
 
 <body>
-  <aside class="sidebar">
-    <h2>General Store</h2>
-    <nav>
-      <a class="menu-item" href="index.html">Dashboard</a>
-      <a class="menu-item" href="sale.html">New Sale</a>
-      <a class="menu-item" href="purchase.html">Purchase</a>
-      <a class="menu-item" href="inventory.html">Inventory</a>
-      <a class="menu-item" href="sales-return.html">Sales Return</a>
-      <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
-      <a class="menu-item active" href="customers.html">Customers</a>
-      <a class="menu-item" href="suppliers.html">Suppliers</a>
-      <a class="menu-item" href="finance.html">Finance</a>
-      <a class="menu-item" href="reports.html">Reports</a>
-      <a class="menu-item" href="whatsapp.html">WhatsApp</a>
-      <a class="menu-item" href="ai.html">AI Assistant</a>
-      <a class="menu-item" href="settings.html">Settings</a>
-    </nav>
-  </aside>
+<aside class="sidebar">
+<h2>General Store</h2>
+<nav>
+<a class="menu-item" href="index.html">Dashboard</a>
+<a class="menu-item" href="sale.html">New Sale</a>
+<a class="menu-item" href="purchase.html">Purchase</a>
+<a class="menu-item" href="inventory.html">Inventory</a>
+<a class="menu-item" href="sales-return.html">Sales Return</a>
+<a class="menu-item" href="stock-lots.html">FIFO Lots</a>
+<a class="menu-item active" href="customers.html">Customers</a>
+<a class="menu-item" href="suppliers.html">Suppliers</a>
+<a class="menu-item" href="finance.html">Finance</a>
+<a class="menu-item" href="reports.html">Reports</a>
+<a class="menu-item" href="whatsapp.html">WhatsApp</a>
+<a class="menu-item" href="ai.html">AI Assistant</a>
+<a class="menu-item" href="settings.html">Settings</a>
+</nav>
+</aside>
 
-  <main class="customer-wrap">
-    <div class="customer-top">
-      <div>
-        <h1>Customer Management</h1>
-        <p>ग्राहक विवरण, बिक्री, प्राप्त रकम र बाँकी रकम</p>
-      </div>
-      <button id="newCustomerBtn" class="customer-btn primary" type="button">
-        + New Customer
-      </button>
-    </div>
+<main class="customer-wrap">
+<div class="customer-top">
+<div>
+<h1>Customer Management</h1>
+<p>ग्राहक विवरण, बिक्री, प्राप्त रकम र बाँकी रकम</p>
+</div>
+<button id="newCustomerBtn" class="customer-btn primary" type="button"
+onclick="window.openNewCustomerPopup()">+ New Customer</button>
+</div>
 
-    <section class="customer-stats">
-      <div class="customer-stat">
-        <span>कुल ग्राहक</span>
-        <strong id="totalCustomers">0</strong>
-      </div>
-      <div class="customer-stat">
-        <span>कुल बिक्री रकम</span>
-        <strong id="customerSalesTotal">रु. 0.00</strong>
-      </div>
-      <div class="customer-stat">
-        <span>कुल प्राप्त रकम</span>
-        <strong id="customerPaidTotal">रु. 0.00</strong>
-      </div>
-      <div class="customer-stat">
-        <span>बाँकी बिक्री रकम</span>
-        <strong id="customerBalanceTotal">रु. 0.00</strong>
-      </div>
-    </section>
+<section class="customer-stats">
+<div class="customer-stat"><span>कुल ग्राहक</span><strong id="totalCustomers">0</strong></div>
+<div class="customer-stat"><span>कुल बिक्री रकम</span><strong id="customerSalesTotal">रु. 0.00</strong></div>
+<div class="customer-stat"><span>कुल प्राप्त रकम</span><strong id="customerPaidTotal">रु. 0.00</strong></div>
+<div class="customer-stat"><span>बाँकी बिक्री रकम</span><strong id="customerBalanceTotal">रु. 0.00</strong></div>
+</section>
 
-    <section class="customer-panel">
-      <div class="customer-toolbar">
-        <input
-          id="customerSearch"
-          type="search"
-          placeholder="ग्राहकको नाम, मोबाइल, इमेल वा ठेगाना खोज्नुहोस्"
-          aria-label="ग्राहक खोज्नुहोस्"
-        >
-      </div>
+<section class="customer-panel">
+<div class="customer-toolbar">
+<input id="customerSearch" type="search" placeholder="ग्राहकको नाम, मोबाइल, इमेल वा ठेगाना खोज्नुहोस्">
+</div>
+<div class="customer-table-wrap">
+<table class="customer-table">
+<thead><tr>
+<th>क्र.सं.</th><th>ग्राहकको नाम</th><th>मोबाइल</th><th>ठेगाना</th><th>कुल बिक्री</th><th>बाँकी रकम</th><th>कार्य</th>
+</tr></thead>
+<tbody id="customersTableBody">
+<tr><td colspan="7" class="customer-empty">ग्राहक विवरण लोड हुँदैछ...</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
 
-      <div class="customer-table-wrap">
-        <table class="customer-table">
-          <thead>
-            <tr>
-              <th>क्र.सं.</th>
-              <th>ग्राहकको नाम</th>
-              <th>मोबाइल</th>
-              <th>ठेगाना</th>
-              <th>कुल बिक्री</th>
-              <th>बाँकी रकम</th>
-              <th>कार्य</th>
-            </tr>
-          </thead>
-          <tbody id="customersTableBody">
-            <tr>
-              <td colspan="7" class="customer-empty">ग्राहक विवरण लोड हुँदैछ...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+<div class="customer-modal" id="customerFormCard" aria-hidden="true">
+<section class="customer-dialog" role="dialog" aria-modal="true" aria-labelledby="customerFormTitle">
+<div class="customer-dialog-head">
+<div>
+<h2 id="customerFormTitle">नयाँ ग्राहक विवरण</h2>
+<p>ग्राहकको विवरण भर्नुहोस्।</p>
+</div>
+<button type="button" id="closeCustomerModal" class="customer-btn" onclick="window.closeCustomerPopup()">✕</button>
+</div>
 
-  <div class="customer-modal" id="customerFormCard" aria-hidden="true">
-    <section class="customer-dialog">
-      <div class="customer-dialog-head">
-        <div>
-          <h2 id="customerFormTitle">नयाँ ग्राहक विवरण</h2>
-          <p>ग्राहकको व्यक्तिगत विवरण भर्नुहोस्।</p>
-        </div>
-        <button
-          type="button"
-          id="closeCustomerModal"
-          class="customer-btn"
-          aria-label="बन्द गर्नुहोस्"
-        >✕</button>
-      </div>
+<div id="customerError" class="customer-error" role="alert"></div>
 
-      <div id="customerError" class="customer-error" role="alert"></div>
+<form id="customerForm" onsubmit="return window.submitCustomerForm(event)">
+<input type="hidden" id="customerId">
 
-      <form id="customerForm">
-        <input type="hidden" id="customerId">
+<div class="customer-grid">
+<div class="customer-field">
+<label for="customerName">ग्राहकको नाम *</label>
+<input id="customerName" type="text" maxlength="120" required>
+</div>
+<div class="customer-field">
+<label for="customerPhone">मोबाइल नम्बर</label>
+<input id="customerPhone" type="tel" maxlength="30">
+</div>
+<div class="customer-field">
+<label for="customerEmail">इमेल</label>
+<input id="customerEmail" type="email" maxlength="150">
+</div>
+<div class="customer-field">
+<label for="customerOpeningBalance">सुरुको बाँकी रकम</label>
+<input id="customerOpeningBalance" type="number" min="0" step="0.01" value="0">
+</div>
+<div class="customer-field" style="grid-column:1/-1">
+<label for="customerAddress">ठेगाना</label>
+<input id="customerAddress" type="text" maxlength="250">
+</div>
+<div class="customer-field" style="grid-column:1/-1">
+<label for="customerNote">टिप्पणी</label>
+<textarea id="customerNote" rows="3" maxlength="500"></textarea>
+</div>
+</div>
 
-        <div class="customer-grid">
-          <div class="customer-field">
-            <label for="customerName">ग्राहकको नाम *</label>
-            <input
-              type="text"
-              id="customerName"
-              maxlength="120"
-              placeholder="पूरा नाम"
-              required
-            >
-          </div>
+<div class="customer-info">
+<strong>ध्यान दिनुहोस्</strong>
+<p>ग्राहकको विवरण सुरक्षित हुनेछ। बिक्री इतिहास भएको ग्राहकलाई हटाउन दिइने छैन।</p>
+</div>
 
-          <div class="customer-field">
-            <label for="customerPhone">मोबाइल नम्बर</label>
-            <input
-              type="tel"
-              id="customerPhone"
-              maxlength="30"
-              placeholder="मोबाइल नम्बर"
-            >
-          </div>
+<div class="customer-form-actions">
+<button type="button" id="cancelCustomerBtn" class="customer-btn" onclick="window.closeCustomerPopup()">Cancel</button>
+<button type="reset" class="customer-btn">Clear</button>
+<button type="submit" class="customer-btn primary">Save Customer</button>
+</div>
+</form>
+</section>
+</div>
 
-          <div class="customer-field">
-            <label for="customerEmail">इमेल</label>
-            <input
-              type="email"
-              id="customerEmail"
-              maxlength="150"
-              placeholder="example@email.com"
-            >
-          </div>
+<script>
+(function(){
+  function byId(id){return document.getElementById(id);}
 
-          <div class="customer-field">
-            <label for="customerOpeningBalance">सुरुको बाँकी रकम</label>
-            <input
-              type="number"
-              id="customerOpeningBalance"
-              min="0"
-              step="0.01"
-              value="0"
-            >
-            <small>यो रकम बिक्रीको कुल रकममा स्वतः जोडिँदैन।</small>
-          </div>
+  window.openNewCustomerPopup=function(){
+    var modal=byId("customerFormCard");
+    var form=byId("customerForm");
+    if(!modal||!form){
+      alert("ग्राहक फारम भेटिएन। customers.html को पूरा कोड राखिएको छ कि जाँच गर्नुहोस्।");
+      return;
+    }
+    form.reset();
+    byId("customerId").value="";
+    byId("customerOpeningBalance").value="0";
+    byId("customerFormTitle").textContent="नयाँ ग्राहक विवरण";
+    byId("customerError").style.display="none";
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden","false");
+    document.body.style.overflow="hidden";
+    window.setTimeout(function(){byId("customerName").focus();},50);
+  };
 
-          <div class="customer-field" style="grid-column:1/-1">
-            <label for="customerAddress">ठेगाना</label>
-            <input
-              type="text"
-              id="customerAddress"
-              maxlength="250"
-              placeholder="ग्राहकको ठेगाना"
-            >
-          </div>
+  window.closeCustomerPopup=function(){
+    var modal=byId("customerFormCard");
+    if(modal){
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden","true");
+    }
+    document.body.style.removeProperty("overflow");
+  };
 
-          <div class="customer-field" style="grid-column:1/-1">
-            <label for="customerNote">टिप्पणी</label>
-            <textarea
-              id="customerNote"
-              rows="3"
-              maxlength="500"
-              placeholder="ऐच्छिक टिप्पणी"
-            ></textarea>
-          </div>
-        </div>
+  byId("customerFormCard").addEventListener("click",function(event){
+    if(event.target===this) window.closeCustomerPopup();
+  });
 
-        <div class="customer-info">
-          <strong>ध्यान दिनुहोस्</strong>
-          <p>ग्राहकको बिक्री इतिहास सुरक्षित राखिनेछ। बिक्री इतिहास भएको ग्राहकलाई गल्तीले हटाउनबाट रोकिएको छ।</p>
-        </div>
-
-        <div class="customer-form-actions">
-          <button type="button" id="cancelCustomerBtn" class="customer-btn">
-            Cancel
-          </button>
-          <button type="reset" class="customer-btn">Clear</button>
-          <button type="submit" class="customer-btn primary">
-            Save Customer
-          </button>
-        </div>
-      </form>
-    </section>
-  </div>
-
-  <script src="customers.js"></script>
+  document.addEventListener("keydown",function(event){
+    if(event.key==="Escape") window.closeCustomerPopup();
+  });
+})();
+</script>
+<script src="customers.js"></script>
 </body>
 </html>
