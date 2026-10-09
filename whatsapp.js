@@ -1,4 +1,3 @@
-
 "use strict";
 
 /*
@@ -749,6 +748,7 @@ personSelect.addEventListener("change", () => {
   generateMessage();
 });
 
+customPhone.value = "";
 customPhone.addEventListener("input", () => {
   updatePhone();
   clearStatus();
