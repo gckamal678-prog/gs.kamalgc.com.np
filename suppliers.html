@@ -1,573 +1,684 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ne">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suppliers - General Store</title>
 
-    <title>Suppliers - General Store</title>
+  <link rel="stylesheet" href="style.css">
 
-    <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --supplier-green: #166534;
+      --supplier-green-hover: #14532d;
+      --supplier-border: #d1d5db;
+      --supplier-muted: #6b7280;
+      --supplier-card: var(--card-bg, #ffffff);
+      --supplier-bg: var(--body-bg, #f5f7f6);
+    }
 
-    <style>
-        .supplier-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.55);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        .supplier-modal.show {
-            display: flex;
-        }
+    body {
+      margin: 0;
+    }
 
-        .supplier-modal-box {
-            width: 100%;
-            max-width: 700px;
-            max-height: 92vh;
-            overflow-y: auto;
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+    .supplier-page {
+      padding: 24px;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
 
-        .supplier-form-group {
-            margin-bottom: 14px;
-        }
+    .supplier-page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
 
-        .supplier-form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
+    .supplier-page-header h1 {
+      margin: 0 0 5px;
+      font-size: 25px;
+    }
 
-        .supplier-form-group input,
-        .supplier-form-group textarea,
-        .supplier-form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 7px;
-            box-sizing: border-box;
-        }
+    .supplier-page-header p {
+      margin: 0;
+      color: var(--supplier-muted);
+      font-size: 14px;
+    }
 
-        .supplier-form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+    .supplier-btn {
+      border: 1px solid var(--supplier-border);
+      border-radius: 9px;
+      padding: 10px 15px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--supplier-card);
+      color: inherit;
+      transition: background .15s ease;
+    }
 
-        .supplier-modal-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 18px;
-        }
+    .supplier-btn:hover {
+      background: #f3f4f6;
+    }
 
-        .supplier-empty {
-            text-align: center;
-            padding: 25px;
-            color: #777;
-        }
+    .supplier-btn-primary {
+      color: #fff;
+      background: var(--supplier-green);
+      border-color: var(--supplier-green);
+    }
 
-        .supplier-status-active {
-            color: green;
-            font-weight: 600;
-        }
+    .supplier-btn-primary:hover {
+      background: var(--supplier-green-hover);
+      color: #fff;
+    }
 
-        .supplier-status-inactive {
-            color: #999;
-            font-weight: 600;
-        }
+    .supplier-btn-danger {
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
 
-        @media (max-width: 600px) {
-            .supplier-form-row {
-                grid-template-columns: 1fr;
-            }
+    .supplier-btn-small {
+      padding: 7px 10px;
+      font-size: 12px;
+    }
 
-            .supplier-modal-box {
-                padding: 15px;
-            }
-        }
-    </style>
+    .supplier-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .supplier-stat-card {
+      min-width: 0;
+      background: var(--supplier-card);
+      border: 1px solid var(--supplier-border);
+      border-radius: 14px;
+      padding: 19px;
+    }
+
+    .supplier-stat-label {
+      color: var(--supplier-muted);
+      font-size: 13px;
+      margin-bottom: 9px;
+    }
+
+    .supplier-stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .supplier-stat-value.green {
+      color: #15803d;
+    }
+
+    .supplier-stat-value.orange {
+      color: #c2410c;
+    }
+
+    .supplier-card {
+      background: var(--supplier-card);
+      border: 1px solid var(--supplier-border);
+      border-radius: 16px;
+      padding: 20px;
+      min-width: 0;
+    }
+
+    .supplier-list-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .supplier-list-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .supplier-search {
+      width: min(340px, 100%);
+      border: 1px solid var(--supplier-border);
+      border-radius: 9px;
+      padding: 10px 12px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      outline: none;
+    }
+
+    .supplier-search:focus,
+    .supplier-field input:focus,
+    .supplier-field select:focus,
+    .supplier-field textarea:focus {
+      border-color: var(--supplier-green);
+      box-shadow: 0 0 0 3px #16653418;
+    }
+
+    .supplier-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .supplier-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 850px;
+    }
+
+    .supplier-table th,
+    .supplier-table td {
+      text-align: left;
+      padding: 13px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .supplier-table th {
+      color: var(--supplier-muted);
+      font-weight: 600;
+      background: #f9fafb;
+      white-space: nowrap;
+    }
+
+    .supplier-table tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .supplier-status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .supplier-status.active {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .supplier-status.inactive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .supplier-balance-payable {
+      color: #c2410c;
+      font-weight: 700;
+    }
+
+    .supplier-balance-advance {
+      color: #15803d;
+      font-weight: 700;
+    }
+
+    .supplier-empty {
+      text-align: center !important;
+      padding: 35px 15px !important;
+      color: var(--supplier-muted);
+    }
+
+    /* Modal: Finance page कै जस्तै */
+    .supplier-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0, 0, 0, .53);
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .supplier-modal.show {
+      display: block;
+    }
+
+    .supplier-dialog {
+      background: var(--supplier-card, #fff);
+      color: inherit;
+      width: min(1000px, 100%);
+      margin: 20px auto;
+      border: 1px solid var(--supplier-border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .18);
+      animation: supplierModalIn .16s ease-out;
+    }
+
+    @keyframes supplierModalIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .supplier-modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 15px;
+      margin-bottom: 22px;
+    }
+
+    .supplier-modal-head h2 {
+      margin: 0 0 6px;
+      font-size: 21px;
+    }
+
+    .supplier-modal-head p {
+      margin: 0;
+      color: var(--supplier-muted);
+      font-size: 13px;
+    }
+
+    .supplier-modal-close {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--supplier-border);
+      border-radius: 9px;
+      background: transparent;
+      color: inherit;
+      font-size: 23px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    .supplier-modal-close:hover {
+      background: #f3f4f6;
+    }
+
+    .supplier-form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .supplier-field {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .supplier-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .supplier-field label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .supplier-field input,
+    .supplier-field select,
+    .supplier-field textarea {
+      width: 100%;
+      min-width: 0;
+      padding: 11px 12px;
+      border: 1px solid var(--supplier-border);
+      border-radius: 8px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .supplier-field select option {
+      color: #111827;
+      background: #fff;
+    }
+
+    .supplier-field textarea {
+      min-height: 85px;
+      resize: vertical;
+    }
+
+    .supplier-field small {
+      color: var(--supplier-muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .supplier-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 43px;
+    }
+
+    .supplier-checkbox-row input {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--supplier-green);
+    }
+
+    .supplier-checkbox-row label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .supplier-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-top: 1px solid #e5e7eb;
+      margin-top: 24px;
+      padding-top: 18px;
+    }
+
+    .supplier-message {
+      display: none;
+      margin-bottom: 16px;
+      border-radius: 9px;
+      padding: 11px 13px;
+      font-size: 13px;
+    }
+
+    .supplier-message.show {
+      display: block;
+    }
+
+    .supplier-message.error {
+      color: #991b1b;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+    }
+
+    .supplier-message.success {
+      color: #166534;
+      background: #dcfce7;
+      border: 1px solid #bbf7d0;
+    }
+
+    @media (max-width: 900px) {
+      .supplier-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .supplier-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .supplier-page {
+        padding: 14px;
+      }
+
+      .supplier-page-header h1 {
+        font-size: 22px;
+      }
+
+      .supplier-stats {
+        gap: 10px;
+      }
+
+      .supplier-stat-card {
+        padding: 14px;
+      }
+
+      .supplier-stat-value {
+        font-size: 20px;
+      }
+
+      .supplier-card {
+        padding: 14px;
+      }
+
+      .supplier-form-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .supplier-field.full {
+        grid-column: auto;
+      }
+
+      .supplier-modal {
+        padding: 8px;
+      }
+
+      .supplier-dialog {
+        margin: 8px auto;
+        padding: 16px;
+        border-radius: 14px;
+      }
+
+      .supplier-modal-head h2 {
+        font-size: 19px;
+      }
+
+      .supplier-modal-footer .supplier-btn {
+        flex: 1;
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <!-- तपाईंको परियोजनाको साझा sidebar/header style.css बाट आउन सक्छ -->
 
-<div class="app">
+  <main class="supplier-page">
+    <header class="supplier-page-header">
+      <div>
+        <h1>Suppliers</h1>
+        <p>आपूर्तिकर्ताको विवरण, बाँकी रकम र अग्रिम रकम व्यवस्थापन गर्नुहोस्।</p>
+      </div>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
+      <button type="button" class="supplier-btn supplier-btn-primary" id="newSupplierBtn">
+        + New Supplier
+      </button>
+    </header>
 
-        <div class="sidebar-header">
-            <h2>General Store</h2>
-        </div>
+    <section class="supplier-stats">
+      <article class="supplier-stat-card">
+        <div class="supplier-stat-label">Total Suppliers</div>
+        <div class="supplier-stat-value" id="totalSuppliers">0</div>
+      </article>
 
-        <nav class="sidebar-menu">
+      <article class="supplier-stat-card">
+        <div class="supplier-stat-label">Total Payable</div>
+        <div class="supplier-stat-value orange" id="totalSupplierPayable">रु 0.00</div>
+      </article>
 
-            <a href="index.html" class="menu-item">
-                <span class="menu-icon">🏠</span>
-                <span>Dashboard</span>
-            </a>
+      <article class="supplier-stat-card">
+        <div class="supplier-stat-label">Total Advance</div>
+        <div class="supplier-stat-value green" id="totalSupplierPaid">रु 0.00</div>
+      </article>
 
-            <a href="sale.html" class="menu-item">
-                <span class="menu-icon">🧾</span>
-                <span>New Sale</span>
-            </a>
+      <article class="supplier-stat-card">
+        <div class="supplier-stat-label">Active Suppliers</div>
+        <div class="supplier-stat-value green" id="activeSuppliers">0</div>
+      </article>
+    </section>
 
-            <a href="purchase.html" class="menu-item">
-                <span class="menu-icon">🛒</span>
-                <span>Purchase</span>
-            </a>
+    <section class="supplier-card">
+      <div class="supplier-list-head">
+        <h2>Supplier List</h2>
+        <input
+          type="search"
+          id="supplierSearch"
+          class="supplier-search"
+          placeholder="नाम, फोन वा PAN/VAT खोज्नुहोस्..."
+          autocomplete="off"
+        >
+      </div>
 
-            <a href="inventory.html" class="menu-item">
-                <span class="menu-icon">📦</span>
-                <span>Inventory</span>
-            </a>
+      <div class="supplier-table-wrap">
+        <table class="supplier-table">
+          <thead>
+            <tr>
+              <th>Supplier</th>
+              <th>Phone</th>
+              <th>PAN / VAT</th>
+              <th>Balance Type</th>
+              <th>Balance</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="supplierTableBody">
+            <tr>
+              <td colspan="7" class="supplier-empty">Supplier विवरण लोड हुँदैछ...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
-            <a href="customers.html" class="menu-item">
-                <span class="menu-icon">👥</span>
-                <span>Customers</span>
-            </a>
-
-            <a href="suppliers.html" class="menu-item active">
-                <span class="menu-icon">🚚</span>
-                <span>Suppliers</span>
-            </a>
-
-            <a href="finance.html" class="menu-item">
-                <span class="menu-icon">💰</span>
-                <span>Finance</span>
-            </a>
-
-            <a href="reports.html" class="menu-item">
-                <span class="menu-icon">📊</span>
-                <span>Reports</span>
-            </a>
-
-            <a href="whatsapp.html" class="menu-item">
-                <span class="menu-icon">📱</span>
-                <span>WhatsApp</span>
-            </a>
-
-            <a href="ai.html" class="menu-item">
-                <span class="menu-icon">🤖</span>
-                <span>AI Assistant</span>
-            </a>
-
-            <a href="settings.html" class="menu-item">
-                <span class="menu-icon">⚙️</span>
-                <span>Settings</span>
-            </a>
-
-        </nav>
-
-    </aside>
-
-
-    <!-- Main Content -->
-    <main class="main-content">
-
-        <header class="topbar">
-
-            <div>
-                <h1>Suppliers</h1>
-                <p>Manage suppliers and payable balances</p>
-            </div>
-
-            <button
-                type="button"
-                id="newSupplierBtn"
-                class="btn btn-primary"
-            >
-                + New Supplier
-            </button>
-
-        </header>
-
-
-        <!-- Summary -->
-        <section class="dashboard-grid">
-
-            <div class="stat-card">
-                <div class="stat-title">
-                    Total Suppliers
-                </div>
-
-                <div
-                    class="stat-value"
-                    id="totalSuppliers"
-                >
-                    0
-                </div>
-            </div>
-
-
-            <div class="stat-card">
-                <div class="stat-title">
-                    Total Payable
-                </div>
-
-                <div
-                    class="stat-value"
-                    id="totalSupplierPayable"
-                >
-                    Rs. 0.00
-                </div>
-            </div>
-
-
-            <div class="stat-card">
-                <div class="stat-title">
-                    Total Paid
-                </div>
-
-                <div
-                    class="stat-value"
-                    id="totalSupplierPaid"
-                >
-                    Rs. 0.00
-                </div>
-            </div>
-
-
-            <div class="stat-card">
-                <div class="stat-title">
-                    Active Suppliers
-                </div>
-
-                <div
-                    class="stat-value"
-                    id="activeSuppliers"
-                >
-                    0
-                </div>
-            </div>
-
-        </section>
-
-
-        <!-- Supplier History -->
-        <section class="card">
-
-            <div class="section-header">
-                <h2>Supplier History</h2>
-            </div>
-
-
-            <!-- Search -->
-            <div style="margin-bottom:15px;">
-
-                <input
-                    type="search"
-                    id="supplierSearch"
-                    placeholder="Search supplier, phone, PAN/VAT, address..."
-                    style="width:100%;padding:11px;border:1px solid #ccc;border-radius:7px;box-sizing:border-box;"
-                >
-
-            </div>
-
-
-            <div style="overflow-x:auto;">
-
-                <table class="data-table">
-
-                    <thead>
-
-                        <tr>
-                            <th>Supplier Name</th>
-                            <th>Phone</th>
-                            <th>PAN / VAT</th>
-                            <th>Opening Payable</th>
-                            <th>Purchase Total</th>
-                            <th>Payment Made</th>
-                            <th>Current Payable</th>
-                            <th>Action</th>
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody id="supplierTableBody">
-
-                        <tr>
-                            <td
-                                colspan="8"
-                                class="supplier-empty"
-                            >
-                                No suppliers found.
-                            </td>
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-    </main>
-
-</div>
-
-
-<!-- NEW / EDIT SUPPLIER MODAL -->
-
-<div
-    id="supplierModal"
+  <!-- New/Edit Supplier Modal -->
+  <div
     class="supplier-modal"
->
-
-    <div class="supplier-modal-box">
-
-        <div class="section-header">
-
-            <h2 id="supplierModalTitle">
-                New Supplier
-            </h2>
-
-            <button
-                type="button"
-                id="closeSupplierModal"
-                class="btn"
-            >
-                ✕
-            </button>
-
+    id="supplierModal"
+    aria-hidden="true"
+  >
+    <section
+      class="supplier-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="supplierModalTitle"
+    >
+      <div class="supplier-modal-head">
+        <div>
+          <h2 id="supplierModalTitle">New Supplier</h2>
+          <p>आपूर्तिकर्ताको विवरण भर्नुहोस्। (*) भएका विवरण आवश्यक छन्।</p>
         </div>
 
+        <button
+          type="button"
+          class="supplier-modal-close"
+          id="closeSupplierModal"
+          aria-label="Close modal"
+        >&times;</button>
+      </div>
 
-        <form id="supplierForm">
+      <div id="supplierMessage" class="supplier-message" role="alert"></div>
 
+      <form id="supplierForm">
+        <input type="hidden" id="supplierId">
+
+        <div class="supplier-form-grid">
+          <div class="supplier-field">
+            <label for="supplierName">Supplier Name *</label>
             <input
-                type="hidden"
-                id="supplierId"
+              type="text"
+              id="supplierName"
+              maxlength="120"
+              placeholder="आपूर्तिकर्ताको नाम"
+              required
             >
+          </div>
 
+          <div class="supplier-field">
+            <label for="supplierPhone">Phone Number</label>
+            <input
+              type="tel"
+              id="supplierPhone"
+              maxlength="30"
+              placeholder="फोन नम्बर"
+            >
+          </div>
 
-            <!-- Supplier Name -->
+          <div class="supplier-field">
+            <label for="supplierAddress">Address</label>
+            <input
+              type="text"
+              id="supplierAddress"
+              maxlength="200"
+              placeholder="ठेगाना"
+            >
+          </div>
 
-            <div class="supplier-form-group">
+          <div class="supplier-field">
+            <label for="supplierTaxType">Tax Type</label>
+            <select id="supplierTaxType">
+              <option value="NON_TAX">Non Tax</option>
+              <option value="PAN">PAN</option>
+              <option value="VAT">VAT</option>
+            </select>
+          </div>
 
-                <label for="supplierName">
-                    Supplier Name *
-                </label>
+          <div class="supplier-field">
+            <label for="supplierTaxNumber">PAN / VAT Number</label>
+            <input
+              type="text"
+              id="supplierTaxNumber"
+              maxlength="40"
+              placeholder="PAN वा VAT नम्बर"
+            >
+          </div>
 
-                <input
-                    type="text"
-                    id="supplierName"
-                    required
-                    autocomplete="off"
-                    placeholder="Enter supplier name"
-                >
+          <div class="supplier-field">
+            <label for="supplierOpeningBalance">Opening Balance (रु)</label>
+            <input
+              type="number"
+              id="supplierOpeningBalance"
+              min="0"
+              step="0.01"
+              value="0"
+              inputmode="decimal"
+            >
+            <small>सुरुको बाँकी वा अग्रिम रकम।</small>
+          </div>
 
+          <div class="supplier-field">
+            <label for="supplierBalanceType">Opening Balance Type</label>
+            <select id="supplierBalanceType">
+              <option value="PAYABLE">Payable (तिर्न बाँकी)</option>
+              <option value="ADVANCE">Advance (अग्रिम दिएको)</option>
+            </select>
+          </div>
+
+          <div class="supplier-field">
+            <label>Status</label>
+            <div class="supplier-checkbox-row">
+              <input type="checkbox" id="supplierActive" checked>
+              <label for="supplierActive">Active Supplier</label>
             </div>
-
-
-            <!-- Phone / Status -->
-
-            <div class="supplier-form-row">
-
-                <div class="supplier-form-group">
-
-                    <label for="supplierPhone">
-                        Phone
-                    </label>
-
-                    <input
-                        type="tel"
-                        id="supplierPhone"
-                        autocomplete="off"
-                        placeholder="Phone number"
-                    >
-
-                </div>
-
-
-                <div class="supplier-form-group">
-
-                    <label for="supplierActive">
-                        Status
-                    </label>
-
-                    <select id="supplierActive">
-
-                        <option value="true">
-                            Active
-                        </option>
-
-                        <option value="false">
-                            Inactive
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-
-            <!-- Address -->
-
-            <div class="supplier-form-group">
-
-                <label for="supplierAddress">
-                    Address
-                </label>
-
-                <textarea
-                    id="supplierAddress"
-                    rows="3"
-                    placeholder="Supplier address"
-                ></textarea>
-
-            </div>
-
-
-            <!-- Tax Type / Number -->
-
-            <div class="supplier-form-row">
-
-                <div class="supplier-form-group">
-
-                    <label for="supplierTaxType">
-                        Tax Type
-                    </label>
-
-                    <select id="supplierTaxType">
-
-                        <option value="VAT">
-                            VAT
-                        </option>
-
-                        <option value="PAN">
-                            PAN
-                        </option>
-
-                        <option value="NON_TAX">
-                            Non Tax
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="supplier-form-group">
-
-                    <label for="supplierTaxNumber">
-                        PAN / VAT Number
-                    </label>
-
-                    <input
-                        type="text"
-                        id="supplierTaxNumber"
-                        autocomplete="off"
-                        placeholder="PAN / VAT number"
-                    >
-
-                </div>
-
-            </div>
-
-
-            <!-- Opening Balance -->
-
-            <div class="supplier-form-row">
-
-                <div class="supplier-form-group">
-
-                    <label for="supplierOpeningBalance">
-                        Opening Payable
-                    </label>
-
-                    <input
-                        type="number"
-                        id="supplierOpeningBalance"
-                        min="0"
-                        step="0.01"
-                        value="0"
-                        placeholder="0.00"
-                    >
-
-                </div>
-
-
-                <div class="supplier-form-group">
-
-                    <label for="supplierBalanceType">
-                        Balance Type
-                    </label>
-
-                    <select id="supplierBalanceType">
-
-                        <option value="PAYABLE">
-                            Payable / Due
-                        </option>
-
-                        <option value="ADVANCE">
-                            Advance Paid
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-
-            <!-- Note -->
-
-            <div class="supplier-form-group">
-
-                <label for="supplierNote">
-                    Supplier Note / History
-                </label>
-
-                <textarea
-                    id="supplierNote"
-                    rows="3"
-                    placeholder="Additional supplier note"
-                ></textarea>
-
-            </div>
-
-
-            <!-- Buttons -->
-
-            <div class="supplier-modal-actions">
-
-                <button
-                    type="button"
-                    id="cancelSupplierBtn"
-                    class="btn"
-                >
-                    Cancel
-                </button>
-
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
-                    Save Supplier
-                </button>
-
-            </div>
-
-        </form>
-
-    </div>
-
-</div>
-
-
-<script src="script.js"></script>
-<script src="suppliers.js"></script>
-
+          </div>
+
+          <div class="supplier-field full">
+            <label for="supplierNote">Notes</label>
+            <textarea
+              id="supplierNote"
+              maxlength="1000"
+              placeholder="थप जानकारी..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="supplier-modal-footer">
+          <button type="button" class="supplier-btn" id="cancelSupplierBtn">
+            Cancel
+          </button>
+          <button type="submit" class="supplier-btn supplier-btn-primary" id="saveSupplierBtn">
+            Save Supplier
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script src="suppliers.js"></script>
 </body>
 </html>
