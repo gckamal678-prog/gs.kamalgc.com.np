@@ -1,653 +1,438 @@
-document.addEventListener("DOMContentLoaded", function () {
 
-    const CUSTOMER_KEY = "gs_customers";
+"use strict";
 
-    const newCustomerBtn = document.getElementById("newCustomerBtn");
-    const customerModal = document.getElementById("customerModal");
-    const closeCustomerModal = document.getElementById("closeCustomerModal");
-    const cancelCustomerBtn = document.getElementById("cancelCustomerBtn");
+(function () {
+  const CUSTOMER_KEY = "gs_customers";
+  const SALE_KEY = "gs_sales";
+  let editingId = null;
 
-    const customerForm = document.getElementById("customerForm");
+  const $ = (id) => document.getElementById(id);
 
-    const customerId = document.getElementById("customerId");
-    const customerName = document.getElementById("customerName");
-    const customerPhone = document.getElementById("customerPhone");
-    const customerAddress = document.getElementById("customerAddress");
-    const customerOpeningBalance = document.getElementById("customerOpeningBalance");
-    const customerBalanceType = document.getElementById("customerBalanceType");
-    const customerNote = document.getElementById("customerNote");
-    const customerActive = document.getElementById("customerActive");
+  function readArray(key) {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return [];
 
-    const customerSearch = document.getElementById("customerSearch");
-    const customerTableBody = document.getElementById("customerTableBody");
+    const value = JSON.parse(raw);
 
-    const totalCustomers = document.getElementById("totalCustomers");
-    const totalCustomerDue = document.getElementById("totalCustomerDue");
-    const totalCustomerAdvance = document.getElementById("totalCustomerAdvance");
-    const activeCustomers = document.getElementById("activeCustomers");
-
-
-    // ================================
-    // STORAGE
-    // ================================
-
-    function getCustomers() {
-
-        try {
-            const data = localStorage.getItem(CUSTOMER_KEY);
-
-            if (!data) {
-                return [];
-            }
-
-            const customers = JSON.parse(data);
-
-            return Array.isArray(customers) ? customers : [];
-
-        } catch (error) {
-
-            console.error("Customer data error:", error);
-
-            return [];
-        }
+    if (!Array.isArray(value)) {
+      throw new Error(key + " को डेटा सूचीको रूपमा छैन।");
     }
 
+    return value;
+  }
 
-    function saveCustomers(customers) {
+  function writeArray(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
 
-        localStorage.setItem(
-            CUSTOMER_KEY,
-            JSON.stringify(customers)
-        );
+  function num(value) {
+    const result = Number(value);
+    return Number.isFinite(result) ? result : 0;
+  }
+
+  function money(value) {
+    return "रु. " + num(value).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function escapeHTML(value) {
+    return String(value == null ? "" : value).replace(
+      /[&<>"']/g,
+      function (char) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        }[char];
+      }
+    );
+  }
+
+  function showError(message) {
+    const box = $("customerError");
+
+    if (box) {
+      box.textContent = message;
+      box.style.display = "block";
+    } else {
+      alert(message);
+    }
+  }
+
+  function clearError() {
+    const box = $("customerError");
+
+    if (box) {
+      box.textContent = "";
+      box.style.display = "none";
+    }
+  }
+
+  function getCustomers() {
+    return readArray(CUSTOMER_KEY);
+  }
+
+  function getSales() {
+    return readArray(SALE_KEY).filter(function (sale) {
+      return sale && !sale.voided && !sale.isVoid;
+    });
+  }
+
+  function customerName(customer) {
+    return String(customer.name || customer.customerName || "").trim();
+  }
+
+  function saleName(sale) {
+    return String(sale.customerName || sale.customer || "").trim();
+  }
+
+  function saleTotal(sale) {
+    return num(sale.total ?? sale.amount);
+  }
+
+  function salePaid(sale) {
+    return num(sale.paidAmount ?? sale.paid);
+  }
+
+  function saleBalance(sale) {
+    if (sale.balance !== undefined && sale.balance !== null) {
+      return Math.max(0, num(sale.balance));
     }
 
-
-    // ================================
-    // HELPERS
-    // ================================
-
-    function money(value) {
-
-        const number = Number(value) || 0;
-
-        return "Rs. " + number.toLocaleString("en-IN", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    }
-
-
-    function numberValue(value) {
-
-        const number = Number(value);
-
-        return Number.isFinite(number) ? number : 0;
-    }
-
-
-    function escapeHTML(value) {
-
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-
-    function generateCustomerId() {
-
-        return (
-            "CUS-" +
-            Date.now() +
-            "-" +
-            Math.floor(Math.random() * 10000)
-        );
-    }
-
-
-    // ================================
-    // MODAL
-    // ================================
-
-    function openCustomerModal(customer = null) {
-
-        if (!customerModal) return;
-
-        customerForm.reset();
-
-        customerId.value = "";
-
-        customerOpeningBalance.value = "0";
-        customerBalanceType.value = "DUE";
-        customerActive.value = "true";
-
-        const title = document.getElementById("customerModalTitle");
-
-        if (customer) {
-
-            if (title) {
-                title.textContent = "Edit Customer";
-            }
-
-            customerId.value = customer.id || "";
-            customerName.value = customer.name || "";
-            customerPhone.value = customer.phone || "";
-            customerAddress.value = customer.address || "";
-
-            const opening = Math.abs(
-                numberValue(customer.openingBalance)
-            );
-
-            customerOpeningBalance.value = opening;
-
-            customerBalanceType.value =
-                customer.balanceType === "ADVANCE"
-                    ? "ADVANCE"
-                    : "DUE";
-
-            customerNote.value = customer.note || "";
-
-            customerActive.value =
-                customer.active === false
-                    ? "false"
-                    : "true";
-
-        } else {
-
-            if (title) {
-                title.textContent = "New Customer";
-            }
-        }
-
-        customerModal.classList.add("show");
-
-        setTimeout(function () {
-            customerName.focus();
-        }, 100);
-    }
-
-
-    function closeModal() {
-
-        if (!customerModal) return;
-
-        customerModal.classList.remove("show");
-    }
-
-
-    // ================================
-    // SUMMARY
-    // ================================
-
-    function updateSummary(customers) {
-
-        let due = 0;
-        let advance = 0;
-        let active = 0;
-
-        customers.forEach(function (customer) {
-
-            const balance = numberValue(
-                customer.currentBalance
-            );
-
-            if (balance > 0) {
-                due += balance;
-            }
-
-            if (balance < 0) {
-                advance += Math.abs(balance);
-            }
-
-            if (customer.active !== false) {
-                active++;
-            }
-        });
-
-
-        totalCustomers.textContent = customers.length;
-
-        totalCustomerDue.textContent = money(due);
-
-        totalCustomerAdvance.textContent = money(advance);
-
-        activeCustomers.textContent = active;
-    }
-
-
-    // ================================
-    // RENDER TABLE
-    // ================================
-
-    function renderCustomers(customers = getCustomers()) {
-
-        updateSummary(customers);
-
-        const searchText =
-            customerSearch.value
-                .trim()
-                .toLowerCase();
-
-
-        const filtered = customers.filter(function (customer) {
-
-            if (!searchText) {
-                return true;
-            }
-
-            const text = [
-
-                customer.name,
-                customer.phone,
-                customer.address,
-                customer.note,
-                customer.id
-
-            ]
-                .join(" ")
-                .toLowerCase();
-
-            return text.includes(searchText);
-        });
-
-
-        if (!filtered.length) {
-
-            customerTableBody.innerHTML = `
-                <tr>
-                    <td colspan="8" class="customer-empty">
-                        No customers found.
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-
-        customerTableBody.innerHTML = filtered.map(function (customer) {
-
-            const opening = numberValue(
-                customer.openingBalance
-            );
-
-            const current = numberValue(
-                customer.currentBalance
-            );
-
-            const creditSale =
-                numberValue(customer.creditSaleTotal);
-
-            const collection =
-                numberValue(customer.paymentTotal);
-
-
-            let currentText = money(Math.abs(current));
-
-            if (current > 0) {
-                currentText += " Due";
-            } else if (current < 0) {
-                currentText += " Advance";
-            } else {
-                currentText = money(0);
-            }
-
-
-            const addressNote = [
-                customer.address || "",
-                customer.note || ""
-            ]
-                .filter(Boolean)
-                .join(" / ");
-
-
-            return `
-                <tr>
-
-                    <td>
-                        <strong>
-                            ${escapeHTML(customer.name)}
-                        </strong>
-                        ${
-                            customer.active === false
-                                ? `<small style="display:block;color:#999;">Inactive</small>`
-                                : ""
-                        }
-                    </td>
-
-                    <td>
-                        ${escapeHTML(customer.phone || "-")}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(addressNote || "-")}
-                    </td>
-
-                    <td>
-                        ${money(opening)}
-                    </td>
-
-                    <td>
-                        ${money(creditSale)}
-                    </td>
-
-                    <td>
-                        ${money(collection)}
-                    </td>
-
-                    <td>
-                        <strong>
-                            ${escapeHTML(currentText)}
-                        </strong>
-                    </td>
-
-                    <td>
-
-                        <button
-                            type="button"
-                            class="btn edit-customer-btn"
-                            data-id="${escapeHTML(customer.id)}"
-                        >
-                            Edit
-                        </button>
-
-                    </td>
-
-                </tr>
-            `;
-
-        }).join("");
-    }
-
-
-    // ================================
-    // SAVE CUSTOMER
-    // ================================
-
-    customerForm.addEventListener("submit", function (event) {
-
-        event.preventDefault();
-
-
-        const name =
-            customerName.value.trim();
-
-        if (!name) {
-
-            alert("Customer name is required.");
-
-            customerName.focus();
-
-            return;
-        }
-
-
-        const customers = getCustomers();
-
-
-        const id =
-            customerId.value ||
-            generateCustomerId();
-
-
-        const openingAmount =
-            Math.abs(
-                numberValue(
-                    customerOpeningBalance.value
-                )
-            );
-
-
-        const balanceType =
-            customerBalanceType.value === "ADVANCE"
-                ? "ADVANCE"
-                : "DUE";
-
-
-        const openingSigned =
-            balanceType === "ADVANCE"
-                ? -openingAmount
-                : openingAmount;
-
-
-        const existingIndex =
-            customers.findIndex(function (customer) {
-                return customer.id === id;
-            });
-
-
-        if (existingIndex === -1) {
-
-            const newCustomer = {
-
-                id: id,
-
-                name: name,
-
-                phone:
-                    customerPhone.value.trim(),
-
-                address:
-                    customerAddress.value.trim(),
-
-                openingBalance:
-                    openingSigned,
-
-                balanceType:
-                    balanceType,
-
-                currentBalance:
-                    openingSigned,
-
-                creditSaleTotal: 0,
-
-                paymentTotal: 0,
-
-                note:
-                    customerNote.value.trim(),
-
-                active:
-                    customerActive.value !== "false",
-
-                createdAt:
-                    new Date().toISOString(),
-
-                updatedAt:
-                    new Date().toISOString()
-            };
-
-
-            customers.push(newCustomer);
-
-        } else {
-
-            const oldCustomer =
-                customers[existingIndex];
-
-
-            const oldOpening =
-                numberValue(
-                    oldCustomer.openingBalance
-                );
-
-
-            const oldCurrent =
-                numberValue(
-                    oldCustomer.currentBalance
-                );
-
-
-            /*
-             * Keep transaction balance while
-             * changing customer information.
-             */
-            const transactionBalance =
-                oldCurrent - oldOpening;
-
-
-            const newCurrentBalance =
-                openingSigned +
-                transactionBalance;
-
-
-            customers[existingIndex] = {
-
-                ...oldCustomer,
-
-                name: name,
-
-                phone:
-                    customerPhone.value.trim(),
-
-                address:
-                    customerAddress.value.trim(),
-
-                openingBalance:
-                    openingSigned,
-
-                balanceType:
-                    balanceType,
-
-                currentBalance:
-                    newCurrentBalance,
-
-                note:
-                    customerNote.value.trim(),
-
-                active:
-                    customerActive.value !== "false",
-
-                updatedAt:
-                    new Date().toISOString()
-            };
-        }
-
-
-        saveCustomers(customers);
-
-        closeModal();
-
-        renderCustomers(customers);
-
-        alert(
-            existingIndex === -1
-                ? "Customer saved successfully."
-                : "Customer updated successfully."
-        );
+    return Math.max(0, saleTotal(sale) - salePaid(sale));
+  }
+
+  function customerSales(customer, sales) {
+    const id = String(customer.id || "");
+    const name = customerName(customer).toLowerCase();
+    const phone = String(customer.phone || "").trim();
+
+    return sales.filter(function (sale) {
+      if (sale.customerId && id && String(sale.customerId) === id) {
+        return true;
+      }
+
+      const saleCustomer = saleName(sale).toLowerCase();
+
+      if (!name || !saleCustomer || name !== saleCustomer) {
+        return false;
+      }
+
+      // Older sales usually only have a customer name, not a customer ID.
+      return true;
+    });
+  }
+
+  function showForm(isEditing) {
+    const panel = $("customerFormCard");
+    if (!panel) return;
+
+    panel.classList.remove("customer-form-hidden");
+    $("customerFormTitle").textContent = isEditing
+      ? "ग्राहक विवरण सम्पादन"
+      : "नयाँ ग्राहक विवरण";
+
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    $("customerName").focus();
+  }
+
+  function hideForm() {
+    $("customerFormCard").classList.add("customer-form-hidden");
+    $("customerForm").reset();
+    $("customerId").value = "";
+    $("customerOpeningBalance").value = "0";
+    editingId = null;
+    clearError();
+  }
+
+  function render() {
+    const customers = getCustomers();
+    const sales = getSales();
+    const tbody = $("customersTableBody");
+    const query = String($("customerSearch").value || "")
+      .trim()
+      .toLowerCase();
+
+    let allSalesTotal = 0;
+    let allBalanceTotal = 0;
+
+    customers.forEach(function (customer) {
+      const matchedSales = customerSales(customer, sales);
+
+      allSalesTotal += matchedSales.reduce(function (sum, sale) {
+        return sum + saleTotal(sale);
+      }, 0);
+
+      allBalanceTotal += matchedSales.reduce(function (sum, sale) {
+        return sum + saleBalance(sale);
+      }, 0);
     });
 
+    $("totalCustomers").textContent = customers.length;
+    $("customerSalesTotal").textContent = money(allSalesTotal);
+    $("customerBalanceTotal").textContent = money(allBalanceTotal);
 
-    // ================================
-    // EDIT
-    // ================================
+    const filtered = customers.filter(function (customer) {
+      const text = [
+        customer.name,
+        customer.customerName,
+        customer.phone,
+        customer.email,
+        customer.address
+      ].join(" ").toLowerCase();
 
-    customerTableBody.addEventListener(
-        "click",
-        function (event) {
+      return text.includes(query);
+    });
 
-            const button =
-                event.target.closest(
-                    ".edit-customer-btn"
-                );
+    if (!filtered.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="7" style="text-align:center;padding:20px;">' +
+        (query ? "खोजिएको ग्राहक भेटिएन।" : "अहिलेसम्म ग्राहक थपिएको छैन।") +
+        "</td></tr>";
+      return;
+    }
 
-            if (!button) return;
+    tbody.innerHTML = filtered.map(function (customer, index) {
+      const matchedSales = customerSales(customer, sales);
 
+      const salesTotal = matchedSales.reduce(function (sum, sale) {
+        return sum + saleTotal(sale);
+      }, 0);
 
-            const id =
-                button.dataset.id;
+      const balanceTotal = matchedSales.reduce(function (sum, sale) {
+        return sum + saleBalance(sale);
+      }, 0);
 
+      return (
+        "<tr>" +
+          "<td>" + (index + 1) + "</td>" +
+          "<td><strong>" + escapeHTML(customerName(customer) || "नाम छैन") + "</strong></td>" +
+          "<td>" + escapeHTML(customer.phone || "—") + "</td>" +
+          "<td>" + escapeHTML(customer.address || "—") + "</td>" +
+          "<td>" + money(salesTotal) + "</td>" +
+          "<td>" + money(balanceTotal) + "</td>" +
+          '<td><div class="customer-actions">' +
+            '<button type="button" class="customer-edit" data-edit="' +
+              escapeHTML(customer.id) + '">सम्पादन</button>' +
+            '<button type="button" class="customer-delete" data-delete="' +
+              escapeHTML(customer.id) + '">हटाउनुहोस्</button>' +
+          "</div></td>" +
+        "</tr>"
+      );
+    }).join("");
+  }
 
-            const customers =
-                getCustomers();
+  function editCustomer(id) {
+    const customers = getCustomers();
 
+    const customer = customers.find(function (item) {
+      return String(item.id) === String(id);
+    });
 
-            const customer =
-                customers.find(function (item) {
-                    return item.id === id;
-                });
+    if (!customer) {
+      showError("यो ग्राहक रेकर्ड भेटिएन।");
+      return;
+    }
 
+    editingId = String(customer.id);
+    $("customerId").value = editingId;
+    $("customerName").value = customer.name || customer.customerName || "";
+    $("customerPhone").value = customer.phone || "";
+    $("customerEmail").value = customer.email || "";
+    $("customerAddress").value = customer.address || "";
+    $("customerNote").value = customer.note || "";
+    $("customerOpeningBalance").value = num(customer.openingBalance);
 
-            if (!customer) {
+    showForm(true);
+  }
 
-                alert("Customer not found.");
+  function saveCustomer(event) {
+    event.preventDefault();
+    clearError();
 
-                return;
-            }
+    try {
+      const name = $("customerName").value.trim();
+      const phone = $("customerPhone").value.trim();
+      const email = $("customerEmail").value.trim();
+      const address = $("customerAddress").value.trim();
+      const note = $("customerNote").value.trim();
+      const openingBalance = num($("customerOpeningBalance").value);
 
+      if (!name) {
+        showError("कृपया ग्राहकको नाम राख्नुहोस्।");
+        return;
+      }
 
-            openCustomerModal(customer);
+      if (openingBalance < 0) {
+        showError("सुरुको बाँकी रकम ऋणात्मक हुन मिल्दैन।");
+        return;
+      }
+
+      const customers = getCustomers();
+
+      const duplicate = customers.find(function (customer) {
+        return String(customer.id) !== String(editingId || "") &&
+          customerName(customer).toLowerCase() === name.toLowerCase() &&
+          phone &&
+          String(customer.phone || "").trim() === phone;
+      });
+
+      if (duplicate) {
+        showError("यही नाम र मोबाइल नम्बर भएको ग्राहक पहिल्यै छ।");
+        return;
+      }
+
+      const now = new Date().toISOString();
+
+      if (editingId) {
+        const index = customers.findIndex(function (customer) {
+          return String(customer.id) === String(editingId);
+        });
+
+        if (index < 0) {
+          showError("सम्पादन गर्न खोजिएको ग्राहक भेटिएन।");
+          return;
         }
-    );
 
+        const old = customers[index];
 
-    // ================================
-    // BUTTON EVENTS
-    // ================================
+        customers[index] = {
+          ...old,
+          name: name,
+          phone: phone,
+          email: email,
+          address: address,
+          note: note,
+          openingBalance: openingBalance,
+          updatedAt: now
+        };
+      } else {
+        customers.push({
+          id: "CUST-" + Date.now() + "-" +
+            Math.random().toString(36).slice(2, 7).toUpperCase(),
+          name: name,
+          phone: phone,
+          email: email,
+          address: address,
+          note: note,
+          openingBalance: openingBalance,
+          active: true,
+          createdAt: now,
+          updatedAt: now
+        });
+      }
 
-    newCustomerBtn.addEventListener(
-        "click",
-        function () {
+      writeArray(CUSTOMER_KEY, customers);
 
-            openCustomerModal();
-        }
-    );
+      hideForm();
+      render();
 
+      alert(editingId
+        ? "ग्राहक विवरण अपडेट भयो।"
+        : "नयाँ ग्राहक सुरक्षित भयो।");
+    } catch (error) {
+      console.error("Customer save error:", error);
+      showError(
+        "ग्राहक सुरक्षित गर्न सकिएन। पुरानो डेटा नहटाउनुहोस्। विवरण: " +
+        error.message
+      );
+    }
+  }
 
-    closeCustomerModal.addEventListener(
-        "click",
-        closeModal
-    );
+  function deleteCustomer(id) {
+    try {
+      const customers = getCustomers();
+      const customer = customers.find(function (item) {
+        return String(item.id) === String(id);
+      });
 
+      if (!customer) {
+        showError("ग्राहक रेकर्ड भेटिएन।");
+        return;
+      }
 
-    cancelCustomerBtn.addEventListener(
-        "click",
-        closeModal
-    );
+      const sales = getSales();
+      const linkedSales = customerSales(customer, sales);
 
+      if (linkedSales.length > 0) {
+        alert(
+          "यो ग्राहकको बिक्री इतिहास छ। बिक्रीसँग जोडिएको ग्राहक हटाउँदा इतिहासमा समस्या आउन सक्छ।\n\n" +
+          "सुरक्षित विकल्प: ग्राहकलाई हटाउनुको सट्टा विवरण सम्पादन गर्नुहोस्।"
+        );
+        return;
+      }
 
-    customerModal.addEventListener(
-        "click",
-        function (event) {
+      const confirmed = confirm(
+        "के तपाईं " + customerName(customer) +
+        " लाई ग्राहक सूचीबाट हटाउन चाहनुहुन्छ?"
+      );
 
-            if (event.target === customerModal) {
-                closeModal();
-            }
-        }
-    );
+      if (!confirmed) return;
 
+      const updated = customers.filter(function (item) {
+        return String(item.id) !== String(id);
+      });
 
-    customerSearch.addEventListener(
-        "input",
-        function () {
+      writeArray(CUSTOMER_KEY, updated);
+      render();
+      alert("ग्राहक सूचीबाट हटाइयो।");
+    } catch (error) {
+      console.error("Customer delete error:", error);
+      showError("ग्राहक हटाउन सकिएन: " + error.message);
+    }
+  }
 
-            renderCustomers(
-                getCustomers()
-            );
-        }
-    );
+  function init() {
+    $("newCustomerBtn").addEventListener("click", function () {
+      clearError();
+      editingId = null;
+      $("customerForm").reset();
+      $("customerId").value = "";
+      $("customerOpeningBalance").value = "0";
+      showForm(false);
+    });
 
+    $("cancelCustomerBtn").addEventListener("click", hideForm);
+    $("customerForm").addEventListener("submit", saveCustomer);
+    $("customerSearch").addEventListener("input", function () {
+      try {
+        render();
+      } catch (error) {
+        showError("ग्राहक सूची देखाउन सकिएन: " + error.message);
+      }
+    });
 
-    // ESC key closes modal
-    document.addEventListener(
-        "keydown",
-        function (event) {
+    $("customersTableBody").addEventListener("click", function (event) {
+      const editButton = event.target.closest("[data-edit]");
+      const deleteButton = event.target.closest("[data-delete]");
 
-            if (
-                event.key === "Escape" &&
-                customerModal.classList.contains("show")
-            ) {
-                closeModal();
-            }
-        }
-    );
+      if (editButton) {
+        editCustomer(editButton.dataset.edit);
+      } else if (deleteButton) {
+        deleteCustomer(deleteButton.dataset.delete);
+      }
+    });
 
+    hideForm();
 
-    // ================================
-    // INITIAL LOAD
-    // ================================
+    try {
+      render();
+    } catch (error) {
+      console.error("Customer load error:", error);
+      showError(
+        "ग्राहक डेटा लोड गर्न सकिएन। डेटा सुरक्षित राखिएको छ। विवरण: " +
+        error.message
+      );
+    }
+  }
 
-    renderCustomers();
-
-});
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
