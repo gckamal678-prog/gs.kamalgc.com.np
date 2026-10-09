@@ -4,496 +4,189 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inventory Management | General Store</title>
+<title>Inventory | General Store Management</title>
 <style>
-:root {
-  --primary:#2563eb;
-  --primary-light:#eff6ff;
-  --bg:#f5f7fb;
-  --card:#ffffff;
-  --text:#172033;
-  --muted:#64748b;
-  --border:#e2e8f0;
-  --green:#15803d;
-  --red:#dc2626;
-  --orange:#c2410c;
-}
-* { box-sizing:border-box; }
-body {
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-button,input,select { font:inherit; }
-button { cursor:pointer; }
-.app { min-height:100vh; }
-.sidebar {
-  position:fixed;
-  inset:0 auto 0 0;
-  width:245px;
-  background:#111827;
-  color:#fff;
-  padding:22px 14px;
-  overflow-y:auto;
-  z-index:100;
-}
-.brand {
-  font-size:21px;
-  font-weight:800;
-  padding:8px 12px 25px;
-}
-.brand small {
-  display:block;
-  font-size:12px;
-  color:#9ca3af;
-  margin-top:6px;
-  font-weight:400;
-}
-.nav-label {
-  color:#9ca3af;
-  font-size:11px;
-  padding:12px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
-.sidebar a {
-  display:block;
-  padding:12px;
-  color:#d1d5db;
-  text-decoration:none;
-  border-radius:8px;
-  margin:3px 0;
-  font-size:14px;
-}
-.sidebar a:hover,.sidebar a.active {
-  background:#263449;
-  color:#fff;
-}
-.main { margin-left:245px; }
-.topbar {
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  padding:15px 26px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:15px;
-  position:sticky;
-  top:0;
-  z-index:50;
-}
-.topbar-title { font-weight:700; }
-.topbar-subtitle { color:var(--muted); font-size:12px; margin-top:4px; }
-.top-search { max-width:330px; width:100%; }
-.content { padding:26px; max-width:1600px; margin:auto; }
-.page-heading {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:16px;
-  margin-bottom:22px;
-}
-h1 { font-size:26px; margin:0 0 7px; }
-.subtitle { color:var(--muted); font-size:14px; }
-.btn {
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:10px 15px;
-  background:#fff;
-  color:var(--text);
-  font-weight:600;
-}
-.btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; }
-.btn:hover { filter:brightness(.97); }
-.stats {
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:16px;
-  margin-bottom:22px;
-}
-.stat-card,.panel {
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:12px;
-  box-shadow:0 2px 5px #0f172a05;
-}
-.stat-card { padding:19px; }
-.stat-label { color:var(--muted); font-size:13px; }
-.stat-number { font-size:27px; font-weight:750; margin-top:12px; }
-.stat-note { color:var(--muted); font-size:12px; margin-top:6px; }
-.panel { overflow:hidden; }
-.panel-header {
-  padding:19px 21px;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
-.panel-header h2 { margin:0; font-size:17px; }
-.filters {
-  padding:16px 20px;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-.field {
-  border:1px solid #cbd5e1;
-  background:#fff;
-  border-radius:8px;
-  padding:10px 11px;
-  min-width:0;
-}
-.filters .field { flex:1; min-width:145px; }
-.table-wrap { overflow-x:auto; }
-table { width:100%; border-collapse:collapse; min-width:850px; }
-th,td {
-  text-align:left;
-  padding:14px 16px;
-  border-bottom:1px solid #edf0f5;
-  font-size:13px;
-}
-th {
-  color:var(--muted);
-  background:#f8fafc;
-  font-weight:650;
-  white-space:nowrap;
-}
-tbody tr:hover { background:#fafcff; }
-.product-name { font-weight:700; }
-.product-sub { color:var(--muted); font-size:12px; margin-top:4px; }
-.status {
-  display:inline-block;
-  border-radius:20px;
-  padding:5px 9px;
-  font-size:11px;
-  font-weight:700;
-  white-space:nowrap;
-}
-.status-in { background:#dcfce7; color:var(--green); }
-.status-low { background:#ffedd5; color:var(--orange); }
-.status-out { background:#fee2e2; color:var(--red); }
-.action-btn {
-  border:1px solid #bfdbfe;
-  background:var(--primary-light);
-  color:#1d4ed8;
-  padding:7px 10px;
-  border-radius:7px;
-  font-size:12px;
-  font-weight:700;
-}
-.empty-state { text-align:center; padding:35px 15px; color:var(--muted); }
-.footer { text-align:center; color:var(--muted); font-size:12px; padding:24px; }
-.overlay {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:#0f172a80;
-  z-index:200;
-  align-items:center;
-  justify-content:center;
-  padding:16px;
-}
-.overlay.show { display:flex; }
-.modal {
-  width:100%;
-  max-width:700px;
-  max-height:92vh;
-  overflow:auto;
-  background:#fff;
-  border-radius:14px;
-  box-shadow:0 20px 60px #0003;
-}
-.modal-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:20px 22px;
-  border-bottom:1px solid var(--border);
-}
-.modal-header h2 { margin:0; font-size:19px; }
-.close-btn {
-  border:0;
-  background:#f1f5f9;
-  border-radius:8px;
-  width:35px;
-  height:35px;
-  font-size:22px;
-}
-.modal-body { padding:22px; }
-.form-grid {
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:16px;
-}
-.form-group { display:flex; flex-direction:column; gap:7px; }
-.form-group label { font-size:13px; font-weight:650; }
-.form-group input,.form-group select {
-  width:100%;
-  border:1px solid #cbd5e1;
-  border-radius:8px;
-  padding:11px;
-  background:#fff;
-}
-.form-group input:focus,.form-group select:focus,.field:focus {
-  outline:2px solid #bfdbfe;
-  border-color:var(--primary);
-}
-.full-width { grid-column:1/-1; }
-.checkbox-row { display:flex; align-items:center; gap:9px; font-size:13px; }
-.modal-footer {
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-  padding-top:20px;
-  margin-top:20px;
-  border-top:1px solid var(--border);
-}
-.detail-grid {
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:14px;
-}
-.detail-item { padding:13px; background:#f8fafc; border-radius:8px; }
-.detail-label { color:var(--muted); font-size:12px; }
-.detail-value { font-weight:700; margin-top:7px; overflow-wrap:anywhere; }
-.mobile-menu { display:none; }
-@media(max-width:1100px) {
-  .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
-}
-@media(max-width:760px) {
-  .sidebar { transform:translateX(-100%); transition:transform .2s ease; }
-  .sidebar.open { transform:translateX(0); }
-  .main { margin-left:0; }
-  .mobile-menu { display:inline-block; }
-  .topbar { padding:13px 16px; }
-  .top-search { max-width:190px; }
-  .content { padding:18px 12px; }
-  .page-heading { align-items:flex-start; flex-direction:column; }
-  h1 { font-size:23px; }
-  .stats { gap:10px; }
-  .stat-card { padding:14px; }
-  .stat-number { font-size:22px; }
-  .panel-header { padding:16px; }
-  .filters { padding:13px; }
-}
-@media(max-width:430px) {
-  .top-search { max-width:145px; }
-  .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .form-grid,.detail-grid { grid-template-columns:1fr; }
-  .full-width { grid-column:auto; }
-}
+:root{--blue:#2563eb;--bg:#f5f7fb;--white:#fff;--text:#172033;--muted:#64748b;--border:#e2e8f0;--green:#15803d;--orange:#c2410c;--red:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.sidebar{position:fixed;top:0;bottom:0;left:0;width:245px;padding:22px 14px;background:#111827;color:#fff;overflow-y:auto}
+.brand{font-size:21px;font-weight:800;padding:8px 12px 25px}
+.brand small{display:block;margin-top:6px;color:#9ca3af;font-size:12px;font-weight:400}
+.nav-label{padding:12px;color:#9ca3af;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.sidebar a{display:block;margin:3px 0;padding:12px;color:#d1d5db;text-decoration:none;border-radius:8px;font-size:14px}
+.sidebar a:hover,.sidebar a.active{background:#263449;color:#fff}
+.main{margin-left:245px;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:17px 26px;background:#fff;border-bottom:1px solid var(--border)}
+.topbar-title{font-weight:700}
+.topbar-subtitle{margin-top:4px;color:var(--muted);font-size:12px}
+.field{min-width:0;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+.top-search{width:290px;max-width:45%}
+.content{max-width:1600px;margin:auto;padding:26px}
+.page-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}
+h1{margin:0 0 7px;font-size:26px}
+.subtitle{color:var(--muted);font-size:13px}
+.btn{padding:10px 15px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-weight:600}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn:hover{filter:brightness(.97)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}
+.stat-card,.panel{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 2px 5px #0f172a05}
+.stat-card{padding:19px}
+.stat-label{color:var(--muted);font-size:13px}
+.stat-number{margin-top:12px;font-size:25px;font-weight:750;overflow-wrap:anywhere}
+.stat-note{margin-top:6px;color:var(--muted);font-size:12px}
+.panel{overflow:hidden}
+.panel-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:19px 21px;border-bottom:1px solid var(--border)}
+.panel-header h2{margin:0;font-size:17px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;padding:16px 20px}
+.filters .field{flex:1;min-width:150px}
+.table-wrap{overflow-x:auto}
+table{width:100%;min-width:850px;border-collapse:collapse}
+th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #edf0f5;font-size:13px}
+th{background:#f8fafc;color:var(--muted);font-weight:650;white-space:nowrap}
+tbody tr:hover{background:#fafcff}
+.product-name{font-weight:700}
+.product-sub{margin-top:4px;color:var(--muted);font-size:12px}
+.status{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.status-in{background:#dcfce7;color:var(--green)}
+.status-low{background:#ffedd5;color:var(--orange)}
+.status-out{background:#fee2e2;color:var(--red)}
+.action-btn{padding:7px 10px;border:1px solid #bfdbfe;border-radius:7px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700}
+.empty-state{text-align:center;padding:35px 15px;color:var(--muted)}
+.footer{text-align:center;padding:24px;color:var(--muted);font-size:12px}
+.overlay{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center;padding:16px;background:#0f172a80}
+.overlay.show{display:flex}
+.modal{width:100%;max-width:700px;max-height:92vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 20px 60px #0003}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--border)}
+.modal-header h2{margin:0;font-size:19px}
+.close-btn{width:35px;height:35px;border:0;border-radius:8px;background:#f1f5f9;font-size:22px}
+.modal-body{padding:22px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.form-group{display:flex;flex-direction:column;gap:7px}
+.form-group label{font-size:13px;font-weight:650}
+.form-group input,.form-group select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+.form-group input:focus,.form-group select:focus,.field:focus{outline:2px solid #bfdbfe;border-color:var(--blue)}
+.full-width{grid-column:1/-1}
+.checkbox-row{display:flex;align-items:center;gap:9px;font-size:13px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding-top:20px;margin-top:20px;border-top:1px solid var(--border)}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.detail-item{padding:13px;background:#f8fafc;border-radius:8px;overflow-wrap:anywhere}
+.detail-label{color:var(--muted);font-size:12px}
+.detail-value{margin-top:7px;font-weight:700}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.sidebar{width:210px}.main{margin-left:210px}.topbar{padding:14px}.top-search{max-width:42%}.content{padding:18px 12px}.page-heading{align-items:flex-start;flex-direction:column}h1{font-size:23px}.stats{gap:10px}.stat-card{padding:14px}.stat-number{font-size:21px}.panel-header{padding:16px}.filters{padding:13px}}
+@media(max-width:520px){.sidebar{position:static;width:auto;height:auto;padding:10px;display:flex;flex-wrap:wrap;gap:4px}.brand{width:100%;padding:8px 10px}.nav-label{display:none}.sidebar a{padding:8px;font-size:12px;margin:0}.main{margin-left:0}.topbar{position:static}.top-search{width:42%;font-size:12px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid,.detail-grid{grid-template-columns:1fr}.full-width{grid-column:auto}}
 </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar" id="inventorySidebar">
-    <div class="brand">🏪 General Store<small>Management System</small></div>
-    <div class="nav-label">मुख्य मेनु</div>
-    <a href="index.html">▦ &nbsp; Dashboard</a>
-    <a href="inventory.html" class="active">▤ &nbsp; Inventory</a>
-    <a href="sale.html">🛒 &nbsp; Sales</a>
-    <a href="purchase.html">📦 &nbsp; Purchases</a>
-    <a href="sales-return.html">↩ &nbsp; Sales Return</a>
-    <a href="stock-lots.html">▥ &nbsp; FIFO Stock Lots</a>
-    <div class="nav-label">सम्पर्क तथा हिसाब</div>
-    <a href="customers.html">👥 &nbsp; Customers</a>
-    <a href="suppliers.html">🚚 &nbsp; Suppliers</a>
-    <a href="finance.html">₹ &nbsp; Finance</a>
-    <a href="reports.html">▧ &nbsp; Reports</a>
-    <div class="nav-label">अन्य</div>
-    <a href="whatsapp.html">WhatsApp</a>
-    <a href="ai.html">AI Assistant</a>
-    <a href="settings.html">⚙ &nbsp; Settings</a>
-  </aside>
 
-  <main class="main">
-    <header class="topbar">
-      <div style="display:flex;align-items:center;gap:12px">
-        <button class="btn mobile-menu" id="inventoryMenuBtn" type="button" aria-label="मेनु खोल्नुहोस्">☰</button>
-        <div>
-          <div class="topbar-title">Inventory Management</div>
-          <div class="topbar-subtitle">Product तथा Stock व्यवस्थापन</div>
-        </div>
+<aside class="sidebar">
+  <div class="brand">🏪 General Store<small>Management System</small></div>
+  <div class="nav-label">मुख्य मेनु</div>
+  <a href="index.html">▦ &nbsp; Dashboard</a>
+  <a href="inventory.html" class="active">▤ &nbsp; Inventory</a>
+  <a href="sale.html">🛒 &nbsp; Sales</a>
+  <a href="purchase.html">📦 &nbsp; Purchases</a>
+  <a href="sales-return.html">↩ &nbsp; Sales Return</a>
+  <a href="stock-lots.html">▥ &nbsp; FIFO Stock Lots</a>
+  <div class="nav-label">सम्पर्क तथा हिसाब</div>
+  <a href="customers.html">👥 &nbsp; Customers</a>
+  <a href="suppliers.html">🚚 &nbsp; Suppliers</a>
+  <a href="finance.html">₹ &nbsp; Finance</a>
+  <a href="reports.html">▧ &nbsp; Reports</a>
+  <div class="nav-label">अन्य</div>
+  <a href="whatsapp.html">WhatsApp</a>
+  <a href="ai.html">AI Assistant</a>
+  <a href="settings.html">⚙ &nbsp; Settings</a>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">Inventory Management</div>
+      <div class="topbar-subtitle">Product तथा Stock व्यवस्थापन</div>
+    </div>
+    <input class="field top-search" id="inventorySearch" type="search" placeholder="Product खोज्नुहोस्...">
+  </header>
+
+  <section class="content">
+    <div class="page-heading">
+      <div>
+        <h1>Inventory</h1>
+        <div class="subtitle">सबै सामान र स्टकको विवरण एकै ठाउँमा।</div>
       </div>
-      <input class="field top-search" id="inventorySearch" type="search" placeholder="Product खोज्नुहोस्...">
-    </header>
+      <button class="btn btn-primary" id="addProductBtn" type="button">＋ नयाँ Product</button>
+    </div>
 
-    <section class="content">
-      <div class="page-heading">
-        <div>
-          <h1>Inventory</h1>
-          <div class="subtitle">तपाईंका सबै सामान र स्टकको विवरण एकै ठाउँमा।</div>
-        </div>
-        <button class="btn btn-primary" id="addProductBtn" type="button">＋ नयाँ Product</button>
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">कुल Products</div><div class="stat-number" id="totalProducts">0</div><div class="stat-note">दर्ता भएका सामान</div></div>
+      <div class="stat-card"><div class="stat-label">Stock उपलब्ध</div><div class="stat-number" id="inStockProducts">0</div><div class="stat-note">न्यूनतम सीमाभन्दा माथि</div></div>
+      <div class="stat-card"><div class="stat-label">Low Stock</div><div class="stat-number" id="lowStockProducts">0</div><div class="stat-note">पुनः खरिद आवश्यक हुन सक्छ</div></div>
+      <div class="stat-card"><div class="stat-label">अनुमानित Stock Value</div><div class="stat-number" id="stockValue">रु 0</div><div class="stat-note">Stock × Purchase Price</div></div>
+    </div>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>📋 Product List</h2>
+        <span class="subtitle" id="productCount">0 Products</span>
       </div>
-
-      <div class="stats">
-        <div class="stat-card">
-          <div class="stat-label">कुल Products</div>
-          <div class="stat-number" id="totalProducts">0</div>
-          <div class="stat-note">दर्ता भएका सामान</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Stock उपलब्ध</div>
-          <div class="stat-number" id="inStockProducts">0</div>
-          <div class="stat-note">न्यूनतम सीमाभन्दा माथि</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Low Stock</div>
-          <div class="stat-number" id="lowStockProducts">0</div>
-          <div class="stat-note">पुनः खरिद आवश्यक हुन सक्छ</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">अनुमानित Stock Value</div>
-          <div class="stat-number" id="stockValue">रु 0</div>
-          <div class="stat-note">Stock × Purchase Price</div>
-        </div>
+      <div class="filters">
+        <input class="field" id="productSearch" type="search" placeholder="नाम, Brand वा Category...">
+        <select class="field" id="categoryFilter">
+          <option value="">सबै Category</option>
+          <option value="Grocery">Grocery</option>
+          <option value="Beverages">Beverages</option>
+          <option value="Snacks">Snacks</option>
+          <option value="Personal Care">Personal Care</option>
+          <option value="Household">Household</option>
+          <option value="Other">Other</option>
+        </select>
+        <select class="field" id="stockFilter">
+          <option value="">सबै Stock Status</option>
+          <option value="in">Stock उपलब्ध</option>
+          <option value="low">Low Stock</option>
+          <option value="out">Out of Stock</option>
+        </select>
       </div>
-
-      <section class="panel">
-        <div class="panel-header">
-          <h2>📋 Product List</h2>
-          <span class="subtitle" id="productCount">0 Products</span>
-        </div>
-        <div class="filters">
-          <input class="field" id="productSearch" type="search" placeholder="नाम, ब्रान्ड वा Category...">
-          <select class="field" id="categoryFilter">
-            <option value="">सबै Category</option>
-            <option value="Grocery">Grocery</option>
-            <option value="Beverages">Beverages</option>
-            <option value="Snacks">Snacks</option>
-            <option value="Personal Care">Personal Care</option>
-            <option value="Household">Household</option>
-            <option value="Other">Other</option>
-          </select>
-          <select class="field" id="stockFilter">
-            <option value="">सबै Stock Status</option>
-            <option value="in">Stock उपलब्ध</option>
-            <option value="low">Low Stock</option>
-            <option value="out">Out of Stock</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Category</th>
-                <th>Unit / Size</th>
-                <th>Purchase Price</th>
-                <th>Sale Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="productTableBody">
-              <tr><td colspan="8" class="empty-state">Product विवरण लोड हुँदैछ...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <div class="footer">General Store Management System · Inventory</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Product</th><th>Category</th><th>Unit / Size</th><th>Purchase Price</th><th>Sale Price</th><th>Stock</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="productTableBody"><tr><td colspan="8" class="empty-state">Product विवरण लोड हुँदैछ...</td></tr></tbody>
+        </table>
+      </div>
     </section>
-  </main>
-</div>
+    <div class="footer">General Store Management System · Inventory</div>
+  </section>
+</main>
 
-<div id="inventoryMobileOverlay" style="display:none;position:fixed;inset:0;background:#0f172a80;z-index:90"></div>
-
-<!-- Add Product Modal -->
 <div class="overlay" id="productModal" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
-    <div class="modal-header">
-      <h2 id="productModalTitle">＋ नयाँ Product थप्नुहोस्</h2>
-      <button class="close-btn" id="closeProductModal" type="button" aria-label="बन्द गर्नुहोस्">×</button>
-    </div>
+    <div class="modal-header"><h2 id="productModalTitle">＋ नयाँ Product थप्नुहोस्</h2><button class="close-btn" id="closeProductModal" type="button" aria-label="बन्द गर्नुहोस्">×</button></div>
     <div class="modal-body">
       <form id="productForm">
         <div class="form-grid">
-          <div class="form-group">
-            <label for="productName">Product Name *</label>
-            <input id="productName" name="productName" required maxlength="120" placeholder="जस्तै: चामल">
-          </div>
-          <div class="form-group">
-            <label for="productCategory">Category</label>
-            <select id="productCategory" name="productCategory">
-              <option value="Grocery">Grocery</option>
-              <option value="Beverages">Beverages</option>
-              <option value="Snacks">Snacks</option>
-              <option value="Personal Care">Personal Care</option>
-              <option value="Household">Household</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="productBrand">Brand</label>
-            <input id="productBrand" name="productBrand" maxlength="100" placeholder="ब्रान्डको नाम">
-          </div>
-          <div class="form-group">
-            <label for="productSize">Size / Weight</label>
-            <input id="productSize" name="productSize" maxlength="60" placeholder="जस्तै: 1 kg">
-          </div>
-          <div class="form-group">
-            <label for="productUnit">Unit *</label>
-            <select id="productUnit" name="productUnit" required>
-              <option value="pcs">Pieces (pcs)</option>
-              <option value="kg">Kilogram (kg)</option>
-              <option value="g">Gram (g)</option>
-              <option value="ltr">Litre (ltr)</option>
-              <option value="ml">Millilitre (ml)</option>
-              <option value="pack">Pack</option>
-              <option value="box">Box</option>
-              <option value="dozen">Dozen</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="purchasePrice">Purchase Price (रु) *</label>
-            <input id="purchasePrice" name="purchasePrice" type="number" min="0" step="0.01" required placeholder="0.00">
-          </div>
-          <div class="form-group">
-            <label for="salePrice">Sale Price (रु) *</label>
-            <input id="salePrice" name="salePrice" type="number" min="0" step="0.01" required placeholder="0.00">
-          </div>
-          <div class="form-group">
-            <label for="minStock">Minimum Stock</label>
-            <input id="minStock" name="minStock" type="number" min="0" step="any" value="5">
-          </div>
-          <div class="form-group">
-            <label for="targetStock">Target Stock</label>
-            <input id="targetStock" name="targetStock" type="number" min="0" step="any" value="20">
-          </div>
-          <div class="form-group full-width">
-            <label class="checkbox-row">
-              <input id="expiryApplicable" name="expiryApplicable" type="checkbox">
-              यो Product मा Expiry Date लागू हुन्छ
-            </label>
-          </div>
+          <div class="form-group"><label for="productName">Product Name *</label><input id="productName" required maxlength="120" placeholder="जस्तै: चामल"></div>
+          <div class="form-group"><label for="productCategory">Category</label><select id="productCategory"><option value="Grocery">Grocery</option><option value="Beverages">Beverages</option><option value="Snacks">Snacks</option><option value="Personal Care">Personal Care</option><option value="Household">Household</option><option value="Other">Other</option></select></div>
+          <div class="form-group"><label for="productBrand">Brand</label><input id="productBrand" maxlength="100" placeholder="ब्रान्डको नाम"></div>
+          <div class="form-group"><label for="productSize">Size / Weight</label><input id="productSize" maxlength="60" placeholder="जस्तै: 1 kg"></div>
+          <div class="form-group"><label for="productUnit">Unit *</label><select id="productUnit" required><option value="pcs">Pieces (pcs)</option><option value="kg">Kilogram (kg)</option><option value="g">Gram (g)</option><option value="ltr">Litre (ltr)</option><option value="ml">Millilitre (ml)</option><option value="pack">Pack</option><option value="box">Box</option><option value="dozen">Dozen</option></select></div>
+          <div class="form-group"><label for="purchasePrice">Purchase Price (रु) *</label><input id="purchasePrice" type="number" min="0" step="0.01" required placeholder="0.00"></div>
+          <div class="form-group"><label for="salePrice">Sale Price (रु) *</label><input id="salePrice" type="number" min="0" step="0.01" required placeholder="0.00"></div>
+          <div class="form-group"><label for="minStock">Minimum Stock</label><input id="minStock" type="number" min="0" step="any" value="5"></div>
+          <div class="form-group"><label for="targetStock">Target Stock</label><input id="targetStock" type="number" min="0" step="any" value="20"></div>
+          <div class="form-group full-width"><label class="checkbox-row"><input id="expiryApplicable" type="checkbox"> यो Product मा Expiry Date लागू हुन्छ</label></div>
         </div>
-        <div class="modal-footer">
-          <button class="btn" id="cancelProductBtn" type="button">Cancel</button>
-          <button class="btn btn-primary" type="submit">Product Save गर्नुहोस्</button>
-        </div>
+        <div class="modal-footer"><button class="btn" id="cancelProductBtn" type="button">Cancel</button><button class="btn btn-primary" type="submit">Product Save गर्नुहोस्</button></div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Product Details Modal -->
 <div class="overlay" id="productViewModal" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="productViewTitle">
-    <div class="modal-header">
-      <h2 id="productViewTitle">Product Details</h2>
-      <button class="close-btn" id="closeProductView" type="button" aria-label="बन्द गर्नुहोस्">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detail-grid" id="productDetails"></div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="closeProductViewBtn" type="button">बन्द गर्नुहोस्</button>
-      </div>
-    </div>
+    <div class="modal-header"><h2 id="productViewTitle">Product Details</h2><button class="close-btn" id="closeProductView" type="button" aria-label="बन्द गर्नुहोस्">×</button></div>
+    <div class="modal-body"><div class="detail-grid" id="productDetails"></div><div class="modal-footer"><button class="btn btn-primary" id="closeProductViewBtn" type="button">बन्द गर्नुहोस्</button></div></div>
   </div>
 </div>
 
