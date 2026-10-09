@@ -3,524 +3,428 @@ const SALE_KEY = "gs_sales";
 const LOT_KEY = "gs_stock_lots";
 
 document.addEventListener("DOMContentLoaded", function () {
-  const $ = (id) => document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
-  const els = {
-    modal: $("saleModal"),
-    form: $("saleForm"),
-    newBtn: $("newSaleBtn"),
-    closeBtn: $("closeSaleModal"),
-    cancelBtn: $("cancelSaleBtn"),
-    date: $("saleDate"),
-    bill: $("billNumber"),
-    product: $("saleProduct"),
-    qty: $("saleQty"),
-    rate: $("saleRate"),
-    discount: $("saleDiscount"),
-    customer: $("customerName"),
-    payment: $("paymentMethod"),
-    paid: $("paidAmount"),
-    note: $("saleNote"),
-    itemAmount: $("previewItemAmount"),
-    discountPreview: $("previewDiscount"),
-    totalPreview: $("previewTotal"),
-    paidPreview: $("previewPaid"),
-    balancePreview: $("previewBalance"),
-    infoProduct: $("infoProduct"),
-    infoUnit: $("infoUnit"),
-    infoStock: $("infoStock"),
-    infoQty: $("infoQty"),
-    infoPayment: $("infoPayment"),
-    stockInfo: $("stockInfo"),
-    search: $("saleSearch"),
-    history: $("salesHistoryBody"),
-    totalSales: $("totalSales"),
-    salesValue: $("salesValue"),
-    salesPaidValue: $("salesPaidValue"),
-    salesBalanceValue: $("salesBalanceValue")
-  };
+  const modal = $("saleModal");
+  const form = $("saleForm");
+  const newBtn = $("newSaleBtn");
 
-  function read(key, fallback = []) {
+  function read(key) {
     try {
-      const value = JSON.parse(localStorage.getItem(key));
-      return value == null ? fallback : value;
-    } catch {
-      return fallback;
+      const value = JSON.parse(localStorage.getItem(key) || "[]");
+      return Array.isArray(value) ? value : [];
+    } catch (error) {
+      console.error("Storage read error:", key, error);
+      return [];
     }
   }
 
-  function write(key, value) {
+  function save(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
   }
 
-  function products() {
-    return read(PRODUCT_KEY);
-  }
-
-  function sales() {
-    return read(SALE_KEY);
-  }
-
-  function lots() {
-    return read(LOT_KEY);
+  function num(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
   }
 
   function money(value) {
-    return Number(value || 0).toLocaleString("en-IN", {
+    return "Rs. " + num(value).toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
   }
 
-  function num(value) {
-    const result = Number(value);
-    return Number.isFinite(result) ? result : 0;
-  }
-
-  function safe(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
       "&": "&amp;",
       "<": "&lt;",
       ">": "&gt;",
       '"': "&quot;",
       "'": "&#39;"
-    })[char]);
+    })[c]);
   }
 
   function today() {
     const d = new Date();
-    return [
-      d.getFullYear(),
-      String(d.getMonth() + 1).padStart(2, "0"),
-      String(d.getDate()).padStart(2, "0")
-    ].join("-");
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
-  function generateBill() {
-    return "SALE-" + Date.now().toString().slice(-8);
+  function newBillNumber() {
+    return "SALE-" + Date.now();
   }
 
-  function getProduct(id) {
-    return products().find(p => String(p.id) === String(id));
-  }
-
-  function openModal() {
-    if (els.modal) {
-      els.modal.hidden = false;
-      els.modal.style.display = "";
-      els.modal.classList.add("active", "show", "open");
+  // Modal: CSS को .show class प्रयोग गर्ने
+  function openSaleModal() {
+    if (!modal) {
+      alert("Sale Modal भेटिएन। sale.html मा id='saleModal' जाँच्नुहोस्।");
+      return;
     }
 
-    if (els.date && !els.date.value) els.date.value = today();
-    if (els.bill && !els.bill.value) els.bill.value = generateBill();
+    modal.hidden = false;
+    modal.style.display = "block";
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+
+    if (!$("saleDate").value) $("saleDate").value = today();
+    if (!$("billNumber").value) $("billNumber").value = newBillNumber();
 
     loadProducts();
-    calculate();
-
-    setTimeout(() => {
-      if (els.product) els.product.focus();
-    }, 50);
+    calculateSale();
   }
 
-  function closeModal() {
-    if (els.modal) {
-      els.modal.classList.remove("active", "show", "open");
-      els.modal.hidden = true;
-      els.modal.style.display = "none";
-    }
+  function closeSaleModal() {
+    if (!modal) return;
+
+    modal.classList.remove("show");
+    modal.style.display = "none";
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
   }
 
-  function loadProducts(selectedId = "") {
-    if (!els.product) return;
+  if (newBtn) {
+    newBtn.addEventListener("click", openSaleModal);
+  } else {
+    console.error("New Sale button भेटिएन: id='newSaleBtn'");
+  }
 
-    const list = products();
-    const current = selectedId || els.product.value;
+  if ($("closeSaleModal")) {
+    $("closeSaleModal").addEventListener("click", closeSaleModal);
+  }
 
-    els.product.innerHTML = '<option value="">Select Product</option>';
+  if ($("cancelSaleBtn")) {
+    $("cancelSaleBtn").addEventListener("click", closeSaleModal);
+  }
+
+  if (modal) {
+    modal.addEventListener("click", function (event) {
+      if (event.target === modal) closeSaleModal();
+    });
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") closeSaleModal();
+  });
+
+  // Product सूची
+  function loadProducts() {
+    const select = $("saleProduct");
+    if (!select) return;
+
+    const previous = select.value;
+    const list = read(PRODUCT_KEY);
+
+    select.innerHTML = '<option value="">Product छान्नुहोस्</option>';
 
     list.filter(p => p.active !== false && p.status !== "INACTIVE")
       .forEach(p => {
         const option = document.createElement("option");
         option.value = p.id;
         option.textContent =
-          `${p.name || "Unnamed Product"} — Stock: ${num(p.stock)} ${p.unit || ""}`;
-        els.product.appendChild(option);
+          `${p.name || "Product"} — Stock: ${num(p.stock)} ${p.unit || ""}`;
+        select.appendChild(option);
       });
 
-    if (current) els.product.value = current;
+    if (previous) select.value = previous;
     updateProductInfo();
   }
 
-  function updateProductInfo() {
-    const product = getProduct(els.product?.value);
-
-    if (els.infoProduct) els.infoProduct.textContent = product?.name || "-";
-    if (els.infoUnit) els.infoUnit.textContent = product?.unit || "-";
-    if (els.infoStock) {
-      els.infoStock.textContent = product ? num(product.stock) : "-";
-    }
-    if (els.infoQty) els.infoQty.textContent = els.qty?.value || "0";
-    if (els.infoPayment) {
-      els.infoPayment.textContent = els.payment?.value || "-";
-    }
-
-    if (els.rate && product && !els.rate.value) {
-      els.rate.value = num(product.salePrice || product.sellingPrice || 0);
-    }
-
-    calculate();
+  function selectedProduct() {
+    const id = $("saleProduct")?.value;
+    return read(PRODUCT_KEY).find(p => String(p.id) === String(id));
   }
 
-  function calculate() {
-    const qty = num(els.qty?.value);
-    const rate = num(els.rate?.value);
-    const discount = num(els.discount?.value);
-    const paid = num(els.paid?.value);
+  function updateProductInfo() {
+    const product = selectedProduct();
+
+    if ($("infoProduct")) $("infoProduct").textContent = product?.name || "-";
+    if ($("infoUnit")) $("infoUnit").textContent = product?.unit || "-";
+    if ($("infoStock")) $("infoStock").textContent = product ? num(product.stock) : "0";
+    if ($("stockInfo")) {
+      $("stockInfo").textContent = product
+        ? `Available stock: ${num(product.stock)} ${product.unit || ""}`
+        : "Available stock: -";
+    }
+
+    if (product && $("saleRate") && !$("saleRate").value) {
+      $("saleRate").value = num(product.salePrice || product.sellingPrice);
+    }
+
+    calculateSale();
+  }
+
+  function calculateSale() {
+    const qty = num($("saleQty")?.value);
+    const rate = num($("saleRate")?.value);
+    const discountInput = num($("saleDiscount")?.value);
+    const paid = num($("paidAmount")?.value);
 
     const itemAmount = qty * rate;
-    const safeDiscount = Math.min(Math.max(discount, 0), itemAmount);
-    const total = Math.max(0, itemAmount - safeDiscount);
+    const discount = Math.min(Math.max(0, discountInput), itemAmount);
+    const total = Math.max(0, itemAmount - discount);
     const balance = Math.max(0, total - paid);
 
-    if (els.itemAmount) els.itemAmount.textContent = money(itemAmount);
-    if (els.discountPreview) els.discountPreview.textContent = money(safeDiscount);
-    if (els.totalPreview) els.totalPreview.textContent = money(total);
-    if (els.paidPreview) els.paidPreview.textContent = money(paid);
-    if (els.balancePreview) els.balancePreview.textContent = money(balance);
-    if (els.infoQty) els.infoQty.textContent = qty || "0";
+    if ($("previewItemAmount")) $("previewItemAmount").textContent = money(itemAmount);
+    if ($("previewDiscount")) $("previewDiscount").textContent = money(discount);
+    if ($("previewTotal")) $("previewTotal").textContent = money(total);
+    if ($("previewPaid")) $("previewPaid").textContent = money(paid);
+    if ($("previewBalance")) $("previewBalance").textContent = money(balance);
+    if ($("infoQty")) $("infoQty").textContent = qty;
+    if ($("infoPayment")) $("infoPayment").textContent = $("paymentMethod")?.value || "CASH";
 
-    return { qty, rate, discount: safeDiscount, itemAmount, total, paid, balance };
+    return { qty, rate, discount, itemAmount, total, paid, balance };
   }
 
-  function renderSummary() {
-    const all = sales().filter(s => !s.voided && !s.isVoid);
-    const totalValue = all.reduce((sum, s) => sum + num(s.total), 0);
-    const paidValue = all.reduce((sum, s) => sum + num(s.paidAmount), 0);
-    const balanceValue = all.reduce((sum, s) => sum + num(s.balance), 0);
+  [
+    "saleProduct", "saleQty", "saleRate", "saleDiscount",
+    "paidAmount", "paymentMethod"
+  ].forEach(id => {
+    const el = $(id);
+    if (el) {
+      el.addEventListener("input", function () {
+        if (id === "saleProduct") {
+          $("saleRate").value = "";
+          updateProductInfo();
+        } else {
+          calculateSale();
+        }
+      });
+      el.addEventListener("change", function () {
+        if (id === "saleProduct") updateProductInfo();
+        else calculateSale();
+      });
+    }
+  });
 
-    if (els.totalSales) els.totalSales.textContent = all.length;
-    if (els.salesValue) els.salesValue.textContent = money(totalValue);
-    if (els.salesPaidValue) els.salesPaidValue.textContent = money(paidValue);
-    if (els.salesBalanceValue) els.salesBalanceValue.textContent = money(balanceValue);
-  }
-
-  function renderHistory() {
-    if (!els.history) return;
-
-    const query = (els.search?.value || "").toLowerCase().trim();
-
-    const list = sales()
+  // Sales History र summary
+  function renderSales() {
+    const tbody = $("salesHistoryBody");
+    const allSales = read(SALE_KEY)
       .filter(s => !s.voided && !s.isVoid)
-      .filter(s => [
-        s.billNumber, s.customerName, s.productName,
-        s.date, s.paymentMethod
-      ].some(value => String(value || "").toLowerCase().includes(query)))
       .sort((a, b) =>
         String(b.createdAt || b.date || "").localeCompare(
           String(a.createdAt || a.date || "")
         )
       );
 
-    if (!list.length) {
-      els.history.innerHTML =
-        '<tr><td colspan="9" style="text-align:center;padding:20px;">No sales records found.</td></tr>';
-      renderSummary();
-      return;
+    const query = ($("saleSearch")?.value || "").toLowerCase().trim();
+
+    const shown = allSales.filter(s =>
+      [
+        s.date, s.billNumber, s.customerName,
+        s.productName, s.paymentMethod
+      ].some(v => String(v || "").toLowerCase().includes(query))
+    );
+
+    if (tbody) {
+      tbody.innerHTML = shown.length ? shown.map(s => `
+        <tr>
+          <td>${esc(s.date || "-")}</td>
+          <td>${esc(s.billNumber || "-")}</td>
+          <td>${esc(s.customerName || "Walk-in Customer")}</td>
+          <td>${esc(s.productName || "-")}</td>
+          <td>${num(s.qty)}</td>
+          <td>${money(s.total)}</td>
+          <td>${money(s.paidAmount)}</td>
+          <td>${money(s.balance)}</td>
+          <td>${esc(s.paymentMethod || "-")}</td>
+          <td><button type="button" data-view-sale="${esc(s.id)}">View Bill</button></td>
+        </tr>
+      `).join("") :
+      '<tr><td colspan="10" class="sale-empty">Sales विवरण छैन।</td></tr>';
     }
 
-    els.history.innerHTML = list.map(s => `
-      <tr>
-        <td>${safe(s.date || "-")}</td>
-        <td>${safe(s.billNumber || "-")}</td>
-        <td>${safe(s.customerName || "Walk-in Customer")}</td>
-        <td>${safe(s.productName || "-")}</td>
-        <td>${money(s.qty)}</td>
-        <td>${money(s.total)}</td>
-        <td>${money(s.paidAmount)}</td>
-        <td>${money(s.balance)}</td>
-        <td>
-          <button type="button" class="view-sale-btn"
-            data-sale-id="${safe(s.id)}">View Bill</button>
-        </td>
-      </tr>
-    `).join("");
-
-    renderSummary();
+    if ($("totalSales")) $("totalSales").textContent = allSales.length;
+    if ($("salesValue")) {
+      $("salesValue").textContent = money(allSales.reduce((t, s) => t + num(s.total), 0));
+    }
+    if ($("salesPaidValue")) {
+      $("salesPaidValue").textContent = money(allSales.reduce((t, s) => t + num(s.paidAmount), 0));
+    }
+    if ($("salesBalanceValue")) {
+      $("salesBalanceValue").textContent = money(allSales.reduce((t, s) => t + num(s.balance), 0));
+    }
   }
 
-  function allocateFIFO(productId, qty) {
-    const allLots = lots();
+  if ($("saleSearch")) $("saleSearch").addEventListener("input", renderSales);
 
-    const productLots = allLots
-      .filter(l =>
-        String(l.productId) === String(productId) &&
-        num(l.remainingQty) > 0
-      )
-      .sort((a, b) => {
-        const dateCompare = String(a.date || "").localeCompare(String(b.date || ""));
-        if (dateCompare !== 0) return dateCompare;
-        return String(a.createdAt || a.id || "").localeCompare(
-          String(b.createdAt || b.id || "")
-        );
-      });
+  if ($("salesHistoryBody")) {
+    $("salesHistoryBody").addEventListener("click", function (event) {
+      const button = event.target.closest("[data-view-sale]");
+      if (!button) return;
 
-    const lotQty = productLots.reduce((sum, l) => sum + num(l.remainingQty), 0);
-    const product = getProduct(productId);
+      const sale = read(SALE_KEY).find(s => String(s.id) === button.dataset.viewSale);
+      if (!sale) return alert("Sale record भेटिएन।");
 
-    if (!product) {
-      throw new Error("Product भेटिएन।");
-    }
+      const win = window.open("", "_blank");
+      if (!win) return alert("Bill खोल्न popup अनुमति दिनुहोस्।");
 
-    if (Math.abs(lotQty - num(product.stock)) > 0.000001) {
-      throw new Error(
-        `FIFO Stock नमिलेको छ। Product Stock: ${num(product.stock)}, ` +
-        `Lot Stock: ${lotQty}। बिक्री सुरक्षित राख्न रोकिएको छ।`
-      );
-    }
-
-    if (lotQty + 0.000001 < qty) {
-      throw new Error("FIFO Lot मा पर्याप्त स्टक छैन।");
-    }
-
-    let remaining = qty;
-    let cost = 0;
-    const allocations = [];
-
-    for (const lot of productLots) {
-      if (remaining <= 0.000001) break;
-
-      const available = num(lot.remainingQty);
-      const used = Math.min(available, remaining);
-
-      if (used <= 0) continue;
-
-      const unitCost = num(lot.effectiveCost);
-      cost += used * unitCost;
-
-      allocations.push({
-        lotId: lot.id,
-        qty: used,
-        unitCost,
-        cost: used * unitCost
-      });
-
-      remaining -= used;
-    }
-
-    if (remaining > 0.000001) {
-      throw new Error("FIFO Lot बाट आवश्यक मात्रा छुट्याउन सकिएन।");
-    }
-
-    return { allocations, cost };
-  }
-
-  function viewSaleBill(id) {
-    const sale = sales().find(s => String(s.id) === String(id));
-    if (!sale) return alert("Sale record भेटिएन।");
-
-    const receipt = `
-      <!doctype html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Sale Bill ${safe(sale.billNumber)}</title>
-        <style>
-          body{font-family:Arial,sans-serif;padding:24px;color:#222}
-          h2{text-align:center;margin-bottom:4px}
-          .center{text-align:center}
-          table{width:100%;border-collapse:collapse;margin-top:20px}
-          th,td{border:1px solid #ccc;padding:8px;text-align:left}
-          .right{text-align:right}
-          @media print{button{display:none}}
-        </style>
-      </head>
-      <body>
-        <h2>GENERAL STORE</h2>
-        <div class="center">Sales Receipt</div>
-        <hr>
-        <p>Bill: ${safe(sale.billNumber)}</p>
-        <p>Date: ${safe(sale.date)}</p>
-        <p>Customer: ${safe(sale.customerName || "Walk-in Customer")}</p>
-        <table>
-          <thead><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
-          <tbody>
-            <tr>
-              <td>${safe(sale.productName)}</td>
-              <td>${money(sale.qty)} ${safe(sale.unit || "")}</td>
-              <td>${money(sale.rate)}</td>
-              <td>${money(sale.itemAmount)}</td>
-            </tr>
-          </tbody>
-        </table>
+      win.document.write(`
+        <!doctype html>
+        <html><head><meta charset="utf-8"><title>Sale Bill</title>
+        <style>body{font-family:Arial;padding:24px}table{width:100%;border-collapse:collapse}
+        td,th{border:1px solid #ccc;padding:8px;text-align:left}.right{text-align:right}
+        @media print{button{display:none}}</style></head><body>
+        <h2>GENERAL STORE</h2><h3>Sales Receipt</h3>
+        <p>Bill: ${esc(sale.billNumber)}</p><p>Date: ${esc(sale.date)}</p>
+        <p>Customer: ${esc(sale.customerName || "Walk-in Customer")}</p>
+        <table><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
+        <tr><td>${esc(sale.productName)}</td><td>${num(sale.qty)} ${esc(sale.unit || "")}</td>
+        <td>${money(sale.rate)}</td><td>${money(sale.itemAmount)}</td></tr></table>
         <p class="right">Discount: ${money(sale.discount)}</p>
         <h3 class="right">Total: ${money(sale.total)}</h3>
         <p class="right">Paid: ${money(sale.paidAmount)}</p>
         <p class="right">Balance: ${money(sale.balance)}</p>
-        <p>Payment: ${safe(sale.paymentMethod || "-")}</p>
-        <p>Note: ${safe(sale.note || "-")}</p>
-        <p class="center">Thank you for shopping!</p>
-        <div class="center"><button onclick="window.print()">Print Bill</button></div>
-      </body>
-      </html>
-    `;
-
-    const win = window.open("", "_blank");
-    if (!win) return alert("Receipt खोल्न browser popup अनुमति दिनुहोस्।");
-    win.document.write(receipt);
-    win.document.close();
+        <p>Payment: ${esc(sale.paymentMethod || "-")}</p>
+        <button onclick="window.print()">Print</button></body></html>
+      `);
+      win.document.close();
+    });
   }
 
-  window.viewSaleBill = viewSaleBill;
+  // Sale Save
+  if (form) {
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
 
-  function saveSale(event) {
-    event.preventDefault();
+      const product = selectedProduct();
+      if (!product) return alert("कृपया Product छान्नुहोस्।");
 
-    const productId = els.product?.value;
-    const product = getProduct(productId);
+      const calc = calculateSale();
 
-    if (!product) return alert("कृपया Product छान्नुहोस्।");
-
-    const calc = calculate();
-
-    if (!els.date?.value) return alert("Sale Date राख्नुहोस्।");
-    if (calc.qty <= 0) return alert("Quantity शून्यभन्दा बढी हुनुपर्छ।");
-    if (calc.rate <= 0) return alert("Sale Rate शून्यभन्दा बढी हुनुपर्छ।");
-    if (calc.discount > calc.itemAmount) return alert("Discount रकम मिलाउनुहोस्।");
-    if (calc.paid < 0 || calc.paid > calc.total) {
-      return alert("Paid Amount मिलाउनुहोस्।");
-    }
-    if (calc.qty > num(product.stock)) {
-      return alert(`पर्याप्त स्टक छैन। उपलब्ध: ${num(product.stock)}`);
-    }
-
-    let fifo;
-    try {
-      fifo = allocateFIFO(productId, calc.qty);
-    } catch (error) {
-      return alert(error.message);
-    }
-
-    const currentProducts = products();
-    const productIndex = currentProducts.findIndex(
-      p => String(p.id) === String(productId)
-    );
-    if (productIndex < 0) return alert("Product record भेटिएन।");
-
-    const currentLots = lots();
-
-    for (const allocation of fifo.allocations) {
-      const lotIndex = currentLots.findIndex(
-        l => String(l.id) === String(allocation.lotId)
-      );
-      if (lotIndex < 0) return alert("FIFO Lot परिवर्तन भएको छ। फेरि प्रयास गर्नुहोस्।");
-      if (num(currentLots[lotIndex].remainingQty) + 0.000001 < allocation.qty) {
-        return alert("FIFO Lot मा स्टक परिवर्तन भएको छ। फेरि प्रयास गर्नुहोस्।");
+      if (!$("saleDate").value) return alert("Sale Date राख्नुहोस्।");
+      if (calc.qty <= 0) return alert("Quantity शून्यभन्दा बढी हुनुपर्छ।");
+      if (calc.rate <= 0) return alert("Sale Rate शून्यभन्दा बढी हुनुपर्छ।");
+      if (calc.discount > calc.itemAmount) return alert("Discount मिलाउनुहोस्।");
+      if (calc.paid < 0 || calc.paid > calc.total) {
+        return alert("Paid Amount मिलाउनुहोस्।");
       }
-    }
+      if (calc.qty > num(product.stock)) {
+        return alert(`पर्याप्त स्टक छैन। उपलब्ध: ${num(product.stock)}`);
+      }
 
-    for (const allocation of fifo.allocations) {
-      const lot = currentLots.find(l => String(l.id) === String(allocation.lotId));
-      lot.remainingQty = Math.max(0, num(lot.remainingQty) - allocation.qty);
-    }
+      const allProducts = read(PRODUCT_KEY);
+      const productIndex = allProducts.findIndex(p => String(p.id) === String(product.id));
+      if (productIndex < 0) return alert("Product record भेटिएन।");
 
-    const sale = {
-      id: "SALE-" + Date.now() + "-" + Math.floor(Math.random() * 10000),
-      date: els.date.value,
-      billNumber: (els.bill?.value || "").trim() || generateBill(),
-      customerName: (els.customer?.value || "").trim(),
-      productId: product.id,
-      productName: product.name || "",
-      unit: product.unit || "",
-      qty: calc.qty,
-      rate: calc.rate,
-      discount: calc.discount,
-      itemAmount: calc.itemAmount,
-      total: calc.total,
-      paidAmount: calc.paid,
-      balance: calc.balance,
-      paymentMethod: els.payment?.value || "CASH",
-      note: (els.note?.value || "").trim(),
-      fifoAllocations: fifo.allocations,
-      fifoCost: fifo.cost,
-      profit: calc.total - fifo.cost,
-      createdAt: new Date().toISOString()
-    };
+      const allLots = read(LOT_KEY);
+      const productLots = allLots
+        .filter(l => String(l.productId) === String(product.id) && num(l.remainingQty) > 0)
+        .sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
 
-    const allSales = sales();
-    allSales.push(sale);
-    currentProducts[productIndex].stock =
-      Math.max(0, num(currentProducts[productIndex].stock) - calc.qty);
-    currentProducts[productIndex].salePrice = calc.rate;
+      const lotTotal = productLots.reduce((sum, l) => sum + num(l.remainingQty), 0);
 
-    try {
-      write(LOT_KEY, currentLots);
-      write(PRODUCT_KEY, currentProducts);
-      write(SALE_KEY, allSales);
-    } catch (error) {
-      alert("रेकर्ड सुरक्षित गर्न समस्या भयो। Storage उपलब्धता जाँच्नुहोस्।");
-      return;
-    }
+      // FIFO lot र Product stock नमिले सुरक्षित रूपमा रोक्ने
+      if (Math.abs(lotTotal - num(product.stock)) > 0.000001) {
+        return alert(
+          `FIFO Stock नमिलेको छ। Product Stock: ${num(product.stock)}, ` +
+          `Lot Stock: ${lotTotal}।\n\nअहिले बिक्री सुरक्षित गरिएको छैन।`
+        );
+      }
 
-    alert("Sale सफलतापूर्वक सुरक्षित भयो।");
-    els.form.reset();
+      let remaining = calc.qty;
+      let fifoCost = 0;
+      const allocations = [];
 
-    if (els.date) els.date.value = today();
-    if (els.bill) els.bill.value = generateBill();
+      for (const lot of productLots) {
+        if (remaining <= 0.000001) break;
 
-    loadProducts();
-    calculate();
-    renderHistory();
-    closeModal();
-  }
+        const used = Math.min(num(lot.remainingQty), remaining);
+        if (used <= 0) continue;
 
-  if (els.newBtn) {
-    els.newBtn.addEventListener("click", openModal);
-  }
+        const unitCost = num(lot.effectiveCost);
+        allocations.push({
+          lotId: lot.id,
+          qty: used,
+          unitCost,
+          cost: used * unitCost
+        });
 
-  if (els.closeBtn) els.closeBtn.addEventListener("click", closeModal);
-  if (els.cancelBtn) els.cancelBtn.addEventListener("click", closeModal);
+        fifoCost += used * unitCost;
+        remaining -= used;
+      }
 
-  if (els.modal) {
-    els.modal.addEventListener("click", function (event) {
-      if (event.target === els.modal) closeModal();
+      if (remaining > 0.000001) {
+        return alert("FIFO Lot मा पर्याप्त स्टक छैन। बिक्री सुरक्षित गरिएको छैन।");
+      }
+
+      // Save गर्नु अघि Lot मात्रा घटाउने
+      allocations.forEach(a => {
+        const lot = allLots.find(l => String(l.id) === String(a.lotId));
+        if (!lot || num(lot.remainingQty) < a.qty) {
+          throw new Error("FIFO Lot परिवर्तन भएको छ। फेरि प्रयास गर्नुहोस्।");
+        }
+        lot.remainingQty = Math.max(0, num(lot.remainingQty) - a.qty);
+      });
+
+      const sale = {
+        id: "SALE-" + Date.now() + "-" + Math.floor(Math.random() * 10000),
+        date: $("saleDate").value,
+        billNumber: $("billNumber").value.trim() || newBillNumber(),
+        customerName: $("customerName").value.trim(),
+        productId: product.id,
+        productName: product.name || "",
+        unit: product.unit || "",
+        qty: calc.qty,
+        rate: calc.rate,
+        discount: calc.discount,
+        itemAmount: calc.itemAmount,
+        total: calc.total,
+        paidAmount: calc.paid,
+        balance: calc.balance,
+        paymentMethod: $("paymentMethod").value || "CASH",
+        note: $("saleNote").value.trim(),
+        fifoAllocations: allocations,
+        fifoCost,
+        profit: calc.total - fifoCost,
+        createdAt: new Date().toISOString()
+      };
+
+      allProducts[productIndex].stock =
+        Math.max(0, num(allProducts[productIndex].stock) - calc.qty);
+      allProducts[productIndex].salePrice = calc.rate;
+
+      const allSales = read(SALE_KEY);
+      allSales.push(sale);
+
+      try {
+        save(LOT_KEY, allLots);
+        save(PRODUCT_KEY, allProducts);
+        save(SALE_KEY, allSales);
+      } catch (error) {
+        console.error(error);
+        return alert("Storage मा Save गर्न समस्या भयो।");
+      }
+
+      alert("Sale सफलतापूर्वक सुरक्षित भयो।");
+      form.reset();
+      $("saleDate").value = today();
+      $("billNumber").value = newBillNumber();
+      loadProducts();
+      calculateSale();
+      renderSales();
+      closeSaleModal();
     });
   }
 
-  if (els.form) els.form.addEventListener("submit", saveSale);
-
-  [els.product, els.qty, els.rate, els.discount, els.paid, els.payment]
-    .filter(Boolean)
-    .forEach(el => {
-      el.addEventListener("input", updateProductInfo);
-      el.addEventListener("change", updateProductInfo);
-    });
-
-  if (els.search) els.search.addEventListener("input", renderHistory);
-
-  if (els.history) {
-    els.history.addEventListener("click", function (event) {
-      const button = event.target.closest("[data-sale-id]");
-      if (button) viewSaleBill(button.dataset.saleId);
+  // Clear थिच्दा preview फेरि मिलाउने
+  if (form) {
+    form.addEventListener("reset", function () {
+      setTimeout(function () {
+        if ($("saleDate")) $("saleDate").value = today();
+        if ($("billNumber")) $("billNumber").value = newBillNumber();
+        loadProducts();
+        calculateSale();
+      }, 0);
     });
   }
 
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") closeModal();
-  });
-
-  // पुरानो sidebar toggle भएमा त्यसलाई पनि चल्न दिन्छ।
-  const sidebarToggle = $("menuToggle") || $("sidebarToggle");
-  if (sidebarToggle) {
-    sidebarToggle.addEventListener("click", function () {
-      document.body.classList.toggle("sidebar-open");
-    });
-  }
-
-  if (els.date) els.date.value = today();
-  if (els.bill) els.bill.value = generateBill();
+  // प्रारम्भिक अवस्था
+  if ($("saleDate")) $("saleDate").value = today();
+  if ($("billNumber")) $("billNumber").value = newBillNumber();
 
   loadProducts();
-  renderHistory();
-  calculate();
-  closeModal();
+  renderSales();
+  calculateSale();
+  closeSaleModal();
 });
