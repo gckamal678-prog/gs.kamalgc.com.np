@@ -1,53 +1,54 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ne">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales Return | General Store</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .return-wrap{padding:24px;max-width:1500px;margin:auto}
-    .return-top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:22px}
+    .return-wrap{padding:24px;max-width:1500px;margin:auto;color:#1e293b}
+    .return-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
     .return-top h1{margin:0 0 6px;font-size:27px}
     .return-top p{margin:0;color:#64748b}
-    .return-btn{border:0;border-radius:8px;padding:11px 17px;cursor:pointer;font-weight:600;font-size:14px}
+    .return-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}
+    .return-stat,.return-panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;box-shadow:0 3px 12px #0f172a08}
+    .return-stat span{display:block;color:#64748b;font-size:14px;margin-bottom:9px}
+    .return-stat strong{font-size:23px;overflow-wrap:anywhere}
+    .return-panel{margin-bottom:22px}
+    .return-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+    .return-toolbar h2{font-size:19px;margin:0}
+    .return-muted{font-size:13px;color:#64748b}
+    .return-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .return-field{min-width:0}
+    .return-field.wide{grid-column:1/-1}
+    .return-field label{display:block;font-size:14px;font-weight:600;margin-bottom:7px}
+    .return-field input,.return-field select,.return-field textarea,.return-search{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#1e293b;font:inherit;min-height:43px}
+    .return-field input[readonly]{background:#f8fafc;color:#475569}
+    .return-field textarea{min-height:82px;resize:vertical}
+    .return-notice{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px 14px;color:#075985;font-size:14px;margin-bottom:18px}
+    .return-error{display:none;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:12px;margin-bottom:16px;white-space:pre-wrap}
+    .return-error.show{display:block}
+    .return-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+    .return-summary>div{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:15px}
+    .return-summary span{display:block;color:#64748b;font-size:13px;margin-bottom:7px}
+    .return-summary strong{font-size:19px;overflow-wrap:anywhere}
+    .return-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px}
+    .return-btn{border:0;border-radius:8px;padding:11px 16px;font:inherit;font-weight:600;cursor:pointer}
     .return-btn.primary{background:#2563eb;color:white}
     .return-btn.secondary{background:#e2e8f0;color:#334155}
-    .return-btn.danger{background:#fee2e2;color:#991b1b}
-    .return-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}
-    .return-stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px;box-shadow:0 2px 8px #0f172a08}
-    .return-stat span{display:block;color:#64748b;font-size:13px;margin-bottom:9px}
-    .return-stat strong{font-size:23px;color:#0f172a;overflow-wrap:anywhere}
-    .return-panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:22px;box-shadow:0 2px 8px #0f172a08}
-    .return-panel h2{font-size:18px;margin:0 0 17px;color:#0f172a}
-    .return-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:15px}
-    .return-toolbar h2{margin:0}
-    .return-field label{display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:7px}
-    .return-field input,.return-field select,.return-field textarea{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:11px 12px;font:inherit;background:#fff;color:#0f172a}
-    .return-field textarea{min-height:80px;resize:vertical}
-    .return-field input:focus,.return-field select:focus,.return-field textarea:focus{outline:2px solid #bfdbfe;border-color:#2563eb}
-    .return-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-    .return-grid .wide{grid-column:span 2}
-    .return-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px}
-    .return-summary div span{display:block;font-size:13px;color:#64748b;margin-bottom:5px}
-    .return-summary strong{font-size:19px;color:#0f172a}
-    .return-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+    .return-btn:disabled{opacity:.6;cursor:not-allowed}
+    .return-search{max-width:340px}
     .return-table-wrap{width:100%;overflow-x:auto}
-    .return-table{width:100%;border-collapse:collapse;min-width:850px}
-    .return-table th,.return-table td{padding:13px 12px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:13px;white-space:nowrap}
+    .return-table{width:100%;border-collapse:collapse;min-width:900px}
+    .return-table th,.return-table td{text-align:left;padding:12px 10px;border-bottom:1px solid #e2e8f0;font-size:13px;white-space:nowrap}
     .return-table th{background:#f8fafc;color:#475569;font-weight:700}
-    .return-table tbody tr:hover{background:#f8fafc}
-    .return-badge{display:inline-block;border-radius:20px;padding:5px 9px;font-size:11px;font-weight:700}
+    .return-badge{display:inline-block;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:700}
     .return-badge.good{background:#dcfce7;color:#166534}
     .return-badge.damaged{background:#fee2e2;color:#991b1b}
-    .return-muted{color:#64748b}
-    .return-empty{text-align:center!important;padding:28px!important;color:#64748b}
-    .return-notice{padding:12px 14px;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-size:13px;margin-bottom:16px}
-    .return-error{padding:12px 14px;border-radius:8px;background:#fef2f2;color:#b91c1c;margin-bottom:15px;display:none}
-    .return-error.show{display:block}
+    .return-empty{text-align:center!important;color:#64748b;padding:25px!important}
+    .return-form-hidden{display:none!important}
     @media(max-width:900px){.return-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.return-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:600px){.return-wrap{padding:14px}.return-top h1{font-size:23px}.return-stats{gap:10px}.return-stat{padding:13px}.return-stat strong{font-size:19px}.return-panel{padding:14px}.return-grid{grid-template-columns:1fr}.return-grid .wide{grid-column:auto}.return-summary{grid-template-columns:1fr}}
+    @media(max-width:560px){.return-wrap{padding:14px}.return-stats{gap:10px}.return-stat,.return-panel{padding:14px}.return-stat strong{font-size:19px}.return-grid,.return-summary{grid-template-columns:1fr}.return-field.wide{grid-column:auto}.return-top h1{font-size:23px}}
   </style>
 </head>
 <body>
@@ -58,7 +59,7 @@
       <a class="menu-item" href="sale.html">New Sale</a>
       <a class="menu-item" href="purchase.html">Purchase</a>
       <a class="menu-item" href="inventory.html">Inventory</a>
-      <a class="menu-item active" href="sales-return.html">Sales Return</a>
+      <a class="menu-item" href="sales-return.html">Sales Return</a>
       <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
       <a class="menu-item" href="customers.html">Customers</a>
       <a class="menu-item" href="suppliers.html">Suppliers</a>
@@ -70,147 +71,118 @@
     </nav>
   </aside>
 
-  <main class="main-content">
-    <div class="return-wrap">
-      <header class="return-top">
-        <div>
-          <h1>Sales Return</h1>
-          <p>बिक्री भएको सामान फिर्ता लिनुहोस् र Return History हेर्नुहोस्।</p>
-        </div>
-        <button type="button" class="return-btn primary" id="clearReturnBtn">＋ नयाँ Return</button>
-      </header>
+  <main class="return-wrap">
+    <header class="return-top">
+      <div>
+        <h1>Sales Return</h1>
+        <p>बिक्री भएको सामान फिर्ता लिनुहोस् र Return History हेर्नुहोस्।</p>
+      </div>
+      <button type="button" class="return-btn primary" id="clearReturnBtn">＋ नयाँ Return</button>
+    </header>
 
-      <section class="return-stats">
-        <div class="return-stat">
-          <span>कुल Return</span>
-          <strong id="totalReturns">0</strong>
-        </div>
-        <div class="return-stat">
-          <span>कुल Return रकम</span>
-          <strong id="totalReturnAmount">Rs. 0.00</strong>
-        </div>
-        <div class="return-stat">
-          <span>Good Return</span>
-          <strong id="goodReturnCount">0</strong>
-        </div>
-        <div class="return-stat">
-          <span>Damaged Return</span>
-          <strong id="damagedReturnCount">0</strong>
-        </div>
-      </section>
+    <section class="return-stats">
+      <div class="return-stat"><span>कुल Return</span><strong id="totalReturns">0</strong></div>
+      <div class="return-stat"><span>कुल Return रकम</span><strong id="totalReturnAmount">Rs. 0.00</strong></div>
+      <div class="return-stat"><span>Good Return</span><strong id="goodReturnCount">0</strong></div>
+      <div class="return-stat"><span>Damaged Return</span><strong id="damagedReturnCount">0</strong></div>
+    </section>
 
-      <section class="return-panel" id="returnDetailsCard">
-        <div class="return-toolbar">
-          <h2>नयाँ Sales Return</h2>
-          <span class="return-muted">बिक्री बिल छानेर विवरण भर्नुहोस्</span>
-        </div>
+    <section class="return-panel return-form-hidden" id="returnDetailsCard">
+      <div class="return-toolbar">
+        <h2>नयाँ Sales Return</h2>
+        <span class="return-muted">बिक्री बिल छानेर विवरण भर्नुहोस्</span>
+      </div>
 
-        <div id="returnError" class="return-error" role="alert"></div>
-        <div class="return-notice">
-          GOOD सामान मात्र स्टकमा फिर्ता थपिन्छ। DAMAGED सामान स्टकमा थपिँदैन।
-        </div>
+      <div id="returnError" class="return-error" role="alert"></div>
+      <div class="return-notice">GOOD सामान मात्र बिक्रीयोग्य स्टकमा थपिन्छ। DAMAGED सामान स्टकमा थपिँदैन।</div>
 
-        <form id="returnForm">
-          <div class="return-grid">
-            <div class="return-field wide">
-              <label for="returnSale">बिक्री बिल / सामान छान्नुहोस् *</label>
-              <select id="returnSale" required>
-                <option value="">पहिले बिक्री भएको बिल छान्नुहोस्</option>
-              </select>
-            </div>
-            <div class="return-field">
-              <label for="returnBillNumber">बिल नम्बर</label>
-              <input id="returnBillNumber" readonly>
-            </div>
-            <div class="return-field">
-              <label for="returnCustomer">ग्राहक</label>
-              <input id="returnCustomer" readonly>
-            </div>
-            <div class="return-field">
-              <label for="returnProduct">सामान</label>
-              <input id="returnProduct" readonly>
-            </div>
-            <div class="return-field">
-              <label for="soldQty">बिक्री भएको मात्रा</label>
-              <input id="soldQty" readonly>
-            </div>
-            <div class="return-field">
-              <label for="alreadyReturnedQty">पहिले फिर्ता भएको</label>
-              <input id="alreadyReturnedQty" readonly>
-            </div>
-            <div class="return-field">
-              <label for="returnQty">फिर्ता मात्रा *</label>
-              <input id="returnQty" type="number" min="0.001" step="any" required placeholder="मात्रा लेख्नुहोस्">
-            </div>
-            <div class="return-field">
-              <label for="returnCondition">सामानको अवस्था *</label>
-              <select id="returnCondition" required>
-                <option value="GOOD">GOOD — पुनः बिक्री गर्न मिल्ने</option>
-                <option value="DAMAGED">DAMAGED — बिग्रिएको</option>
-              </select>
-            </div>
-            <div class="return-field">
-              <label for="returnReason">फिर्ताको कारण *</label>
-              <select id="returnReason" required>
-                <option value="">कारण छान्नुहोस्</option>
-                <option value="Wrong Item">गलत सामान</option>
-                <option value="Damaged Item">सामान बिग्रिएको</option>
-                <option value="Expiry">म्याद सकिएको</option>
-                <option value="Customer Request">ग्राहकको अनुरोध</option>
-                <option value="Other">अन्य</option>
-              </select>
-            </div>
-            <div class="return-field wide">
-              <label for="returnNote">कैफियत</label>
-              <textarea id="returnNote" placeholder="थप विवरण (वैकल्पिक)"></textarea>
-            </div>
+      <form id="returnForm">
+        <div class="return-grid">
+          <div class="return-field wide">
+            <label for="returnSale">बिक्री बिल / सामान छान्नुहोस् *</label>
+            <select id="returnSale" required>
+              <option value="">पहिले बिक्री भएको बिल छान्नुहोस्</option>
+            </select>
           </div>
-
-          <div class="return-summary">
-            <div>
-              <span>फिर्ता गर्न बाँकी मात्रा</span>
-              <strong id="remainingReturnQty">—</strong>
-            </div>
-            <div>
-              <span>फिर्ता रकम (अनुमानित)</span>
-              <strong id="returnAmountPreview">Rs. 0.00</strong>
-            </div>
+          <div class="return-field">
+            <label for="returnBillNumber">बिल नम्बर</label>
+            <input id="returnBillNumber" readonly>
           </div>
-
-          <div class="return-actions">
-            <button type="button" class="return-btn secondary" id="cancelReturnBtn">रद्द गर्नुहोस्</button>
-            <button type="submit" class="return-btn primary" id="saveReturnBtn">Return सुरक्षित गर्नुहोस्</button>
+          <div class="return-field">
+            <label for="returnCustomer">ग्राहक</label>
+            <input id="returnCustomer" readonly>
           </div>
-        </form>
-      </section>
+          <div class="return-field">
+            <label for="returnProduct">सामान</label>
+            <input id="returnProduct" readonly>
+          </div>
+          <div class="return-field">
+            <label for="soldQty">बिक्री भएको मात्रा</label>
+            <input id="soldQty" readonly>
+          </div>
+          <div class="return-field">
+            <label for="alreadyReturnedQty">पहिले फिर्ता भएको</label>
+            <input id="alreadyReturnedQty" readonly>
+          </div>
+          <div class="return-field">
+            <label for="returnQty">फिर्ता मात्रा *</label>
+            <input id="returnQty" type="number" min="0.001" step="any" required placeholder="मात्रा लेख्नुहोस्">
+          </div>
+          <div class="return-field">
+            <label for="returnCondition">सामानको अवस्था *</label>
+            <select id="returnCondition" required>
+              <option value="GOOD">GOOD — पुनः बिक्री गर्न मिल्ने</option>
+              <option value="DAMAGED">DAMAGED — बिग्रिएको</option>
+            </select>
+          </div>
+          <div class="return-field">
+            <label for="returnReason">फिर्ताको कारण *</label>
+            <select id="returnReason" required>
+              <option value="">कारण छान्नुहोस्</option>
+              <option value="Wrong Item">गलत सामान</option>
+              <option value="Damaged Item">सामान बिग्रिएको</option>
+              <option value="Expiry">म्याद सकिएको</option>
+              <option value="Customer Request">ग्राहकको अनुरोध</option>
+              <option value="Other">अन्य</option>
+            </select>
+          </div>
+          <div class="return-field wide">
+            <label for="returnNote">कैफियत</label>
+            <textarea id="returnNote" placeholder="थप विवरण (वैकल्पिक)"></textarea>
+          </div>
+        </div>
 
-      <section class="return-panel">
-        <div class="return-toolbar">
-          <h2>Return History</h2>
-          <input id="returnSearch" type="search" placeholder="बिल, सामान वा ग्राहक खोज्नुहोस्..." style="max-width:320px;width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px">
+        <div class="return-summary">
+          <div><span>फिर्ता गर्न बाँकी मात्रा</span><strong id="remainingReturnQty">—</strong></div>
+          <div><span>फिर्ता रकम (अनुमानित)</span><strong id="returnAmountPreview">Rs. 0.00</strong></div>
         </div>
-        <div class="return-table-wrap">
-          <table class="return-table">
-            <thead>
-              <tr>
-                <th>मिति</th>
-                <th>Return ID</th>
-                <th>बिल नम्बर</th>
-                <th>ग्राहक</th>
-                <th>सामान</th>
-                <th>मात्रा</th>
-                <th>अवस्था</th>
-                <th>रकम</th>
-                <th>कारण</th>
-              </tr>
-            </thead>
-            <tbody id="returnHistoryBody">
-              <tr><td colspan="9" class="return-empty">लोड हुँदैछ...</td></tr>
-            </tbody>
-          </table>
+
+        <div class="return-actions">
+          <button type="button" class="return-btn secondary" id="cancelReturnBtn">रद्द गर्नुहोस्</button>
+          <button type="submit" class="return-btn primary" id="saveReturnBtn">Return सुरक्षित गर्नुहोस्</button>
         </div>
-      </section>
-    </div>
+      </form>
+    </section>
+
+    <section class="return-panel">
+      <div class="return-toolbar">
+        <h2>Return History</h2>
+        <input id="returnSearch" class="return-search" type="search" placeholder="बिल, सामान वा ग्राहक खोज्नुहोस्...">
+      </div>
+      <div class="return-table-wrap">
+        <table class="return-table">
+          <thead>
+            <tr>
+              <th>मिति</th><th>Return ID</th><th>बिल नम्बर</th><th>ग्राहक</th>
+              <th>सामान</th><th>मात्रा</th><th>अवस्था</th><th>रकम</th><th>कारण</th>
+            </tr>
+          </thead>
+          <tbody id="returnHistoryBody">
+            <tr><td colspan="9" class="return-empty">लोड हुँदैछ...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
   <script src="sales-return.js"></script>
