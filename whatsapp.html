@@ -1,513 +1,295 @@
+
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp - General Store</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp - General Store</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <style>
+    * { box-sizing: border-box; }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fa;
-            color: #1f2937;
-        }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      color: #1f2937;
+    }
 
-        .app {
-            display: flex;
-            min-height: 100vh;
-        }
+    .app { display: flex; min-height: 100vh; }
 
-        .sidebar {
-            width: 240px;
-            background: #111827;
-            color: white;
-            padding: 18px 12px;
-            flex-shrink: 0;
-        }
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: #111827;
+      color: white;
+      padding: 18px 12px;
+    }
 
-        .brand {
-            font-size: 20px;
-            font-weight: bold;
-            padding: 10px 12px 20px;
-        }
+    .brand {
+      font-size: 20px;
+      font-weight: bold;
+      padding: 10px 12px 20px;
+    }
 
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #d1d5db;
-            text-decoration: none;
-            padding: 11px 12px;
-            margin: 4px 0;
-            border-radius: 8px;
-        }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #d1d5db;
+      text-decoration: none;
+      padding: 11px 12px;
+      margin: 4px 0;
+      border-radius: 8px;
+    }
 
-        .menu-item:hover,
-        .menu-item.active {
-            background: #1f2937;
-            color: white;
-        }
+    .menu-item:hover,
+    .menu-item.active {
+      background: #1f2937;
+      color: white;
+    }
 
-        .menu-icon {
-            width: 24px;
-            text-align: center;
-        }
+    .menu-icon { width: 24px; text-align: center; }
 
-        .main {
-            flex: 1;
-            padding: 20px;
-            min-width: 0;
-        }
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 24px;
+    }
 
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
 
-        .page-title {
-            margin: 0;
-            font-size: 26px;
-        }
+    .page-title { margin: 0; font-size: 26px; }
 
-        .subtitle {
-            margin: 5px 0 0;
-            color: #6b7280;
-            font-size: 14px;
-        }
+    .subtitle {
+      margin: 6px 0 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
 
-        .card h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-        }
+    .card h3 { margin: 0 0 16px; font-size: 18px; }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-        }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+    .form-group { display: flex; flex-direction: column; gap: 7px; }
+    .form-group.full { grid-column: 1 / -1; }
 
-        .form-group.full {
-            grid-column: 1 / -1;
-        }
+    label { font-size: 14px; font-weight: 600; }
 
-        label {
-            font-size: 14px;
-            font-weight: 600;
-        }
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+      color: #111827;
+    }
 
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-            background: white;
-        }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid #bbf7d0;
+      border-color: #166534;
+    }
 
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: #2563eb;
-        }
+    textarea { min-height: 190px; resize: vertical; line-height: 1.6; }
 
-        textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
+    .phone-info {
+      margin-top: 15px;
+      padding: 11px 12px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
 
-        .phone-info {
-            padding: 10px 12px;
-            background: #f3f4f6;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #374151;
-        }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
 
-        .preview-box {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 10px;
-            padding: 15px;
-        }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-        .preview-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+    button:focus-visible {
+      outline: 3px solid #86efac;
+      outline-offset: 2px;
+    }
 
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
+    .btn-primary { background: #166534; color: white; }
+    .btn-primary:hover { background: #14532d; }
+    .btn-blue { background: #2563eb; color: white; }
+    .btn-blue:hover { background: #1d4ed8; }
+    .btn-secondary { background: #e5e7eb; color: #111827; }
+    .btn-secondary:hover { background: #d1d5db; }
 
-        button {
-            border: none;
-            border-radius: 8px;
-            padding: 11px 17px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-        }
+    .status {
+      display: none;
+      margin-top: 14px;
+      padding: 11px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
 
-        .btn-primary {
-            background: #16a34a;
-            color: white;
-        }
+    .status.success { display: block; background: #dcfce7; color: #166534; }
+    .status.error { display: block; background: #fee2e2; color: #991b1b; }
 
-        .btn-primary:hover {
-            background: #15803d;
-        }
+    .info-list {
+      margin: 0;
+      padding-left: 22px;
+      line-height: 1.9;
+      color: #4b5563;
+      font-size: 14px;
+    }
 
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #111827;
-        }
+    .hint { color: #6b7280; font-size: 12px; line-height: 1.5; }
 
-        .btn-secondary:hover {
-            background: #d1d5db;
-        }
-
-        .btn-blue {
-            background: #2563eb;
-            color: white;
-        }
-
-        .btn-blue:hover {
-            background: #1d4ed8;
-        }
-
-        .status {
-            margin-top: 12px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            display: none;
-            font-size: 14px;
-        }
-
-        .status.success {
-            display: block;
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .status.error {
-            display: block;
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .info-list {
-            margin: 0;
-            padding-left: 20px;
-            line-height: 1.8;
-            color: #4b5563;
-            font-size: 14px;
-        }
-
-        @media (max-width: 800px) {
-            .app {
-                display: block;
-            }
-
-            .sidebar {
-                width: 100%;
-                padding: 10px;
-                overflow-x: auto;
-            }
-
-            .brand {
-                padding: 8px 10px;
-            }
-
-            .menu-item {
-                display: inline-flex;
-                margin: 2px;
-            }
-
-            .main {
-                padding: 14px;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-group.full {
-                grid-column: auto;
-            }
-
-            .topbar {
-                align-items: flex-start;
-            }
-        }
-    </style>
+    @media (max-width: 800px) {
+      .app { display: block; }
+      .sidebar { width: 100%; padding: 10px; overflow-x: auto; }
+      .brand { padding: 8px 10px; }
+      .menu-item { display: inline-flex; white-space: nowrap; margin: 2px; }
+      .main { padding: 14px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: auto; }
+      .topbar { align-items: flex-start; }
+      .page-title { font-size: 23px; }
+      .card { padding: 15px; }
+    }
+  </style>
 </head>
 
 <body>
-
 <div class="app">
+  <aside class="sidebar">
+    <div class="brand">🏪 General Store</div>
 
-    <aside class="sidebar">
-        <div class="brand">🏪 General Store</div>
+    <a href="index.html" class="menu-item"><span class="menu-icon">🏠</span>Dashboard</a>
+    <a href="sale.html" class="menu-item"><span class="menu-icon">🧾</span>New Sale</a>
+    <a href="purchase.html" class="menu-item"><span class="menu-icon">📦</span>Purchase</a>
+    <a href="inventory.html" class="menu-item"><span class="menu-icon">📋</span>Inventory</a>
+    <a href="customers.html" class="menu-item"><span class="menu-icon">👥</span>Customers</a>
+    <a href="suppliers.html" class="menu-item"><span class="menu-icon">🚚</span>Suppliers</a>
+    <a href="finance.html" class="menu-item"><span class="menu-icon">💰</span>Finance</a>
+    <a href="reports.html" class="menu-item"><span class="menu-icon">📊</span>Reports</a>
+    <a href="whatsapp.html" class="menu-item active"><span class="menu-icon">💬</span>WhatsApp</a>
+    <a href="ai.html" class="menu-item"><span class="menu-icon">🤖</span>AI Assistant</a>
+    <a href="settings.html" class="menu-item"><span class="menu-icon">⚙️</span>Settings</a>
+  </aside>
 
-        <a href="index.html" class="menu-item">
-            <span class="menu-icon">🏠</span>
-            <span>Dashboard</span>
-        </a>
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 class="page-title">💬 WhatsApp</h1>
+        <p class="subtitle">Customer तथा Supplier का लागि message तयार गर्नुहोस्।</p>
+      </div>
+    </div>
 
-        <a href="sale.html" class="menu-item">
-            <span class="menu-icon">🧾</span>
-            <span>New Sale</span>
-        </a>
+    <section class="card">
+      <h3>Message तयार गर्नुहोस्</h3>
 
-        <a href="purchase.html" class="menu-item">
-            <span class="menu-icon">📦</span>
-            <span>Purchase</span>
-        </a>
-
-        <a href="inventory.html" class="menu-item">
-            <span class="menu-icon">📋</span>
-            <span>Inventory</span>
-        </a>
-
-        <a href="customers.html" class="menu-item">
-            <span class="menu-icon">👥</span>
-            <span>Customers</span>
-        </a>
-
-        <a href="suppliers.html" class="menu-item">
-            <span class="menu-icon">🚚</span>
-            <span>Suppliers</span>
-        </a>
-
-        <a href="finance.html" class="menu-item">
-            <span class="menu-icon">💰</span>
-            <span>Finance</span>
-        </a>
-
-        <a href="reports.html" class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span>Reports</span>
-        </a>
-
-        <a href="whatsapp.html" class="menu-item active">
-            <span class="menu-icon">💬</span>
-            <span>WhatsApp</span>
-        </a>
-
-        <a href="ai.html" class="menu-item">
-            <span class="menu-icon">🤖</span>
-            <span>AI Assistant</span>
-        </a>
-
-        <a href="settings.html" class="menu-item">
-            <span class="menu-icon">⚙️</span>
-            <span>Settings</span>
-        </a>
-    </aside>
-
-
-    <main class="main">
-
-        <div class="topbar">
-            <div>
-                <h1 class="page-title">💬 WhatsApp</h1>
-                <p class="subtitle">
-                    Customer तथा Supplier लाई तयार message पठाउनुहोस्
-                </p>
-            </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="messageFor">कसलाई?</label>
+          <select id="messageFor">
+            <option value="customer">Customer</option>
+            <option value="supplier">Supplier</option>
+            <option value="custom">Custom Number</option>
+          </select>
         </div>
 
-
-        <div class="card">
-
-            <h3>Message तयार गर्नुहोस्</h3>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label for="messageFor">कसलाई?</label>
-
-                    <select id="messageFor">
-                        <option value="customer">Customer</option>
-                        <option value="supplier">Supplier</option>
-                        <option value="custom">Custom Number</option>
-                    </select>
-                </div>
-
-
-                <div class="form-group" id="personGroup">
-
-                    <label for="personSelect">नाम छान्नुहोस्</label>
-
-                    <select id="personSelect">
-                        <option value="">-- नाम छान्नुहोस् --</option>
-                    </select>
-
-                </div>
-
-
-                <div class="form-group" id="customPhoneGroup" style="display:none;">
-
-                    <label for="customPhone">WhatsApp Number</label>
-
-                    <input
-                        type="tel"
-                        id="customPhone"
-                        placeholder="जस्तै: 97798XXXXXXXX"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="messageType">Message Type</label>
-
-                    <select id="messageType">
-
-                        <option value="due_reminder">
-                            Customer Due Reminder
-                        </option>
-
-                        <option value="customer_statement">
-                            Customer Statement
-                        </option>
-
-                        <option value="supplier_statement">
-                            Supplier Statement
-                        </option>
-
-                        <option value="supplier_order">
-                            Supplier Order
-                        </option>
-
-                        <option value="bill">
-                            Bill / Receipt Message
-                        </option>
-
-                        <option value="custom">
-                            Custom Message
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="form-group" id="referenceGroup">
-
-                    <label for="referenceSelect">Reference</label>
-
-                    <select id="referenceSelect">
-                        <option value="">-- Select --</option>
-                    </select>
-
-                </div>
-
-
-                <div class="form-group full">
-
-                    <label for="messageText">Message Preview / Edit</label>
-
-                    <textarea id="messageText"
-                        placeholder="यहाँ WhatsApp message देखिन्छ..."></textarea>
-
-                </div>
-
-            </div>
-
-
-            <div class="phone-info" id="phoneInfo">
-                WhatsApp Number: -
-            </div>
-
-
-            <div class="actions">
-
-                <button
-                    type="button"
-                    class="btn-primary"
-                    id="openWhatsAppBtn">
-                    💬 Open WhatsApp
-                </button>
-
-                <button
-                    type="button"
-                    class="btn-blue"
-                    id="copyMessageBtn">
-                    📋 Copy Message
-                </button>
-
-                <button
-                    type="button"
-                    class="btn-secondary"
-                    id="clearBtn">
-                    Clear
-                </button>
-
-            </div>
-
-
-            <div id="statusBox" class="status"></div>
-
+        <div class="form-group" id="personGroup">
+          <label for="personSelect">नाम छान्नुहोस्</label>
+          <select id="personSelect">
+            <option value="">-- नाम छान्नुहोस् --</option>
+          </select>
         </div>
 
-
-        <div class="card">
-
-            <h3>ℹ️ WhatsApp Module</h3>
-
-            <ul class="info-list">
-
-                <li>Customer/Supplier को नाम छानेर message तयार गर्न सकिन्छ।</li>
-
-                <li>Due reminder र statement automatically तयार हुन्छ।</li>
-
-                <li>Message पठाउनु अघि Preview/Edit गर्न सकिन्छ।</li>
-
-                <li>Open WhatsApp गर्दा browser बाट WhatsApp खुल्छ।</li>
-
-                <li>यस चरणमा WhatsApp API आवश्यक छैन।</li>
-
-                <li>Phone number country code सहित राख्नु राम्रो हुन्छ।</li>
-
-            </ul>
-
+        <div class="form-group" id="customPhoneGroup" hidden>
+          <label for="customPhone">WhatsApp Number</label>
+          <input type="tel" id="customPhone" placeholder="जस्तै: 97798XXXXXXXX" autocomplete="tel">
+          <span class="hint">Country code सहित नम्बर राख्नुहोस्।</span>
         </div>
 
-    </main>
+        <div class="form-group">
+          <label for="messageType">Message Type</label>
+          <select id="messageType">
+            <option value="due_reminder">Customer Due Reminder</option>
+            <option value="customer_statement">Customer Statement</option>
+            <option value="supplier_statement">Supplier Statement</option>
+            <option value="supplier_order">Supplier Order</option>
+            <option value="bill">Bill / Receipt Message</option>
+            <option value="custom">Custom Message</option>
+          </select>
+        </div>
 
+        <div class="form-group" id="referenceGroup" hidden>
+          <label for="referenceSelect">Bill Reference</label>
+          <select id="referenceSelect">
+            <option value="">-- Bill छान्नुहोस् --</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label for="messageText">Message Preview / Edit</label>
+          <textarea id="messageText" placeholder="यहाँ message लेख्नुहोस् वा तयार भएको message सम्पादन गर्नुहोस्।"></textarea>
+          <span class="hint">तयार message सम्पादन गर्न सक्नुहुन्छ। व्यक्तिको नाम वा reference परिवर्तन गर्दा तयार message फेरि बन्न सक्छ।</span>
+        </div>
+      </div>
+
+      <div class="phone-info" id="phoneInfo" aria-live="polite">WhatsApp Number: -</div>
+
+      <div class="actions">
+        <button type="button" class="btn-primary" id="openWhatsAppBtn">💬 Open WhatsApp</button>
+        <button type="button" class="btn-blue" id="copyMessageBtn">📋 Copy Message</button>
+        <button type="button" class="btn-secondary" id="clearBtn">Clear</button>
+      </div>
+
+      <div id="statusBox" class="status" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <h3>ℹ️ WhatsApp Module</h3>
+      <ul class="info-list">
+        <li>Customer र Supplier को नम्बर सम्बन्धित सूचीबाट लिइन्छ।</li>
+        <li>Due reminder, statement र bill message स्वतः तयार हुन्छ।</li>
+        <li>Message पठाउनुअघि Preview/Edit गर्न सकिन्छ।</li>
+        <li>Open WhatsApp ले WhatsApp Web वा App खोल्छ; पठाउने अन्तिम पुष्टि तपाईंले गर्नुपर्छ।</li>
+        <li>यो संस्करणले WhatsApp API प्रयोग गर्दैन।</li>
+        <li>नम्बर र रकम पठाउनुअघि एकपटक जाँच गर्नुहोस्।</li>
+      </ul>
+    </section>
+  </main>
 </div>
 
 <script src="whatsapp.js"></script>
-
 </body>
 </html>
