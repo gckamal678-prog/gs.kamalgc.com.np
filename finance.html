@@ -3,82 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance - General Store</title>
+    <title>Finance | General Store</title>
     <link rel="stylesheet" href="style.css">
 
     <style>
+        .finance-wrap {
+            max-width: 1400px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .finance-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .finance-top h1 {
+            margin-bottom: 6px;
+        }
+
+        .finance-top p {
+            margin-top: 0;
+            color: #6b7280;
+        }
+
+        .finance-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin: 20px 0;
+        }
+
+        .finance-stat,
+        .finance-panel {
+            background: var(--card-bg, #fff);
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 16px;
+            min-width: 0;
+        }
+
+        .finance-stat span {
+            display: block;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .finance-stat strong {
+            display: block;
+            font-size: 21px;
+            margin-top: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .finance-toolbar {
+            margin-bottom: 14px;
+        }
+
+        .finance-toolbar input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: transparent;
+            color: inherit;
+        }
+
+        .finance-table-wrap {
+            overflow-x: auto;
+        }
+
+        .finance-table {
+            width: 100%;
+            min-width: 850px;
+            border-collapse: collapse;
+        }
+
+        .finance-table th,
+        .finance-table td {
+            padding: 11px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .finance-table th {
+            font-size: 13px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .finance-table td {
+            overflow-wrap: anywhere;
+        }
+
         .finance-modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,.55);
             z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-        }
-
-        .finance-modal.show {
-            display: flex;
-        }
-
-        .finance-modal-box {
-            width: 100%;
-            max-width: 650px;
-            max-height: 92vh;
+            background: #0008;
             overflow-y: auto;
-            background: #fff;
-            border-radius: 12px;
             padding: 20px;
             box-sizing: border-box;
         }
 
-        .finance-form-group {
-            margin-bottom: 14px;
+        .finance-modal.show {
+            display: block;
         }
 
-        .finance-form-group label {
-            display: block;
-            margin-bottom: 6px;
+        .finance-dialog {
+            background: var(--card-bg, #fff);
+            color: inherit;
+            width: min(760px, 100%);
+            margin: 20px auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 22px;
+            box-sizing: border-box;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .18);
+        }
+
+        .finance-dialog-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .finance-dialog-head h2 {
+            margin: 0 0 6px;
+        }
+
+        .finance-dialog-head p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .finance-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .finance-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .finance-field label {
+            font-size: 13px;
             font-weight: 600;
         }
 
-        .finance-form-group input,
-        .finance-form-group select,
-        .finance-form-group textarea {
+        .finance-field input,
+        .finance-field select,
+        .finance-field textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 7px;
             box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            min-width: 0;
         }
 
-        .finance-form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+        .finance-field select option {
+            background: var(--card-bg, #fff);
+            color: #111827;
+        }
+
+        .finance-field input:focus,
+        .finance-field select:focus,
+        .finance-field textarea:focus,
+        .finance-toolbar input:focus {
+            outline: none;
+            border-color: #166534;
+            box-shadow: 0 0 0 3px rgba(22, 101, 52, .12);
+        }
+
+        .finance-field textarea {
+            resize: vertical;
+        }
+
+        .finance-full {
+            grid-column: 1 / -1;
         }
 
         .finance-actions {
             display: flex;
             justify-content: flex-end;
+            align-items: center;
             gap: 10px;
-            margin-top: 18px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
+
+        .finance-btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 9px;
+            cursor: pointer;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background .15s, border-color .15s;
+        }
+
+        .finance-btn:hover {
+            background: rgba(107, 114, 128, .08);
+        }
+
+        .finance-btn.primary {
+            background: #166534;
+            color: #fff;
+            border-color: #166534;
+        }
+
+        .finance-btn.primary:hover {
+            background: #14532d;
+            border-color: #14532d;
+        }
+
+        .finance-btn.danger {
+            color: #b91c1c;
+        }
+
+        .finance-btn:focus-visible {
+            outline: 3px solid rgba(22, 101, 52, .25);
+            outline-offset: 2px;
+        }
+
+        .finance-type {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .finance-type.income {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .finance-type.expense {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .finance-type.payment {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .finance-positive {
+            color: #15803d;
+        }
+
+        .finance-negative {
+            color: #b91c1c;
         }
 
         .finance-empty {
             text-align: center;
-            padding: 25px;
-            color: #777;
+            padding: 35px !important;
+            color: #6b7280;
         }
 
-        @media(max-width:600px) {
-            .finance-form-row {
+        .finance-message {
+            display: none;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            margin-bottom: 14px;
+            font-size: 13px;
+        }
+
+        .finance-message.show {
+            display: block;
+        }
+
+        .finance-message.error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .finance-message.success {
+            background: #f0fdf4;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        body.finance-modal-open {
+            overflow: hidden;
+        }
+
+        @media (max-width: 800px) {
+            .finance-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .finance-wrap {
+                padding: 12px;
+            }
+
+            .finance-dialog {
+                padding: 15px;
+                margin: 5px auto;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .finance-modal {
+                padding: 8px;
+            }
+
+            .finance-grid {
                 grid-template-columns: 1fr;
             }
 
-            .finance-modal-box {
-                padding: 15px;
+            .finance-full {
+                grid-column: auto;
+            }
+
+            .finance-stat strong {
+                font-size: 17px;
+            }
+
+            .finance-actions .finance-btn {
+                flex: 1;
+            }
+
+            .finance-top > button {
+                width: 100%;
             }
         }
     </style>
@@ -89,13 +364,11 @@
 <div class="app">
 
     <aside class="sidebar">
-
         <div class="sidebar-header">
             <h2>General Store</h2>
         </div>
 
         <nav class="sidebar-menu">
-
             <a href="index.html" class="menu-item">
                 <span class="menu-icon">🏠</span>
                 <span>Dashboard</span>
@@ -150,387 +423,266 @@
                 <span class="menu-icon">⚙️</span>
                 <span>Settings</span>
             </a>
-
         </nav>
-
     </aside>
 
+    <main class="main-content finance-wrap">
 
-    <main class="main-content">
-
-        <header class="topbar">
-
+        <header class="finance-top">
             <div>
                 <h1>Finance</h1>
-                <p>Manage cash, bank, QR and financial transactions</p>
+                <p>Manage cash, bank, QR and financial transactions.</p>
             </div>
 
             <button
                 type="button"
                 id="newFinanceBtn"
-                class="btn btn-primary"
-            >
+                class="finance-btn primary">
                 + New Transaction
             </button>
-
         </header>
 
+        <!-- ACCOUNT BALANCES -->
 
-        <!-- SUMMARY -->
+        <section class="finance-stats">
 
-        <section class="dashboard-grid">
-
-            <div class="stat-card">
-                <div class="stat-title">Cash Balance</div>
-                <div class="stat-value" id="cashBalance">
-                    Rs. 0.00
-                </div>
+            <div class="finance-stat">
+                <span>Cash Balance</span>
+                <strong id="cashBalance">Rs. 0.00</strong>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-title">Bank Balance</div>
-                <div class="stat-value" id="bankBalance">
-                    Rs. 0.00
-                </div>
+            <div class="finance-stat">
+                <span>Bank Balance</span>
+                <strong id="bankBalance">Rs. 0.00</strong>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-title">QR Balance</div>
-                <div class="stat-value" id="qrBalance">
-                    Rs. 0.00
-                </div>
+            <div class="finance-stat">
+                <span>QR Balance</span>
+                <strong id="qrBalance">Rs. 0.00</strong>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-title">Total Balance</div>
-                <div class="stat-value" id="totalBalance">
-                    Rs. 0.00
-                </div>
+            <div class="finance-stat">
+                <span>Total Balance</span>
+                <strong id="totalBalance">Rs. 0.00</strong>
             </div>
 
         </section>
 
+        <!-- TRANSACTION TOTALS -->
 
-        <!-- TRANSACTION SUMMARY -->
+        <section class="finance-stats">
 
-        <section class="dashboard-grid">
-
-            <div class="stat-card">
-                <div class="stat-title">Total Income</div>
-                <div class="stat-value" id="totalIncome">
-                    Rs. 0.00
-                </div>
+            <div class="finance-stat">
+                <span>Total Income</span>
+                <strong id="totalIncome">Rs. 0.00</strong>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-title">Total Expense</div>
-                <div class="stat-value" id="totalExpense">
-                    Rs. 0.00
-                </div>
+            <div class="finance-stat">
+                <span>Total Expense</span>
+                <strong id="totalExpense">Rs. 0.00</strong>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-title">Total Payment</div>
-                <div class="stat-value" id="totalPayment">
-                    Rs. 0.00
-                </div>
+            <div class="finance-stat">
+                <span>Total Payment</span>
+                <strong id="totalPayment">Rs. 0.00</strong>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-title">Transactions</div>
-                <div class="stat-value" id="totalTransactions">
-                    0
-                </div>
+            <div class="finance-stat">
+                <span>Transactions</span>
+                <strong id="totalTransactions">0</strong>
             </div>
 
         </section>
 
+        <!-- FINANCE HISTORY -->
 
-        <!-- HISTORY -->
-
-        <section class="card">
+        <section class="finance-panel">
 
             <div class="section-header">
                 <h2>Finance History</h2>
             </div>
 
-            <div style="margin-bottom:15px;">
+            <div
+                id="financeMessage"
+                class="finance-message"
+                role="status"
+                aria-live="polite">
+            </div>
 
+            <div class="finance-toolbar">
                 <input
                     type="search"
                     id="financeSearch"
-                    placeholder="Search date, category, note, payment method..."
-                    style="width:100%;padding:11px;border:1px solid #ccc;border-radius:7px;box-sizing:border-box;"
-                >
-
+                    placeholder="Search date, category, note, reference or account..."
+                    aria-label="Search finance transactions">
             </div>
 
-
-            <div style="overflow-x:auto;">
-
-                <table class="data-table">
+            <div class="finance-table-wrap">
+                <table class="finance-table">
 
                     <thead>
-
                         <tr>
                             <th>Date</th>
                             <th>Type</th>
                             <th>Category</th>
                             <th>Account</th>
                             <th>Amount</th>
-                            <th>Note</th>
+                            <th>Note / Reference</th>
                             <th>Action</th>
                         </tr>
-
                     </thead>
 
                     <tbody id="financeTableBody">
-
                         <tr>
-                            <td
-                                colspan="7"
-                                class="finance-empty"
-                            >
+                            <td colspan="7" class="finance-empty">
                                 No transactions found.
                             </td>
                         </tr>
-
                     </tbody>
 
                 </table>
-
             </div>
 
         </section>
 
     </main>
-
 </div>
 
-
-<!-- FINANCE MODAL -->
+<!-- NEW / EDIT TRANSACTION MODAL -->
 
 <div
     id="financeModal"
     class="finance-modal"
->
+    aria-hidden="true">
 
-    <div class="finance-modal-box">
+    <section
+        class="finance-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="financeModalTitle"
+        aria-describedby="financeModalDescription">
 
-        <div class="section-header">
+        <div class="finance-dialog-head">
 
-            <h2 id="financeModalTitle">
-                New Transaction
-            </h2>
+            <div>
+                <h2 id="financeModalTitle">New Transaction</h2>
+                <p id="financeModalDescription">
+                    Enter the transaction and payment details.
+                </p>
+            </div>
 
             <button
                 type="button"
                 id="closeFinanceModal"
-                class="btn"
-            >
+                class="finance-btn"
+                aria-label="Close transaction form">
                 ✕
             </button>
 
         </div>
 
+        <div
+            id="financeFormMessage"
+            class="finance-message"
+            role="alert"
+            aria-live="assertive">
+        </div>
 
         <form id="financeForm">
 
-            <input
-                type="hidden"
-                id="financeId"
-            >
+            <input type="hidden" id="financeId">
 
+            <div class="finance-grid">
 
-            <div class="finance-form-row">
+                <div class="finance-field">
+                    <label for="financeDate">Date *</label>
+                    <input type="date" id="financeDate" required>
+                </div>
 
-                <div class="finance-form-group">
+                <div class="finance-field">
+                    <label for="financeType">Transaction Type *</label>
+                    <select id="financeType" required>
+                        <option value="INCOME">Income</option>
+                        <option value="EXPENSE">Expense</option>
+                        <option value="PAYMENT">Payment</option>
+                    </select>
+                </div>
 
-                    <label for="financeDate">
-                        Date *
-                    </label>
+                <div class="finance-field">
+                    <label for="financeCategory">Category *</label>
+                    <select id="financeCategory" required>
+                        <option value="SALES">Sales</option>
+                        <option value="CUSTOMER_COLLECTION">Customer Collection</option>
+                        <option value="OTHER_INCOME">Other Income</option>
+                        <option value="PURCHASE_PAYMENT">Purchase Payment</option>
+                        <option value="SUPPLIER_PAYMENT">Supplier Payment</option>
+                        <option value="EXPENSE">Expense</option>
+                        <option value="WITHDRAWAL">Cash Withdrawal</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
 
+                <div class="finance-field">
+                    <label for="financeAccount">Account *</label>
+                    <select id="financeAccount" required>
+                        <option value="CASH">Cash</option>
+                        <option value="BANK">Bank</option>
+                        <option value="QR">QR</option>
+                    </select>
+                </div>
+
+                <div class="finance-field finance-full">
+                    <label for="financeAmount">Amount (Rs.) *</label>
                     <input
-                        type="date"
-                        id="financeDate"
+                        type="number"
+                        id="financeAmount"
+                        min="0.01"
+                        step="0.01"
                         required
-                    >
-
+                        placeholder="0.00"
+                        inputmode="decimal">
                 </div>
 
+                <div class="finance-field finance-full">
+                    <label for="financeReference">Reference / Bill Number</label>
+                    <input
+                        type="text"
+                        id="financeReference"
+                        maxlength="100"
+                        placeholder="Optional reference or bill number">
+                </div>
 
-                <div class="finance-form-group">
-
-                    <label for="financeType">
-                        Transaction Type *
-                    </label>
-
-                    <select
-                        id="financeType"
-                        required
-                    >
-
-                        <option value="INCOME">
-                            Income
-                        </option>
-
-                        <option value="EXPENSE">
-                            Expense
-                        </option>
-
-                        <option value="PAYMENT">
-                            Payment
-                        </option>
-
-                    </select>
-
+                <div class="finance-field finance-full">
+                    <label for="financeNote">Note</label>
+                    <textarea
+                        id="financeNote"
+                        rows="3"
+                        maxlength="500"
+                        placeholder="Enter transaction details (optional)"></textarea>
                 </div>
 
             </div>
-
-
-            <div class="finance-form-row">
-
-                <div class="finance-form-group">
-
-                    <label for="financeCategory">
-                        Category *
-                    </label>
-
-                    <select
-                        id="financeCategory"
-                        required
-                    >
-
-                        <option value="SALES">
-                            Sales
-                        </option>
-
-                        <option value="CUSTOMER_COLLECTION">
-                            Customer Collection
-                        </option>
-
-                        <option value="OTHER_INCOME">
-                            Other Income
-                        </option>
-
-                        <option value="PURCHASE_PAYMENT">
-                            Purchase Payment
-                        </option>
-
-                        <option value="SUPPLIER_PAYMENT">
-                            Supplier Payment
-                        </option>
-
-                        <option value="EXPENSE">
-                            Expense
-                        </option>
-
-                        <option value="WITHDRAWAL">
-                            Cash Withdrawal
-                        </option>
-
-                        <option value="OTHER">
-                            Other
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="finance-form-group">
-
-                    <label for="financeAccount">
-                        Account *
-                    </label>
-
-                    <select
-                        id="financeAccount"
-                        required
-                    >
-
-                        <option value="CASH">
-                            Cash
-                        </option>
-
-                        <option value="BANK">
-                            Bank
-                        </option>
-
-                        <option value="QR">
-                            QR
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-
-            <div class="finance-form-group">
-
-                <label for="financeAmount">
-                    Amount *
-                </label>
-
-                <input
-                    type="number"
-                    id="financeAmount"
-                    min="0.01"
-                    step="0.01"
-                    required
-                    placeholder="0.00"
-                >
-
-            </div>
-
-
-            <div class="finance-form-group">
-
-                <label for="financeReference">
-                    Reference / Bill Number
-                </label>
-
-                <input
-                    type="text"
-                    id="financeReference"
-                    placeholder="Optional reference"
-                >
-
-            </div>
-
-
-            <div class="finance-form-group">
-
-                <label for="financeNote">
-                    Note
-                </label>
-
-                <textarea
-                    id="financeNote"
-                    rows="3"
-                    placeholder="Transaction note"
-                ></textarea>
-
-            </div>
-
 
             <div class="finance-actions">
 
                 <button
                     type="button"
                     id="cancelFinanceBtn"
-                    class="btn"
-                >
+                    class="finance-btn">
                     Cancel
                 </button>
 
                 <button
+                    type="reset"
+                    id="clearFinanceBtn"
+                    class="finance-btn">
+                    Clear
+                </button>
+
+                <button
                     type="submit"
-                    class="btn btn-primary"
-                >
+                    id="saveFinanceBtn"
+                    class="finance-btn primary">
                     Save Transaction
                 </button>
 
@@ -538,10 +690,8 @@
 
         </form>
 
-    </div>
-
+    </section>
 </div>
-
 
 <script src="script.js"></script>
 <script src="finance.js"></script>
