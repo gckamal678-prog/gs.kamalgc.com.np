@@ -46,9 +46,29 @@
     .return-badge.good{background:#dcfce7;color:#166534}
     .return-badge.damaged{background:#fee2e2;color:#991b1b}
     .return-empty{text-align:center!important;color:#64748b;padding:25px!important}
-    .return-form-hidden{display:none!important}
+
+    /* Popup styling */
+    .return-modal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.60);overflow-y:auto;padding:20px;box-sizing:border-box}
+    .return-modal.show{display:block!important}
+    .return-dialog{width:min(1050px,100%);margin:20px auto;background:#fff;color:#1e293b;border-radius:15px;padding:22px;box-sizing:border-box;box-shadow:0 20px 60px #0004}
+    .return-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .return-dialog-head h2{font-size:21px;margin:0}
+    .return-dialog-head p{margin:5px 0 0;color:#64748b;font-size:13px}
+    .return-close{flex-shrink:0;border:0;border-radius:8px;width:40px;height:40px;font-size:23px;cursor:pointer;background:#e2e8f0;color:#334155}
+    .return-dialog .return-panel{padding:0;border:0;box-shadow:none;margin:0}
+    .return-dialog .return-toolbar{display:none}
     @media(max-width:900px){.return-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.return-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:560px){.return-wrap{padding:14px}.return-stats{gap:10px}.return-stat,.return-panel{padding:14px}.return-stat strong{font-size:19px}.return-grid,.return-summary{grid-template-columns:1fr}.return-field.wide{grid-column:auto}.return-top h1{font-size:23px}}
+    @media(max-width:560px){
+      .return-wrap{padding:14px}
+      .return-stats{gap:10px}
+      .return-stat,.return-panel{padding:14px}
+      .return-stat strong{font-size:19px}
+      .return-grid,.return-summary{grid-template-columns:1fr}
+      .return-field.wide{grid-column:auto}
+      .return-top h1{font-size:23px}
+      .return-modal{padding:8px}
+      .return-dialog{padding:14px;margin:5px auto}
+    }
   </style>
 </head>
 <body>
@@ -87,81 +107,93 @@
       <div class="return-stat"><span>Damaged Return</span><strong id="damagedReturnCount">0</strong></div>
     </section>
 
-    <section class="return-panel return-form-hidden" id="returnDetailsCard">
-      <div class="return-toolbar">
-        <h2>नयाँ Sales Return</h2>
-        <span class="return-muted">बिक्री बिल छानेर विवरण भर्नुहोस्</span>
+    <section class="return-modal" id="returnModal" aria-hidden="true">
+      <div class="return-dialog" role="dialog" aria-modal="true" aria-labelledby="returnModalTitle">
+        <div class="return-dialog-head">
+          <div>
+            <h2 id="returnModalTitle">नयाँ Sales Return</h2>
+            <p>बिक्री बिल छानेर फिर्ता विवरण भर्नुहोस्।</p>
+          </div>
+          <button type="button" class="return-close" id="closeReturnModal" aria-label="बन्द गर्नुहोस्">×</button>
+        </div>
+
+        <section class="return-panel" id="returnDetailsCard">
+          <div class="return-toolbar">
+            <h2>नयाँ Sales Return</h2>
+            <span class="return-muted">बिक्री बिल छानेर विवरण भर्नुहोस्</span>
+          </div>
+
+          <div id="returnError" class="return-error" role="alert"></div>
+          <div class="return-notice">GOOD सामान मात्र बिक्रीयोग्य स्टकमा थपिन्छ। DAMAGED सामान स्टकमा थपिँदैन।</div>
+
+          <form id="returnForm">
+            <div class="return-grid">
+              <div class="return-field wide">
+                <label for="returnSale">बिक्री बिल / सामान छान्नुहोस् *</label>
+                <select id="returnSale" required>
+                  <option value="">पहिले बिक्री भएको बिल छान्नुहोस्</option>
+                </select>
+              </div>
+              <div class="return-field">
+                <label for="returnBillNumber">बिल नम्बर</label>
+                <input id="returnBillNumber" readonly>
+              </div>
+              <div class="return-field">
+                <label for="returnCustomer">ग्राहक</label>
+                <input id="returnCustomer" readonly>
+              </div>
+              <div class="return-field">
+                <label for="returnProduct">सामान</label>
+                <input id="returnProduct" readonly>
+              </div>
+              <div class="return-field">
+                <label for="soldQty">बिक्री भएको मात्रा</label>
+                <input id="soldQty" readonly>
+              </div>
+              <div class="return-field">
+                <label for="alreadyReturnedQty">पहिले फिर्ता भएको</label>
+                <input id="alreadyReturnedQty" readonly>
+              </div>
+              <div class="return-field">
+                <label for="returnQty">फिर्ता मात्रा *</label>
+                <input id="returnQty" type="number" min="0.001" step="any" required placeholder="मात्रा लेख्नुहोस्">
+              </div>
+              <div class="return-field">
+                <label for="returnCondition">सामानको अवस्था *</label>
+                <select id="returnCondition" required>
+                  <option value="GOOD">GOOD — पुनः बिक्री गर्न मिल्ने</option>
+                  <option value="DAMAGED">DAMAGED — बिग्रिएको</option>
+                </select>
+              </div>
+              <div class="return-field">
+                <label for="returnReason">फिर्ताको कारण *</label>
+                <select id="returnReason" required>
+                  <option value="">कारण छान्नुहोस्</option>
+                  <option value="Wrong Item">गलत सामान</option>
+                  <option value="Damaged Item">सामान बिग्रिएको</option>
+                  <option value="Expiry">म्याद सकिएको</option>
+                  <option value="Customer Request">ग्राहकको अनुरोध</option>
+                  <option value="Other">अन्य</option>
+                </select>
+              </div>
+              <div class="return-field wide">
+                <label for="returnNote">कैफियत</label>
+                <textarea id="returnNote" placeholder="थप विवरण (वैकल्पिक)"></textarea>
+              </div>
+            </div>
+
+            <div class="return-summary">
+              <div><span>फिर्ता गर्न बाँकी मात्रा</span><strong id="remainingReturnQty">—</strong></div>
+              <div><span>फिर्ता रकम (अनुमानित)</span><strong id="returnAmountPreview">Rs. 0.00</strong></div>
+            </div>
+
+            <div class="return-actions">
+              <button type="button" class="return-btn secondary" id="cancelReturnBtn">रद्द गर्नुहोस्</button>
+              <button type="submit" class="return-btn primary" id="saveReturnBtn">Return सुरक्षित गर्नुहोस्</button>
+            </div>
+          </form>
+        </section>
       </div>
-
-      <div id="returnError" class="return-error" role="alert"></div>
-      <div class="return-notice">GOOD सामान मात्र बिक्रीयोग्य स्टकमा थपिन्छ। DAMAGED सामान स्टकमा थपिँदैन।</div>
-
-      <form id="returnForm">
-        <div class="return-grid">
-          <div class="return-field wide">
-            <label for="returnSale">बिक्री बिल / सामान छान्नुहोस् *</label>
-            <select id="returnSale" required>
-              <option value="">पहिले बिक्री भएको बिल छान्नुहोस्</option>
-            </select>
-          </div>
-          <div class="return-field">
-            <label for="returnBillNumber">बिल नम्बर</label>
-            <input id="returnBillNumber" readonly>
-          </div>
-          <div class="return-field">
-            <label for="returnCustomer">ग्राहक</label>
-            <input id="returnCustomer" readonly>
-          </div>
-          <div class="return-field">
-            <label for="returnProduct">सामान</label>
-            <input id="returnProduct" readonly>
-          </div>
-          <div class="return-field">
-            <label for="soldQty">बिक्री भएको मात्रा</label>
-            <input id="soldQty" readonly>
-          </div>
-          <div class="return-field">
-            <label for="alreadyReturnedQty">पहिले फिर्ता भएको</label>
-            <input id="alreadyReturnedQty" readonly>
-          </div>
-          <div class="return-field">
-            <label for="returnQty">फिर्ता मात्रा *</label>
-            <input id="returnQty" type="number" min="0.001" step="any" required placeholder="मात्रा लेख्नुहोस्">
-          </div>
-          <div class="return-field">
-            <label for="returnCondition">सामानको अवस्था *</label>
-            <select id="returnCondition" required>
-              <option value="GOOD">GOOD — पुनः बिक्री गर्न मिल्ने</option>
-              <option value="DAMAGED">DAMAGED — बिग्रिएको</option>
-            </select>
-          </div>
-          <div class="return-field">
-            <label for="returnReason">फिर्ताको कारण *</label>
-            <select id="returnReason" required>
-              <option value="">कारण छान्नुहोस्</option>
-              <option value="Wrong Item">गलत सामान</option>
-              <option value="Damaged Item">सामान बिग्रिएको</option>
-              <option value="Expiry">म्याद सकिएको</option>
-              <option value="Customer Request">ग्राहकको अनुरोध</option>
-              <option value="Other">अन्य</option>
-            </select>
-          </div>
-          <div class="return-field wide">
-            <label for="returnNote">कैफियत</label>
-            <textarea id="returnNote" placeholder="थप विवरण (वैकल्पिक)"></textarea>
-          </div>
-        </div>
-
-        <div class="return-summary">
-          <div><span>फिर्ता गर्न बाँकी मात्रा</span><strong id="remainingReturnQty">—</strong></div>
-          <div><span>फिर्ता रकम (अनुमानित)</span><strong id="returnAmountPreview">Rs. 0.00</strong></div>
-        </div>
-
-        <div class="return-actions">
-          <button type="button" class="return-btn secondary" id="cancelReturnBtn">रद्द गर्नुहोस्</button>
-          <button type="submit" class="return-btn primary" id="saveReturnBtn">Return सुरक्षित गर्नुहोस्</button>
-        </div>
-      </form>
     </section>
 
     <section class="return-panel">
