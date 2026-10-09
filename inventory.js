@@ -9,8 +9,8 @@ function getProducts() {
     const data = JSON.parse(localStorage.getItem(PRODUCT_KEY) || "[]");
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("Product data पढ्न समस्या:", error);
-    alert("Product data पढ्न सकिएन। कृपया Browser Data नहटाउनुहोस्।");
+    console.error("Product data error:", error);
+    alert("Product data पढ्न सकिएन। Browser data नहटाउनुहोस्।");
     return [];
   }
 }
@@ -20,7 +20,7 @@ function saveProducts(products) {
     localStorage.setItem(PRODUCT_KEY, JSON.stringify(products));
     return true;
   } catch (error) {
-    console.error("Product Save गर्न समस्या:", error);
+    console.error("Product save error:", error);
     alert("Product Save भएन। Browser storage जाँच गर्नुहोस्।");
     return false;
   }
@@ -28,93 +28,97 @@ function saveProducts(products) {
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;",
-    '"': "&quot;", "'": "&#39;"
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
   })[char]);
 }
 
 function money(value) {
-  const number = Number(value) || 0;
-  return "रु " + number.toLocaleString("en-IN", {
+  const amount = Number(value) || 0;
+  return "Rs. " + amount.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
 }
 
-function getStockStatus(product) {
+function stockStatus(product) {
   const stock = Number(product.stock) || 0;
-  const minStock = Number(product.minStock) || 0;
+  const minimum = Number(product.minStock) || 0;
+
   if (stock <= 0) return "out";
-  if (stock <= minStock) return "low";
+  if (stock <= minimum) return "low";
   return "in";
 }
 
-function statusHTML(status) {
+function statusLabel(status) {
   const labels = {
-    in: ["status-in", "Stock उपलब्ध"],
-    low: ["status-low", "Low Stock"],
-    out: ["status-out", "Out of Stock"]
+    in: "In Stock",
+    low: "Low Stock",
+    out: "Out of Stock"
   };
-  const item = labels[status] || labels.out;
-  return `<span class="status ${item[0]}">${item[1]}</span>`;
+
+  return `<span class="inventory-status ${status}">${labels[status] || labels.out}</span>`;
 }
 
 function updateSummary(products) {
   $("totalProducts").textContent = products.length;
-  $("inStockProducts").textContent =
-    products.filter(p => getStockStatus(p) === "in").length;
-  $("lowStockProducts").textContent =
-    products.filter(p => getStockStatus(p) === "low").length;
 
-  const value = products.reduce((sum, product) => {
+  $("inStockProducts").textContent =
+    products.filter(product => stockStatus(product) === "in").length;
+
+  $("lowStockProducts").textContent =
+    products.filter(product => stockStatus(product) === "low").length;
+
+  const value = products.reduce((total, product) => {
     const stock = Math.max(0, Number(product.stock) || 0);
-    const price = Math.max(0, Number(product.purchasePrice) || 0);
-    return sum + stock * price;
+    const cost = Math.max(0, Number(product.purchasePrice) || 0);
+    return total + stock * cost;
   }, 0);
 
   $("stockValue").textContent = money(value);
-}
-
-function getSearchTerm() {
-  return ($("productSearch").value || $("inventorySearch").value || "")
-    .trim().toLowerCase();
 }
 
 function renderProducts() {
   const products = getProducts();
   updateSummary(products);
 
-  const search = getSearchTerm();
+  const search = $("productSearch").value.trim().toLowerCase();
   const category = $("categoryFilter").value;
-  const stockFilter = $("stockFilter").value;
+  const filter = $("stockFilter").value;
 
   const filtered = products.filter(product => {
-    const text = [
-      product.name, product.brand, product.category,
-      product.size, product.unit
+    const searchable = [
+      product.name,
+      product.brand,
+      product.category,
+      product.size,
+      product.unit
     ].join(" ").toLowerCase();
 
-    return text.includes(search) &&
+    return searchable.includes(search) &&
       (!category || (product.category || "Other") === category) &&
-      (!stockFilter || getStockStatus(product) === stockFilter);
+      (!filter || stockStatus(product) === filter);
   });
 
   $("productCount").textContent = `${filtered.length} / ${products.length} Products`;
 
   if (!filtered.length) {
-    $("productTableBody").innerHTML = `
-      <tr><td colspan="8" class="empty-state">${
-        products.length
-          ? "खोजसँग मिल्ने Product भेटिएन।"
-          : "अहिलेसम्म Product थपिएको छैन। ＋ नयाँ Product थिचेर सुरु गर्नुहोस्।"
-      }</td></tr>`;
+    const message = products.length
+      ? "खोजसँग मिल्ने Product भेटिएन।"
+      : "Product छैन। + New Product थिचेर पहिलो सामान थप्नुहोस्।";
+
+    $("productTableBody").innerHTML =
+      `<tr><td colspan="8" class="inventory-empty">${message}</td></tr>`;
     return;
   }
 
   $("productTableBody").innerHTML = filtered.map(product => {
     const id = escapeHTML(product.id);
-    const name = escapeHTML(product.name || "नाम छैन");
-    const brand = escapeHTML(product.brand || "Brand छैन");
+    const name = escapeHTML(product.name || "Unnamed Product");
+    const brand = escapeHTML(product.brand || "—");
     const categoryName = escapeHTML(product.category || "Other");
     const unit = escapeHTML(product.unit || "pcs");
     const size = escapeHTML(product.size || "—");
@@ -122,27 +126,35 @@ function renderProducts() {
 
     return `
       <tr>
-        <td><div class="product-name">${name}</div><div class="product-sub">${brand}</div></td>
+        <td>
+          <div class="inventory-product-name">${name}</div>
+          <div class="inventory-subtext">${brand}</div>
+        </td>
         <td>${categoryName}</td>
         <td>${unit} / ${size}</td>
         <td>${money(product.purchasePrice)}</td>
         <td>${money(product.salePrice)}</td>
-        <td><strong>${stock.toLocaleString("en-IN")} ${unit}</strong></td>
-        <td>${statusHTML(getStockStatus(product))}</td>
-        <td><button class="action-btn" type="button" data-view-product="${id}">विवरण हेर्नुहोस्</button></td>
+        <td>${stock.toLocaleString("en-IN")} ${unit}</td>
+        <td>${statusLabel(stockStatus(product))}</td>
+        <td>
+          <button type="button" class="inventory-btn view"
+            data-view-product="${id}">View</button>
+        </td>
       </tr>`;
   }).join("");
 }
 
 function openModal(id) {
-  $(id).classList.add("show");
-  $(id).setAttribute("aria-hidden", "false");
+  const modal = $(id);
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
 }
 
 function closeModal(id) {
-  $(id).classList.remove("show");
-  $(id).setAttribute("aria-hidden", "true");
+  const modal = $(id);
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden", "true");
 
   if (!$("productModal").classList.contains("show") &&
       !$("productViewModal").classList.contains("show")) {
@@ -156,11 +168,12 @@ function openProductModal() {
   $("productUnit").value = "pcs";
   $("minStock").value = "5";
   $("targetStock").value = "20";
+
   openModal("productModal");
   setTimeout(() => $("productName").focus(), 50);
 }
 
-function closeProductModalFunc() {
+function closeProductModal() {
   closeModal("productModal");
   $("productForm").reset();
 }
@@ -181,23 +194,27 @@ function addProduct(event) {
     return;
   }
 
-  if (![purchasePrice, salePrice].every(n => Number.isFinite(n) && n >= 0)) {
+  if (![purchasePrice, salePrice].every(value =>
+    Number.isFinite(value) && value >= 0)) {
     alert("Purchase Price र Sale Price सही रूपमा लेख्नुहोस्।");
     return;
   }
 
-  if (![minStock, targetStock].every(n => Number.isFinite(n) && n >= 0)) {
-    alert("Minimum Stock र Target Stock शून्य वा त्यसभन्दा बढी हुनुपर्छ।");
+  if (![minStock, targetStock].every(value =>
+    Number.isFinite(value) && value >= 0)) {
+    alert("Minimum Stock र Target Stock सही रूपमा लेख्नुहोस्।");
     return;
   }
 
   const products = getProducts();
+
   const duplicate = products.some(product =>
     String(product.name || "").trim().toLowerCase() === name.toLowerCase() &&
     String(product.brand || "").trim().toLowerCase() === brand.toLowerCase()
   );
 
-  if (duplicate && !confirm("यस्तै नाम र Brand भएको Product पहिले नै छ। फेरि थप्ने?")) {
+  if (duplicate &&
+      !confirm("यस्तै नाम र Brand भएको Product पहिले नै छ। फेरि थप्ने?")) {
     return;
   }
 
@@ -222,30 +239,36 @@ function addProduct(event) {
 
   if (!saveProducts(products)) return;
 
-  closeProductModalFunc();
+  closeProductModal();
   renderProducts();
-  alert("Product सफलतापूर्वक Save भयो। Stock Purchase बाट थप्नुहोस्।");
+
+  alert("Product Save भयो। वास्तविक Stock Purchase बाट थप्नुहोस्।");
 }
 
 function viewProduct(productId) {
-  const product = getProducts().find(item => String(item.id) === String(productId));
+  const product = getProducts().find(item =>
+    String(item.id) === String(productId)
+  );
 
   if (!product) {
-    alert("यो Product भेटिएन।");
+    alert("Product भेटिएन।");
     renderProducts();
     return;
   }
 
-  const stockStatus = getStockStatus(product);
-  const statusText = stockStatus === "in" ? "Stock उपलब्ध" :
-    stockStatus === "low" ? "Low Stock" : "Out of Stock";
+  const status = stockStatus(product);
+  const statusText = {
+    in: "In Stock",
+    low: "Low Stock",
+    out: "Out of Stock"
+  }[status];
 
   const details = [
     ["Product Name", product.name],
     ["Product ID", product.id],
     ["Category", product.category || "Other"],
     ["Brand", product.brand || "—"],
-    ["Size", product.size || "—"],
+    ["Size / Weight", product.size || "—"],
     ["Unit", product.unit || "pcs"],
     ["Purchase Price", money(product.purchasePrice)],
     ["Sale Price", money(product.salePrice)],
@@ -253,69 +276,68 @@ function viewProduct(productId) {
     ["Minimum Stock", product.minStock ?? 0],
     ["Target Stock", product.targetStock ?? 0],
     ["Stock Status", statusText],
-    ["Expiry Applicable", product.expiryApplicable ? "हो" : "होइन"],
-    ["Created At", product.createdAt ? new Date(product.createdAt).toLocaleDateString() : "—"]
+    ["Expiry Applicable", product.expiryApplicable ? "Yes" : "No"],
+    ["Created At", product.createdAt
+      ? new Date(product.createdAt).toLocaleDateString()
+      : "—"]
   ];
 
   $("productViewTitle").textContent = product.name || "Product Details";
+
   $("productDetails").innerHTML = details.map(([label, value]) => `
-    <div class="detail-item">
-      <div class="detail-label">${escapeHTML(label)}</div>
-      <div class="detail-value">${escapeHTML(value)}</div>
-    </div>`).join("");
+    <div class="inventory-detail">
+      <span>${escapeHTML(label)}</span>
+      <strong>${escapeHTML(value)}</strong>
+    </div>
+  `).join("");
 
   openModal("productViewModal");
 }
 
-function setupSearch() {
-  $("productSearch").addEventListener("input", () => {
-    $("inventorySearch").value = $("productSearch").value;
-    renderProducts();
-  });
-
-  $("inventorySearch").addEventListener("input", () => {
-    $("productSearch").value = $("inventorySearch").value;
-    renderProducts();
-  });
-}
-
-function setupModal() {
+function setupInventory() {
   $("addProductBtn").addEventListener("click", openProductModal);
-  $("closeProductModal").addEventListener("click", closeProductModalFunc);
-  $("cancelProductBtn").addEventListener("click", closeProductModalFunc);
+  $("closeProductModal").addEventListener("click", closeProductModal);
+  $("cancelProductBtn").addEventListener("click", closeProductModal);
   $("productForm").addEventListener("submit", addProduct);
 
-  $("closeProductView").addEventListener("click", () => closeModal("productViewModal"));
-  $("closeProductViewBtn").addEventListener("click", () => closeModal("productViewModal"));
+  $("productSearch").addEventListener("input", renderProducts);
+  $("categoryFilter").addEventListener("change", renderProducts);
+  $("stockFilter").addEventListener("change", renderProducts);
+
+  $("closeProductView").addEventListener("click", () =>
+    closeModal("productViewModal")
+  );
+
+  $("closeProductViewBtn").addEventListener("click", () =>
+    closeModal("productViewModal")
+  );
 
   $("productTableBody").addEventListener("click", event => {
     const button = event.target.closest("[data-view-product]");
-    if (button) viewProduct(button.getAttribute("data-view-product"));
+    if (button) {
+      viewProduct(button.getAttribute("data-view-product"));
+    }
   });
 
   ["productModal", "productViewModal"].forEach(id => {
     $(id).addEventListener("click", event => {
       if (event.target !== $(id)) return;
-      if (id === "productModal") closeProductModalFunc();
-      else closeModal(id);
+
+      if (id === "productModal") {
+        closeProductModal();
+      } else {
+        closeModal("productViewModal");
+      }
     });
   });
 
   document.addEventListener("keydown", event => {
     if (event.key !== "Escape") return;
-    closeProductModalFunc();
+    closeProductModal();
     closeModal("productViewModal");
   });
+
+  renderProducts();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  setupSearch();
-
-  $("categoryFilter").addEventListener("change", renderProducts);
-  $("stockFilter").addEventListener("change", renderProducts);
-
-  setupModal();
-  renderProducts();
-
-  console.log("Inventory Module ready.");
-});
+document.addEventListener("DOMContentLoaded", setupInventory);
