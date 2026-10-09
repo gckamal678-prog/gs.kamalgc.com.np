@@ -299,9 +299,9 @@
 
     @media (max-width: 800px) {
       .app { display: block; }
-      .sidebar { width: 100%; padding: 10px; overflow-x: auto; }
-      .brand { padding: 8px 10px; }
-      .menu-item { display: inline-flex; margin: 2px; white-space: nowrap; }
+      .sidebar { 
+        display: none; /* मोबाइलमा sidebar पूर्ण रूपमा हटाइएको छ */
+      }
       .main { padding: 14px; }
       .form-grid, .tile-grid { grid-template-columns: 1fr; }
       .full { grid-column: auto; }
