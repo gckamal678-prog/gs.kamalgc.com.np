@@ -1,19 +1,35 @@
+
 <!DOCTYPE html>
 <html lang="ne">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>General Store Management - Dashboard</title>
+    <meta name="description" content="General Store Management and Billing System">
+
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#071b35">
+
+    <!-- App Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="./gs192.png">
+    <link rel="apple-touch-icon" href="./gs192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./gs512.png">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- Shared Appearance Settings -->
+    <script src="appearance.js"></script>
 </head>
+
 <body class="dashboard-page">
 
 <!-- Mobile Overlay -->
 <div class="overlay" id="overlay"></div>
 
-<!-- =========================================================
-     SIDEBAR
-     ========================================================= -->
+<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
     <div class="logo-area">
         <div class="logo-icon">GS</div>
@@ -90,13 +106,13 @@
     </div>
 </aside>
 
-<!-- =========================================================
-     MAIN
-     ========================================================= -->
+<!-- MAIN CONTENT -->
 <main class="main-content">
+
     <header class="topbar">
         <div class="topbar-left">
-            <button class="mobile-menu-btn" id="menuBtn" type="button">☰</button>
+            <button class="mobile-menu-btn" id="menuBtn" type="button"
+                    aria-label="Open navigation">☰</button>
             <div>
                 <h1>Dashboard</h1>
                 <p id="todayDate">आजको व्यापारको अवस्था</p>
@@ -106,10 +122,17 @@
         <div class="topbar-right">
             <div class="search-box">
                 <span>⌕</span>
-                <input type="text" id="searchInput" placeholder="Product, customer, bill...">
+                <input type="text" id="searchInput"
+                       placeholder="Product, customer, bill..."
+                       aria-label="Search">
             </div>
-            <button class="dash-tool-btn" id="themeBtn" type="button" title="Dark / Light Mode">🌙</button>
-            <button class="dash-tool-btn" id="lockBtn" type="button" title="Lock Dashboard">🔒</button>
+
+            <button class="dash-tool-btn" id="themeBtn" type="button"
+                    title="Dark / Light Mode">🌙</button>
+
+            <button class="dash-tool-btn" id="lockBtn" type="button"
+                    title="Lock Dashboard">🔒</button>
+
             <div class="profile">
                 <div class="profile-avatar">A</div>
                 <div class="profile-info">
@@ -121,6 +144,7 @@
     </header>
 
     <section class="dashboard-content">
+
         <div class="welcome-section">
             <div>
                 <h2 id="welcomeTitle">नमस्ते, Admin 👋</h2>
@@ -129,6 +153,7 @@
             <a href="sale.html" class="primary-btn">+ New Sale</a>
         </div>
 
+        <!-- SALES AND PROFIT -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-top">
@@ -136,16 +161,23 @@
                     <span class="stat-label">आजको बिक्री</span>
                 </div>
                 <div class="stat-value">Rs. <span id="todaySales">0</span></div>
-                <div class="stat-bottom"><span class="positive" id="salesChange">Live</span><span>आज</span></div>
+                <div class="stat-bottom">
+                    <span class="positive" id="salesChange">Live</span>
+                    <span>आज</span>
+                </div>
             </div>
+
             <div class="stat-card">
                 <div class="stat-top">
                     <div class="stat-icon profit-icon">📈</div>
                     <span class="stat-label">Gross Profit</span>
                 </div>
                 <div class="stat-value">Rs. <span id="grossProfit">0</span></div>
-                <div class="stat-bottom"><span class="positive">FIFO</span><span>आज</span></div>
+                <div class="stat-bottom">
+                    <span class="positive">FIFO</span><span>आज</span>
+                </div>
             </div>
+
             <div class="stat-card">
                 <div class="stat-top">
                     <div class="stat-icon expense-icon">💸</div>
@@ -154,16 +186,20 @@
                 <div class="stat-value">Rs. <span id="expenses">0</span></div>
                 <div class="stat-bottom"><span>आजको खर्च</span></div>
             </div>
+
             <div class="stat-card">
                 <div class="stat-top">
                     <div class="stat-icon net-profit-icon">💰</div>
                     <span class="stat-label">Net Profit</span>
                 </div>
                 <div class="stat-value">Rs. <span id="netProfit">0</span></div>
-                <div class="stat-bottom"><span class="positive">Gross − Expense</span><span>आज</span></div>
+                <div class="stat-bottom">
+                    <span class="positive">Gross − Expense</span><span>आज</span>
+                </div>
             </div>
         </div>
 
+        <!-- FINANCIAL OVERVIEW -->
         <div class="section-title">
             <div>
                 <h3>Financial Overview</h3>
@@ -180,6 +216,7 @@
                     <small>ग्राहकबाट लिन बाँकी</small>
                 </div>
             </div>
+
             <div class="finance-card">
                 <div class="finance-icon">🏢</div>
                 <div>
@@ -188,6 +225,7 @@
                     <small>Supplier लाई दिन बाँकी</small>
                 </div>
             </div>
+
             <div class="finance-card">
                 <div class="finance-icon">📦</div>
                 <div>
@@ -196,6 +234,7 @@
                     <small>FIFO cost based</small>
                 </div>
             </div>
+
             <div class="finance-card">
                 <div class="finance-icon">💳</div>
                 <div>
@@ -206,6 +245,7 @@
             </div>
         </div>
 
+        <!-- CHART AND ATTENTION -->
         <div class="dashboard-grid">
             <div class="dashboard-card sales-overview">
                 <div class="card-header">
@@ -228,6 +268,7 @@
                         <p>तुरुन्त हेर्नुपर्ने कुरा</p>
                     </div>
                 </div>
+
                 <div class="attention-list">
                     <div class="attention-item">
                         <div class="attention-icon warning">⚠️</div>
@@ -237,6 +278,7 @@
                         </div>
                         <a href="inventory.html">View</a>
                     </div>
+
                     <div class="attention-item">
                         <div class="attention-icon danger">⏰</div>
                         <div class="attention-text">
@@ -245,6 +287,7 @@
                         </div>
                         <a href="inventory.html">View</a>
                     </div>
+
                     <div class="attention-item">
                         <div class="attention-icon money">💰</div>
                         <div class="attention-text">
@@ -253,6 +296,7 @@
                         </div>
                         <a href="customers.html">View</a>
                     </div>
+
                     <div class="attention-item">
                         <div class="attention-icon supplier">🏢</div>
                         <div class="attention-text">
@@ -265,6 +309,7 @@
             </div>
         </div>
 
+        <!-- FAST MOVING PRODUCTS -->
         <div class="dashboard-card" style="margin-top:22px;">
             <div class="card-header">
                 <div>
@@ -276,6 +321,7 @@
             <div class="data-table-wrap" id="fastMovingArea"></div>
         </div>
 
+        <!-- RECENT ACTIVITY -->
         <div class="dashboard-card" style="margin-top:22px;">
             <div class="card-header">
                 <div>
@@ -287,6 +333,7 @@
             <div class="data-table-wrap" id="recentActivityArea"></div>
         </div>
 
+        <!-- QUICK ACTIONS -->
         <div class="section-title quick-title">
             <div>
                 <h3>Quick Actions</h3>
@@ -296,47 +343,32 @@
 
         <div class="quick-actions">
             <a href="sale.html" class="quick-action">
-                <span>🛒</span>
-                <strong>New Sale</strong>
-                <small>नयाँ बिक्री</small>
+                <span>🛒</span><strong>New Sale</strong><small>नयाँ बिक्री</small>
             </a>
             <a href="sales-return.html" class="quick-action">
-                <span>↩️</span>
-                <strong>Sales Return</strong>
-                <small>बिक्री फिर्ता</small>
+                <span>↩️</span><strong>Sales Return</strong><small>बिक्री फिर्ता</small>
             </a>
             <a href="purchase.html" class="quick-action">
-                <span>📦</span>
-                <strong>Purchase</strong>
-                <small>नयाँ खरीद</small>
+                <span>📦</span><strong>Purchase</strong><small>नयाँ खरीद</small>
             </a>
             <a href="stock-lots.html" class="quick-action">
-                <span>🧮</span>
-                <strong>FIFO Lots</strong>
-                <small>Stock cost</small>
+                <span>🧮</span><strong>FIFO Lots</strong><small>Stock cost</small>
             </a>
             <a href="customers.html" class="quick-action">
-                <span>👤</span>
-                <strong>Customer</strong>
-                <small>ग्राहक रकम</small>
+                <span>👤</span><strong>Customer</strong><small>ग्राहक रकम</small>
             </a>
             <a href="suppliers.html" class="quick-action">
-                <span>🏢</span>
-                <strong>Supplier</strong>
-                <small>Supplier payment</small>
+                <span>🏢</span><strong>Supplier</strong><small>Supplier payment</small>
             </a>
             <a href="finance.html" class="quick-action">
-                <span>💸</span>
-                <strong>Expense</strong>
-                <small>खर्च राख्नुहोस्</small>
+                <span>💸</span><strong>Expense</strong><small>खर्च राख्नुहोस्</small>
             </a>
             <a href="inventory.html" class="quick-action">
-                <span>🔧</span>
-                <strong>Stock</strong>
-                <small>Stock मिलाउनुहोस्</small>
+                <span>🔧</span><strong>Stock</strong><small>Stock मिलाउनुहोस्</small>
             </a>
         </div>
 
+        <!-- AI ASSISTANT -->
         <div class="ai-card">
             <div class="ai-content">
                 <div class="ai-icon">🤖</div>
@@ -347,6 +379,7 @@
             </div>
             <a href="ai.html" class="ai-btn">Ask AI →</a>
         </div>
+
     </section>
 
     <footer class="footer">
@@ -355,6 +388,20 @@
     </footer>
 </main>
 
-<script src="script.js"></script>
+<!-- Dashboard JavaScript -->
+<script src="dashboard.js"></script>
+
+<!-- PWA Service Worker -->
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js")
+            .catch(function (error) {
+                console.error("Service worker registration failed:", error);
+            });
+    });
+}
+</script>
+
 </body>
 </html>
