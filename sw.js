@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "general-store-v1";
+const CACHE_NAME = "general-store-v2";
 
 const APP_FILES = [
   "./",
@@ -7,6 +7,8 @@ const APP_FILES = [
   "./style.css",
   "./script.js",
   "./index.js",
+  "./dashboard.js",
+  "./appearance.js",
   "./inventory.html",
   "./inventory.js",
   "./purchase.html",
@@ -42,9 +44,12 @@ self.addEventListener("install", event => {
       await Promise.all(
         APP_FILES.map(async file => {
           try {
-            await cache.add(file);
+            const response = await fetch(file, { cache: "reload" });
+            if (response.ok) {
+              await cache.put(file, response);
+            }
           } catch (error) {
-            console.warn("Cache skipped:", file);
+            console.warn("Cache skipped:", file, error);
           }
         })
       );
@@ -62,10 +67,8 @@ self.addEventListener("activate", event => {
           .filter(key => key !== CACHE_NAME)
           .map(key => caches.delete(key))
       )
-    )
+    ).then(() => self.clients.claim())
   );
-
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", event => {
@@ -79,42 +82,65 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // HTML navigation: network first, then cached page.
+  const isScriptOrStyle =
+    /\.(js|css)$/i.test(url.pathname);
+
+  // JavaScript/CSS: online हुँदा नयाँ फाइल पहिले खोज्ने।
+  if (isScriptOrStyle) {
+    event.respondWith(
+      fetch(request, { cache: "no-cache" })
+        .then(response => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache =>
+              cache.put(request, copy)
+            );
+          }
+          return response;
+        })
+        .catch(async () => {
+          return (
+            await caches.match(request) ||
+            new Response("फाइल उपलब्ध छैन। इन्टरनेट जाँच गर्नुहोस्।", {
+              status: 503,
+              headers: {
+                "Content-Type": "text/plain; charset=utf-8"
+              }
+            })
+          );
+        })
+    );
+    return;
+  }
+
+  // HTML navigation: पहिले network, त्यसपछि cache।
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then(response => {
           if (response.ok) {
             const copy = response.clone();
-
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, copy);
-            });
+            caches.open(CACHE_NAME).then(cache =>
+              cache.put(request, copy)
+            );
           }
-
           return response;
         })
-        .catch(async () => {
-          return (
-            await caches.match(request) ||
-            await caches.match("./index.html") ||
-            new Response(
-              "इन्टरनेट उपलब्ध छैन। पहिले खोलिएको पेज फेरि प्रयास गर्नुहोस्।",
-              {
-                status: 503,
-                headers: {
-                  "Content-Type": "text/plain; charset=utf-8"
-                }
-              }
-            )
-          );
-        })
+        .catch(async () =>
+          (await caches.match(request)) ||
+          (await caches.match("./index.html")) ||
+          new Response("इन्टरनेट उपलब्ध छैन।", {
+            status: 503,
+            headers: {
+              "Content-Type": "text/plain; charset=utf-8"
+            }
+          })
+        )
     );
-
     return;
   }
 
-  // Other same-origin files: cache first.
+  // अन्य फाइल: cache पहिले, आवश्यक पर्दा network।
   event.respondWith(
     caches.match(request).then(cached => {
       if (cached) return cached;
@@ -122,12 +148,10 @@ self.addEventListener("fetch", event => {
       return fetch(request).then(response => {
         if (response.ok) {
           const copy = response.clone();
-
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, copy);
-          });
+          caches.open(CACHE_NAME).then(cache =>
+            cache.put(request, copy)
+          );
         }
-
         return response;
       });
     })
