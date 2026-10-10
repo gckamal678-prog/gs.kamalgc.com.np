@@ -1897,115 +1897,136 @@ body {
     }
 }
 
-/* =====================================================
-   DASHBOARD READABILITY FIX
-   Existing styles are preserved.
-   ===================================================== */
 
-:root {
-    --bg: #f3f6fa;
-    --card: #ffffff;
-    --text: #111827;
-    --text-light: #4b5563;
-    --text-muted: #6b7280;
-    --border: #d1d5db;
+/* ===== DASHBOARD FINAL READABILITY FIX ===== */
+
+.dashboard-page {
+    --dash-bg: #f3f6fa;
+    --dash-card: #ffffff;
+    --dash-text: #111827;
+    --dash-muted: #4b5563;
+    --dash-border: #d1d5db;
+    background: var(--dash-bg) !important;
+    color: var(--dash-text) !important;
 }
 
-body {
-    background-color: var(--bg);
-    color: var(--text);
+html[data-theme="dark"] .dashboard-page {
+    --dash-bg: #111827;
+    --dash-card: #1f2937;
+    --dash-text: #f3f4f6;
+    --dash-muted: #cbd5e1;
+    --dash-border: #374151;
 }
 
-.topbar,
-.finance-card,
-.dashboard-card,
-.stat-card,
-.quick-action,
-.footer {
-    background-color: var(--card);
-    color: var(--text);
+.dashboard-page .topbar,
+.dashboard-page .stat-card,
+.dashboard-page .finance-card,
+.dashboard-page .dashboard-card,
+.dashboard-page .quick-action,
+.dashboard-page .footer {
+    background: var(--dash-card) !important;
+    color: var(--dash-text) !important;
+    border-color: var(--dash-border) !important;
 }
 
-.topbar h1,
-.welcome-section h2,
-.section-title h3,
-.card-header h3,
-.stat-value,
-.finance-card strong,
-.attention-text strong,
-.quick-action strong,
-.ai-content h3 {
-    color: var(--text);
+.dashboard-page h1,
+.dashboard-page h2,
+.dashboard-page h3,
+.dashboard-page strong,
+.dashboard-page .stat-value,
+.dashboard-page .finance-card strong,
+.dashboard-page .quick-action strong {
+    color: var(--dash-text) !important;
 }
 
-.topbar-left p,
-.welcome-section p,
-.section-title p,
-.card-header p,
-.stat-label,
-.finance-card span,
-.finance-card small,
-.stat-bottom,
-.profile-info small,
-.ai-content p {
-    color: var(--text-light);
+.dashboard-page p,
+.dashboard-page small,
+.dashboard-page .stat-label,
+.dashboard-page .stat-bottom,
+.dashboard-page .finance-card span,
+.dashboard-page .finance-card small,
+.dashboard-page .profile-info small,
+.dashboard-page .card-header p,
+.dashboard-page .section-title p,
+.dashboard-page .welcome-section p {
+    color: var(--dash-muted) !important;
 }
 
-.quick-action,
-.text-btn,
-.ai-btn,
-.primary-btn,
-.sidebar-menu a {
+.dashboard-page a {
     text-decoration: none;
 }
 
-.quick-action:focus-visible,
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-    outline: 3px solid #93c5fd;
-    outline-offset: 2px;
+.dashboard-page .menu-item {
+    color: #cbd5e1 !important;
 }
 
-.search-box,
-.search-box input,
-.card-header select,
-.inventory-filter input,
-.inventory-filter select,
-.form-group input,
-.form-group select {
-    color: var(--text);
+.dashboard-page .menu-item.active {
+    color: #ffffff !important;
 }
 
-.chart-area {
+.dashboard-page .primary-btn,
+.dashboard-page .ai-btn {
+    background: var(--primary, #166534);
+    color: #ffffff !important;
+}
+
+.dashboard-page .text-btn,
+.dashboard-page .attention-item a {
+    color: var(--primary, #166534);
+    font-weight: 600;
+}
+
+.dashboard-page .attention-item {
+    background: var(--dash-bg) !important;
+}
+
+.dashboard-page .search-box,
+.dashboard-page .search-box input,
+.dashboard-page .card-header select {
+    color: var(--dash-text);
+}
+
+.dashboard-page .chart-area {
     background: repeating-linear-gradient(
         to bottom,
-        #ffffff 0,
-        #ffffff 48px,
-        #e5e7eb 49px
+        var(--dash-card) 0,
+        var(--dash-card) 48px,
+        var(--dash-border) 49px
     );
 }
 
-.empty-table,
-.empty-inventory {
-    color: var(--text-light);
+.dashboard-page .empty-table {
+    background: var(--dash-bg);
+    color: var(--dash-text);
+    border-color: var(--dash-border);
 }
 
-.empty-table span,
-.empty-inventory span,
-.empty-inventory strong,
-.product-name-cell strong {
-    color: var(--text);
+.dashboard-page .quick-action small,
+.dashboard-page .attention-text span {
+    color: var(--dash-muted) !important;
 }
 
-.attention-item {
-    background: #f3f4f6;
-}
+@media (max-width: 420px) {
+    .dashboard-page .stats-grid,
+    .dashboard-page .finance-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 
-.attention-text span,
-.quick-action small {
-    color: #4b5563;
+    .dashboard-page .stat-card,
+    .dashboard-page .finance-card {
+        min-width: 0;
+        padding: 11px;
+    }
+
+    .dashboard-page .stat-value {
+        font-size: 16px;
+        overflow-wrap: anywhere;
+    }
+
+    .dashboard-page .finance-card strong {
+        font-size: 13px;
+        overflow-wrap: anywhere;
+    }
 }
 
 @media (max-width: 760px) {
