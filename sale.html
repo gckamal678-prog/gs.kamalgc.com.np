@@ -6,64 +6,47 @@
   <title>Sale Management | General Store</title>
   <link rel="stylesheet" href="style.css">
 
-  <script src="appearance.js"></script>
-
   <style>
     .sale-wrap{max-width:1400px;margin:auto;padding:20px}
     .sale-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
     .sale-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
-    .sale-stat,.sale-panel{background:var(--card-bg,#fff);border:1px solid var(--border-color,#e5e7eb);border-radius:14px;padding:16px;color:var(--text-color,inherit)}
-    .sale-stat span{display:block;color:var(--muted-color,#6b7280);font-size:13px}
+    .sale-stat,.sale-panel{background:var(--card-bg,#fff);border:1px solid #e5e7eb;border-radius:14px;padding:16px}
+    .sale-stat span{display:block;color:#6b7280;font-size:13px}
     .sale-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
     .sale-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
     .sale-toolbar input{flex:1;min-width:0}
     .sale-table-wrap{overflow-x:auto}
     .sale-table{width:100%;border-collapse:collapse;min-width:900px}
-    .sale-table th,.sale-table td{padding:11px;border-bottom:1px solid var(--border-color,#e5e7eb);text-align:left;white-space:nowrap}
-    .sale-table th{font-size:13px;color:var(--muted-color,#6b7280)}
+    .sale-table th,.sale-table td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}
+    .sale-table th{font-size:13px;color:#6b7280}
     .sale-modal{display:none;position:fixed;inset:0;z-index:1000;background:#0008;overflow:auto;padding:20px}
     .sale-modal.show{display:block}
-    .sale-dialog{background:var(--card-bg,#fff);color:var(--text-color,inherit);border:1px solid var(--border-color,#e5e7eb);width:min(1100px,100%);margin:20px auto;border-radius:16px;padding:22px}
+    .sale-dialog{background:var(--card-bg,#fff);width:min(1100px,100%);margin:20px auto;border-radius:16px;padding:22px}
     .sale-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
     .sale-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
     .sale-field{display:flex;flex-direction:column;gap:6px;min-width:0}
     .sale-field label{font-size:13px;font-weight:600}
-    .sale-field input,.sale-field select,.sale-field textarea,.sale-toolbar input{width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border-color,#d1d5db);border-radius:8px;background:var(--input-bg,transparent);color:inherit}
-    .sale-field small{font-size:12px;color:var(--muted-color,#6b7280)}
+    .sale-field input,.sale-field select,.sale-field textarea,.sale-toolbar input{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
+    .sale-field small{font-size:12px;color:#6b7280}
     .sale-section{margin-top:20px}
     .sale-section h3{margin-bottom:12px}
     .sale-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px;margin:18px 0 0 auto}
     .sale-summary div{display:flex;justify-content:space-between;gap:16px;padding:5px 0}
-    .sale-summary .grand{border-top:1px solid var(--border-color,#d1d5db);padding-top:12px;font-size:18px;font-weight:700}
+    .sale-summary .grand{border-top:1px solid #d1d5db;padding-top:12px;font-size:18px;font-weight:700}
     .sale-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
-    .sale-btn{padding:10px 15px;border:1px solid var(--border-color,#d1d5db);border-radius:9px;cursor:pointer;background:transparent;color:inherit}
-    .sale-btn.primary{background:var(--accent-color,#166534);color:#fff;border-color:var(--accent-color,#166534)}
+    .sale-btn{padding:10px 15px;border:1px solid #d1d5db;border-radius:9px;cursor:pointer;background:transparent;color:inherit}
+    .sale-btn.primary{background:#166534;color:#fff;border-color:#166534}
     .sale-btn.danger{color:#b91c1c}
-    .sale-note{font-size:12px;color:var(--muted-color,#6b7280);margin-top:8px}
-    .sale-empty{text-align:center;padding:35px;color:var(--muted-color,#6b7280)}
+    .sale-note{font-size:12px;color:#6b7280;margin-top:8px}
+    .sale-empty{text-align:center;padding:35px;color:#6b7280}
     .sale-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
-    .sale-info-item{padding:12px;border:1px solid var(--border-color,#e5e7eb);border-radius:10px;min-width:0}
-    .sale-info-item span{display:block;font-size:12px;color:var(--muted-color,#6b7280)}
+    .sale-info-item{padding:12px;border:1px solid #e5e7eb;border-radius:10px;min-width:0}
+    .sale-info-item span{display:block;font-size:12px;color:#6b7280}
     .sale-info-item strong{display:block;margin-top:5px;overflow-wrap:anywhere}
-    .sale-notice{background:var(--hover-bg,#f9fafb);border:1px solid var(--border-color,#e5e7eb);border-radius:10px;padding:13px;margin-top:18px}
+    .sale-notice{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:13px;margin-top:18px}
     .sale-notice p{margin:6px 0 0;font-size:13px}
-
-    @media(max-width:800px){
-      .sale-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .sale-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .sale-wrap{padding:12px}
-      .sale-dialog{padding:15px;margin:5px auto}
-    }
-
-    @media(max-width:520px){
-      .sale-grid{grid-template-columns:1fr}
-      .sale-modal{padding:8px}
-      .sale-summary{max-width:none}
-      .sale-stat strong{font-size:17px}
-      .sale-info-grid{grid-template-columns:1fr}
-      .sale-top h1{font-size:23px}
-      .sale-btn{max-width:100%}
-    }
+    @media(max-width:800px){.sale-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.sale-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sale-wrap{padding:12px}.sale-dialog{padding:15px;margin:5px auto}}
+    @media(max-width:520px){.sale-grid{grid-template-columns:1fr}.sale-modal{padding:8px}.sale-summary{max-width:none}.sale-stat strong{font-size:17px}.sale-info-grid{grid-template-columns:1fr}}
   </style>
 </head>
 
@@ -207,4 +190,79 @@
           </div>
 
           <div class="sale-field">
-            <label for="paidAmount">Paid Amount
+            <label for="paidAmount">Paid Amount</label>
+            <input type="number" id="paidAmount" min="0" step="0.01" value="0">
+          </div>
+
+          <div class="sale-field" style="grid-column:1/-1">
+            <label for="saleNote">Notes</label>
+            <textarea id="saleNote" rows="3" maxlength="500" placeholder="ऐच्छिक टिप्पणी"></textarea>
+          </div>
+        </div>
+
+        <section class="sale-section">
+          <h3>Sale Information</h3>
+          <div class="sale-info-grid">
+            <div class="sale-info-item">
+              <span>Product</span>
+              <strong id="infoProduct">-</strong>
+            </div>
+            <div class="sale-info-item">
+              <span>Unit</span>
+              <strong id="infoUnit">-</strong>
+            </div>
+            <div class="sale-info-item">
+              <span>Available Stock</span>
+              <strong id="infoStock">0</strong>
+            </div>
+            <div class="sale-info-item">
+              <span>Sale Qty</span>
+              <strong id="infoQty">0</strong>
+            </div>
+            <div class="sale-info-item">
+              <span>Payment</span>
+              <strong id="infoPayment">CASH</strong>
+            </div>
+          </div>
+        </section>
+
+        <div class="sale-summary">
+          <div>
+            <span>Item Amount</span>
+            <strong id="previewItemAmount">Rs. 0.00</strong>
+          </div>
+          <div>
+            <span>Discount</span>
+            <strong id="previewDiscount">Rs. 0.00</strong>
+          </div>
+          <div class="grand">
+            <span>Total</span>
+            <strong id="previewTotal">Rs. 0.00</strong>
+          </div>
+          <div>
+            <span>Paid</span>
+            <strong id="previewPaid">Rs. 0.00</strong>
+          </div>
+          <div>
+            <span>Balance</span>
+            <strong id="previewBalance">Rs. 0.00</strong>
+          </div>
+        </div>
+
+        <div class="sale-notice">
+          <strong>ध्यान दिनुहोस्</strong>
+          <p>बिक्री Save गर्दा Product Stock घट्छ। FIFO Lot बाट Stock कटौती र लागत गणना अर्को चरणको JavaScript अपडेटपछि सक्रिय हुनेछ।</p>
+        </div>
+
+        <div class="sale-actions">
+          <button type="button" id="cancelSaleBtn" class="sale-btn">Cancel</button>
+          <button type="reset" class="sale-btn">Clear</button>
+          <button type="submit" class="sale-btn primary">Save Sale</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script src="sale.js"></script>
+</body>
+</html>
