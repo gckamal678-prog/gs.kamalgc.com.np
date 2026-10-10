@@ -1,470 +1,165 @@
+
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Lots - General Store</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fa;
-            color: #1f2937;
-        }
-
-        .app {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 240px;
-            background: #111827;
-            color: white;
-            padding: 18px 12px;
-            flex-shrink: 0;
-        }
-
-        .brand {
-            font-size: 20px;
-            font-weight: bold;
-            padding: 10px 12px 20px;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #d1d5db;
-            text-decoration: none;
-            padding: 11px 12px;
-            margin: 4px 0;
-            border-radius: 8px;
-        }
-
-        .menu-item:hover,
-        .menu-item.active {
-            background: #1f2937;
-            color: white;
-        }
-
-        .menu-icon {
-            width: 24px;
-            text-align: center;
-        }
-
-        .main {
-            flex: 1;
-            padding: 20px;
-            min-width: 0;
-        }
-
-        .topbar {
-            margin-bottom: 20px;
-        }
-
-        .page-title {
-            margin: 0;
-            font-size: 26px;
-        }
-
-        .subtitle {
-            margin: 5px 0 0;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .card h3 {
-            margin-top: 0;
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
-
-        .summary {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 10px;
-        }
-
-        .summary-label {
-            color: #6b7280;
-            font-size: 13px;
-        }
-
-        .summary-value {
-            margin-top: 7px;
-            font-size: 21px;
-            font-weight: bold;
-        }
-
-        .table-wrap {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 900px;
-        }
-
-        th,
-        td {
-            padding: 11px 10px;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
-            font-size: 13px;
-        }
-
-        th {
-            background: #f8fafc;
-            font-weight: 700;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 5px 8px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .badge-green {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .badge-yellow {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-red {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .filter-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 12px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        input:focus,
-        select:focus {
-            border-color: #2563eb;
-        }
-
-        .note {
-            color: #6b7280;
-            font-size: 13px;
-            line-height: 1.7;
-        }
-
-        .empty {
-            padding: 30px;
-            text-align: center;
-            color: #6b7280;
-        }
-
-        @media (max-width: 800px) {
-
-            .app {
-                display: block;
-            }
-
-            .sidebar {
-                width: 100%;
-                padding: 10px;
-                overflow-x: auto;
-            }
-
-            .brand {
-                padding: 8px 10px;
-            }
-
-            .menu-item {
-                display: inline-flex;
-                margin: 2px;
-            }
-
-            .main {
-                padding: 14px;
-            }
-
-            .summary-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .filter-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIFO Stock Lots | General Store</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="appearance.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    .lots-wrap{max-width:1400px;margin:auto;padding:20px;color:var(--text-color,inherit)}
+    .lots-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+    .lots-top h1{margin:0;font-size:26px}
+    .lots-subtitle{margin:6px 0 0;color:var(--muted-color,#6b7280);font-size:14px}
+    .lots-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
+    .lots-stat,.lots-panel{background:var(--card-bg,#fff);border:1px solid var(--border-color,#e5e7eb);border-radius:14px;padding:17px;min-width:0}
+    .lots-stat span{display:block;color:var(--muted-color,#6b7280);font-size:13px}
+    .lots-stat strong{display:block;font-size:22px;margin-top:8px;overflow-wrap:anywhere}
+    .lots-panel h2{font-size:17px;margin:0 0 14px}
+    .lots-toolbar{display:grid;grid-template-columns:minmax(0,2fr) minmax(180px,1fr);gap:12px;margin-bottom:14px}
+    .lots-toolbar input,.lots-toolbar select{width:100%;min-width:0;padding:11px 12px;border:1px solid var(--border-color,#d1d5db);border-radius:9px;background:var(--input-bg,#fff);color:var(--text-color,inherit);font:inherit}
+    .lots-table-wrap{overflow-x:auto}
+    .lots-table{width:100%;min-width:950px;border-collapse:collapse}
+    .lots-table th,.lots-table td{padding:12px 10px;border-bottom:1px solid var(--border-color,#e5e7eb);text-align:left;font-size:13px;white-space:nowrap}
+    .lots-table th{background:var(--table-header-bg,#f8fafc);color:var(--muted-color,#6b7280);font-weight:700}
+    .lots-badge{display:inline-block;padding:5px 9px;border-radius:20px;font-size:12px;font-weight:650}
+    .lots-badge.remaining{background:#dcfce7;color:#166534}
+    .lots-badge.partial{background:#fef3c7;color:#92400e}
+    .lots-badge.empty{background:#fee2e2;color:#991b1b}
+    .lots-note{font-size:13px;line-height:1.7;color:var(--muted-color,#6b7280);margin:0}
+    .lots-empty{text-align:center;padding:34px;color:var(--muted-color,#6b7280)}
+    .lots-help{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .lots-help-item{padding:14px;border:1px solid var(--border-color,#e5e7eb);border-radius:10px;background:var(--hover-bg,#f8fafc)}
+    .lots-help-item strong{display:block;margin-bottom:6px}
+    @media(max-width:800px){
+      .lots-wrap{padding:13px}
+      .lots-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .lots-toolbar{grid-template-columns:1fr}
+      .lots-help{grid-template-columns:1fr}
+    }
+    @media(max-width:520px){
+      .lots-top h1{font-size:22px}
+      .lots-stat strong{font-size:18px}
+      .lots-stat,.lots-panel{padding:13px}
+    }
+  </style>
 </head>
-
 <body>
+  <aside class="sidebar">
+    <h2>General Store</h2>
+    <nav>
+      <a class="menu-item" href="index.html">Dashboard</a>
+      <a class="menu-item" href="sale.html">New Sale</a>
+      <a class="menu-item" href="purchase.html">Purchase</a>
+      <a class="menu-item" href="inventory.html">Inventory</a>
+      <a class="menu-item" href="sales-return.html">Sales Return</a>
+      <a class="menu-item active" href="stock-lots.html">FIFO Lots</a>
+      <a class="menu-item" href="customers.html">Customers</a>
+      <a class="menu-item" href="suppliers.html">Suppliers</a>
+      <a class="menu-item" href="finance.html">Finance</a>
+      <a class="menu-item" href="reports.html">Reports</a>
+      <a class="menu-item" href="whatsapp.html">WhatsApp</a>
+      <a class="menu-item" href="ai.html">AI Assistant</a>
+      <a class="menu-item" href="settings.html">Settings</a>
+    </nav>
+  </aside>
 
-<div class="app">
+  <main class="lots-wrap">
+    <header class="lots-top">
+      <div>
+        <h1>🧮 FIFO Stock Lots</h1>
+        <p class="lots-subtitle">Purchase अनुसार बाँकी stock र यसको लागत हेर्नुहोस्।</p>
+      </div>
+    </header>
 
-    <aside class="sidebar">
+    <section class="lots-stats" aria-label="Lot summary">
+      <div class="lots-stat">
+        <span>Total Lots</span>
+        <strong id="totalLots">0</strong>
+      </div>
+      <div class="lots-stat">
+        <span>Remaining Quantity</span>
+        <strong id="remainingQty">0</strong>
+      </div>
+      <div class="lots-stat">
+        <span>Remaining Stock Cost</span>
+        <strong id="stockCost">Rs. 0.00</strong>
+      </div>
+      <div class="lots-stat">
+        <span>Products With Stock</span>
+        <strong id="productCount">0</strong>
+      </div>
+    </section>
 
-        <div class="brand">🏪 General Store</div>
+    <section class="lots-panel" style="margin-bottom:16px">
+      <h2>🔎 Search &amp; Filter</h2>
+      <div class="lots-toolbar">
+        <input type="search" id="searchInput"
+          placeholder="Product, Supplier, Bill No. वा Lot ID खोज्नुहोस्..."
+          aria-label="Search stock lots">
+        <select id="statusFilter" aria-label="Filter lot status">
+          <option value="ALL">All Lots</option>
+          <option value="REMAINING">Remaining Stock</option>
+          <option value="EMPTY">Empty Lots</option>
+        </select>
+      </div>
+      <p class="lots-note">Search र status filter ले तलको lot history मात्र filter गर्छ; मूल stock data परिवर्तन हुँदैन।</p>
+    </section>
 
-        <a href="index.html" class="menu-item">
-            <span class="menu-icon">🏠</span>
-            <span>Dashboard</span>
-        </a>
+    <section class="lots-panel" style="margin-bottom:16px">
+      <h2>📦 FIFO Lot History</h2>
+      <p class="lots-note" style="margin-bottom:14px">
+        पुराना purchase lots पहिले देखाइन्छन्। Remaining quantity र लागत सुरक्षित lot data अनुसार देखिन्छ।
+      </p>
+      <div class="lots-table-wrap">
+        <table class="lots-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Lot ID</th>
+              <th>Product</th>
+              <th>Supplier</th>
+              <th>Bill No.</th>
+              <th>Received</th>
+              <th>Remaining</th>
+              <th>Unit Cost</th>
+              <th>Stock Value</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="lotTableBody">
+            <tr>
+              <td colspan="10" class="lots-empty">Loading lots…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-        <a href="sale.html" class="menu-item">
-            <span class="menu-icon">🧾</span>
-            <span>New Sale</span>
-        </a>
-
-        <a href="purchase.html" class="menu-item">
-            <span class="menu-icon">📦</span>
-            <span>Purchase</span>
-        </a>
-
-        <a href="inventory.html" class="menu-item">
-            <span class="menu-icon">📋</span>
-            <span>Inventory</span>
-        </a>
-
-        <a href="stock-lots.html" class="menu-item active">
-            <span class="menu-icon">🧮</span>
-            <span>FIFO Lots</span>
-        </a>
-
-        <a href="customers.html" class="menu-item">
-            <span class="menu-icon">👥</span>
-            <span>Customers</span>
-        </a>
-
-        <a href="suppliers.html" class="menu-item">
-            <span class="menu-icon">🚚</span>
-            <span>Suppliers</span>
-        </a>
-
-        <a href="finance.html" class="menu-item">
-            <span class="menu-icon">💰</span>
-            <span>Finance</span>
-        </a>
-
-        <a href="reports.html" class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span>Reports</span>
-        </a>
-
-        <a href="whatsapp.html" class="menu-item">
-            <span class="menu-icon">💬</span>
-            <span>WhatsApp</span>
-        </a>
-
-        <a href="ai.html" class="menu-item">
-            <span class="menu-icon">🤖</span>
-            <span>AI Assistant</span>
-        </a>
-
-        <a href="settings.html" class="menu-item">
-            <span class="menu-icon">⚙️</span>
-            <span>Settings</span>
-        </a>
-
-    </aside>
-
-
-    <main class="main">
-
-        <div class="topbar">
-
-            <h1 class="page-title">🧮 FIFO Stock Lots</h1>
-
-            <p class="subtitle">
-                Purchase भएको stock कुन lot बाट बाँकी छ भनेर हेर्नुहोस्
-            </p>
-
+    <section class="lots-panel">
+      <h2>ℹ️ FIFO कसरी बुझ्ने?</h2>
+      <div class="lots-help">
+        <div class="lots-help-item">
+          <strong>1. Received</strong>
+          <p class="lots-note">Purchase lot बाट आएको कुल quantity।</p>
         </div>
-
-
-        <div class="card">
-
-            <h3>📊 Lot Summary</h3>
-
-            <div class="summary-grid">
-
-                <div class="summary">
-                    <div class="summary-label">
-                        Total Lots
-                    </div>
-
-                    <div
-                        class="summary-value"
-                        id="totalLots">
-                        0
-                    </div>
-                </div>
-
-
-                <div class="summary">
-                    <div class="summary-label">
-                        Remaining Qty
-                    </div>
-
-                    <div
-                        class="summary-value"
-                        id="remainingQty">
-                        0
-                    </div>
-                </div>
-
-
-                <div class="summary">
-                    <div class="summary-label">
-                        Stock Cost
-                    </div>
-
-                    <div
-                        class="summary-value"
-                        id="stockCost">
-                        Rs. 0.00
-                    </div>
-                </div>
-
-
-                <div class="summary">
-                    <div class="summary-label">
-                        Products
-                    </div>
-
-                    <div
-                        class="summary-value"
-                        id="productCount">
-                        0
-                    </div>
-                </div>
-
-            </div>
-
+        <div class="lots-help-item">
+          <strong>2. Remaining</strong>
+          <p class="lots-note">Lot मा अझै बाँकी रहेको quantity। Sale ले lot consume गरेको भए घटेको देखिन्छ।</p>
         </div>
-
-
-        <div class="card">
-
-            <h3>🔎 Search Lots</h3>
-
-            <div class="filter-grid">
-
-                <input
-                    type="text"
-                    id="searchInput"
-                    placeholder="Product, Supplier, Bill No. खोज्नुहोस्..."
-                >
-
-                <select id="statusFilter">
-
-                    <option value="ALL">
-                        All Lots
-                    </option>
-
-                    <option value="REMAINING">
-                        Remaining
-                    </option>
-
-                    <option value="EMPTY">
-                        Fully Sold / Empty
-                    </option>
-
-                </select>
-
-            </div>
-
+        <div class="lots-help-item">
+          <strong>3. Stock Value</strong>
+          <p class="lots-note">Remaining quantity × effective unit cost।</p>
         </div>
+      </div>
+      <p class="lots-note" style="margin-top:13px">
+        ध्यान दिनुहोस्: FIFO calculation सही देखिन purchase र sale modules ले एउटै lot records update गरेको हुनुपर्छ।
+      </p>
+    </section>
+  </main>
 
-
-        <div class="card">
-
-            <h3>📦 FIFO Lot History</h3>
-
-            <p class="note">
-                पुरानो purchase lot पहिले consume हुने सिद्धान्तमा
-                यो list क्रमबद्ध हुन्छ।
-            </p>
-
-            <div class="table-wrap">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-                            <th>Date</th>
-                            <th>Lot ID</th>
-                            <th>Product</th>
-                            <th>Supplier</th>
-                            <th>Bill No.</th>
-                            <th>Received</th>
-                            <th>Remaining</th>
-                            <th>Effective Cost</th>
-                            <th>Stock Value</th>
-                            <th>Status</th>
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="lotTableBody"></tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>ℹ️ FIFO कसरी काम गर्छ?</h3>
-
-            <p class="note">
-                उदाहरण: पहिले 10 वटा @ Rs.100 र पछि 10 वटा @ Rs.120
-                purchase भयो भने 12 वटा sale हुँदा पहिलो 10 वटा
-                Rs.100 को lot बाट र बाँकी 2 वटा Rs.120 को lot बाट
-                घटाइन्छ। यसलाई FIFO भनिन्छ।
-            </p>
-
-        </div>
-
-    </main>
-
-</div>
-
-<script src="stock-lots.js"></script>
-
+  <script src="stock-lots.js"></script>
 </body>
 </html>
