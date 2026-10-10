@@ -1896,3 +1896,136 @@ body {
         width: 100%;
     }
 }
+
+/* =====================================================
+   DASHBOARD READABILITY FIX
+   Existing styles are preserved.
+   ===================================================== */
+
+:root {
+    --bg: #f3f6fa;
+    --card: #ffffff;
+    --text: #111827;
+    --text-light: #4b5563;
+    --text-muted: #6b7280;
+    --border: #d1d5db;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+.topbar,
+.finance-card,
+.dashboard-card,
+.stat-card,
+.quick-action,
+.footer {
+    background-color: var(--card);
+    color: var(--text);
+}
+
+.topbar h1,
+.welcome-section h2,
+.section-title h3,
+.card-header h3,
+.stat-value,
+.finance-card strong,
+.attention-text strong,
+.quick-action strong,
+.ai-content h3 {
+    color: var(--text);
+}
+
+.topbar-left p,
+.welcome-section p,
+.section-title p,
+.card-header p,
+.stat-label,
+.finance-card span,
+.finance-card small,
+.stat-bottom,
+.profile-info small,
+.ai-content p {
+    color: var(--text-light);
+}
+
+.quick-action,
+.text-btn,
+.ai-btn,
+.primary-btn,
+.sidebar-menu a {
+    text-decoration: none;
+}
+
+.quick-action:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 2px;
+}
+
+.search-box,
+.search-box input,
+.card-header select,
+.inventory-filter input,
+.inventory-filter select,
+.form-group input,
+.form-group select {
+    color: var(--text);
+}
+
+.chart-area {
+    background: repeating-linear-gradient(
+        to bottom,
+        #ffffff 0,
+        #ffffff 48px,
+        #e5e7eb 49px
+    );
+}
+
+.empty-table,
+.empty-inventory {
+    color: var(--text-light);
+}
+
+.empty-table span,
+.empty-inventory span,
+.empty-inventory strong,
+.product-name-cell strong {
+    color: var(--text);
+}
+
+.attention-item {
+    background: #f3f4f6;
+}
+
+.attention-text span,
+.quick-action small {
+    color: #4b5563;
+}
+
+@media (max-width: 760px) {
+    .dashboard-content {
+        padding: 16px 12px;
+    }
+
+    .topbar {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .stat-card,
+    .finance-card,
+    .dashboard-card {
+        min-width: 0;
+    }
+
+    .stat-value {
+        overflow-wrap: anywhere;
+    }
+}
+
