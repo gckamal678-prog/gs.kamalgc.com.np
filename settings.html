@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ne">
 <head>
@@ -25,29 +24,6 @@
       font-size: var(--font-size, 15px);
     }
     a { color: inherit; }
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      padding: 15px 22px;
-      color: white;
-      background: #166534;
-      box-shadow: 0 3px 12px #0001;
-    }
-    .brand { font-size: 20px; font-weight: 800; }
-    .top-links { display: flex; gap: 8px; flex-wrap: wrap; }
-    .top-links a {
-      text-decoration: none;
-      padding: 8px 10px;
-      border-radius: 8px;
-      font-size: 13px;
-    }
-    .top-links a:hover, .top-links a.active { background: #ffffff25; }
     .page { max-width: 1450px; margin: auto; padding: 24px; }
     .page-heading { margin-bottom: 20px; }
     .page-heading h1 { margin: 0 0 8px; font-size: 27px; }
@@ -60,7 +36,7 @@
     }
     .settings-nav {
       position: sticky;
-      top: 85px;
+      top: 20px;
       display: grid;
       gap: 5px;
       padding: 12px;
@@ -82,7 +58,7 @@
       border-radius: 15px;
       background: var(--surface);
       box-shadow: 0 4px 18px #00000005;
-      scroll-margin-top: 90px;
+      scroll-margin-top: 20px;
     }
     .card h2 { margin: 0 0 7px; font-size: 21px; }
     .section-description, .note { color: var(--muted); line-height: 1.6; }
@@ -178,7 +154,6 @@
     }
     @media (max-width: 580px) {
       .page { padding: 13px; }
-      .topbar { padding: 13px; }
       .form-grid, .tile-grid { grid-template-columns: 1fr; }
       .card { padding: 16px; }
       .page-heading h1 { font-size: 23px; }
@@ -200,23 +175,6 @@
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">🏪 General Store</div>
-    <nav class="top-links" aria-label="Main navigation">
-      <a href="index.html">🏠 Dashboard</a>
-      <a href="sale.html">🧾 New Sale</a>
-      <a href="purchase.html">📦 Purchase</a>
-      <a href="inventory.html">📋 Inventory</a>
-      <a href="customers.html">👥 Customers</a>
-      <a href="suppliers.html">🚚 Suppliers</a>
-      <a href="finance.html">💰 Finance</a>
-      <a href="reports.html">📊 Reports</a>
-      <a href="whatsapp.html">💬 WhatsApp</a>
-      <a href="ai.html">🤖 AI Assistant</a>
-      <a class="active" href="settings.html">⚙️ Settings</a>
-    </nav>
-  </header>
-
   <main class="page">
     <div class="page-heading">
       <h1>⚙️ Settings Center</h1>
@@ -241,7 +199,7 @@
           <p class="section-description">बिल र पसलसम्बन्धी विवरण।</p>
           <div class="profile-preview">
             <img id="avatarPreview" class="avatar" alt="Operator avatar" hidden>
-            <div id="avatarFallback" class="avatar">🏪</div>
+            <div id="avatarFallback" class="avatar" hidden>🏪</div>
             <div>
               <strong id="profilePreviewName">General Store</strong>
               <div class="small" id="profilePreviewOwner">सञ्चालकको नाम</div>
@@ -421,7 +379,7 @@
 
         <section class="card" id="feedback">
           <h2>💬 Feedback & Bug Report</h2>
-          <p class="section-description">सुझाव वा समस्या स्थानीय रूपमा सुरक्षित गर्नुहोस्।</p>
+          <p class="section-description">सुझाव वा समस्या support@kamalgc.com.np मा पठाउनुहोस्।</p>
           <form id="feedbackForm">
             <div class="form-grid">
               <div class="form-group">
@@ -443,12 +401,11 @@
               </div>
             </div>
             <div class="actions">
-              <button type="submit">Save Feedback</button>
+              <button type="submit">Send Feedback</button>
               <button type="button" class="secondary" id="exportFeedbackBtn">Export Feedback</button>
             </div>
           </form>
           <div id="feedbackStatus" class="status" role="status"></div>
-          <p class="note">Feedback स्वतः developer सम्म पुग्दैन। पठाउन Export गरेर साझा गर्नुपर्छ।</p>
         </section>
 
         <section class="card" id="policy">
@@ -459,7 +416,6 @@
               <li>यो संस्करणले मुख्य डेटा यस ब्राउजरको localStorage मा राख्छ।</li>
               <li>ब्राउजर डेटा मेटिएमा स्टोरका रेकर्ड हराउन सक्छन्।</li>
               <li>Backup मा ग्राहक र कारोबारका संवेदनशील विवरण हुन सक्छन्।</li>
-              <li>Feedback स्वतः कसैलाई पठाइँदैन।</li>
               <li>स्थानीय MPIN server-side authentication होइन।</li>
             </ul>
             <h3>📋 Terms & Conditions</h3>
