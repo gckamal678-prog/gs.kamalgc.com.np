@@ -9,175 +9,443 @@
   <script src="appearance.js"></script>
 
   <style>
-    .inventory-wrap{max-width:1400px;margin:auto;padding:20px}
-    .inventory-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-    .inventory-top h1{margin-bottom:8px}
-    .inventory-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
-    .inventory-stat,.inventory-panel{background:var(--card-bg,#fff);border:1px solid var(--border-color,#e5e7eb);border-radius:14px;padding:16px;color:var(--text-color,inherit)}
-    .inventory-stat span{display:block;color:var(--muted-color,#6b7280);font-size:13px}
-    .inventory-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
-    .inventory-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-    .inventory-toolbar input{flex:1;min-width:180px}
-    .inventory-toolbar select{min-width:145px}
-    .inventory-toolbar input,.inventory-toolbar select,.inventory-field input:not([type="checkbox"]),.inventory-field select{
-      box-sizing:border-box;padding:10px;border:1px solid var(--border-color,#d1d5db);border-radius:8px;background:var(--input-bg,transparent);color:var(--text-color,inherit)
+    :root {
+      --inv-accent: var(--accent-color, #166534);
+      --inv-bg: var(--body-bg, #f3f6fa);
+      --inv-card: var(--card-bg, #fff);
+      --inv-text: var(--text-color, #111827);
+      --inv-muted: var(--muted-color, #6b7280);
+      --inv-border: var(--border-color, #e5e7eb);
+      --inv-hover: var(--hover-bg, #f8fafc);
     }
-    .inventory-toolbar input::placeholder{color:var(--muted-color,#6b7280);opacity:1}
-    .inventory-toolbar select option,.inventory-field select option{background:var(--card-bg,#fff);color:var(--text-color,#111827)}
-    .inventory-table-wrap{overflow-x:auto}
-    .inventory-table{width:100%;border-collapse:collapse;min-width:850px;color:var(--text-color,inherit)}
-    .inventory-table th,.inventory-table td{padding:11px;border-bottom:1px solid var(--border-color,#e5e7eb);text-align:left}
-    .inventory-table th{font-size:13px;color:var(--muted-color,#6b7280);white-space:nowrap}
-    .inventory-product-name{font-weight:600;color:var(--text-color,inherit)}
-    .inventory-subtext{font-size:12px;color:var(--muted-color,#6b7280);margin-top:4px}
-    .inventory-status{display:inline-block;padding:5px 9px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
-    .inventory-status.in{background:#dcfce7;color:#166534}
-    .inventory-status.low{background:#ffedd5;color:#9a3412}
-    .inventory-status.out{background:#fee2e2;color:#991b1b}
-    .inventory-modal{display:none;position:fixed;inset:0;z-index:1000;background:#0008;overflow:auto;padding:20px}
-    .inventory-modal.show{display:block}
-    .inventory-dialog{background:var(--card-bg,#fff);color:var(--text-color,inherit);border:1px solid var(--border-color,#e5e7eb);width:min(850px,100%);margin:20px auto;border-radius:16px;padding:22px}
-    .inventory-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
-    .inventory-dialog-head h2{margin:0}
-    .inventory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-    .inventory-field{display:flex;flex-direction:column;gap:6px;min-width:0}
-    .inventory-field label{font-size:13px;font-weight:600}
-    .inventory-field input:focus,.inventory-field select:focus{outline:2px solid var(--accent-color,#166534);outline-offset:1px}
-    .inventory-section{margin-top:20px}
-    .inventory-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
-    .inventory-btn{padding:10px 15px;border:1px solid var(--border-color,#d1d5db);border-radius:9px;cursor:pointer;background:transparent;color:var(--text-color,inherit)}
-    .inventory-btn.primary{background:var(--accent-color,#166534);color:#fff;border-color:var(--accent-color,#166534)}
-    .inventory-btn.view{padding:7px 10px;font-size:12px}
-    .inventory-btn:focus-visible{outline:2px solid var(--accent-color,#166534);outline-offset:2px}
-    .inventory-empty{text-align:center;padding:35px;color:var(--muted-color,#6b7280)!important}
-    .inventory-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-    .inventory-detail{padding:12px;border:1px solid var(--border-color,#e5e7eb);border-radius:10px;overflow-wrap:anywhere}
-    .inventory-detail span{display:block;color:var(--muted-color,#6b7280);font-size:12px}
-    .inventory-detail strong{display:block;margin-top:6px;color:var(--text-color,inherit)}
-    .inventory-full{grid-column:1/-1}
-    @media(max-width:800px){
-      .inventory-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .inventory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .inventory-wrap{padding:12px}
-      .inventory-dialog{padding:15px;margin:5px auto}
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--inv-bg);
+      color: var(--inv-text);
+      font-family: var(--font-family, Arial, sans-serif);
     }
-    @media(max-width:520px){
-      .inventory-grid,.inventory-details{grid-template-columns:1fr}
-      .inventory-modal{padding:8px}
-      .inventory-stat strong{font-size:17px}
-      .inventory-full{grid-column:auto}
-      .inventory-toolbar input,.inventory-toolbar select{width:100%;min-width:0}
-      .inventory-top h1{font-size:23px}
-      .inventory-btn{max-width:100%}
+
+    .inventory-wrap {
+      max-width: 1400px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .inventory-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .inventory-top h1 { margin: 0 0 8px; }
+    .inventory-top p { margin: 0; color: var(--inv-muted); }
+
+    .inventory-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .inventory-stat,
+    .inventory-panel {
+      min-width: 0;
+      background: var(--inv-card);
+      border: 1px solid var(--inv-border);
+      border-radius: 14px;
+      padding: 16px;
+      color: var(--inv-text);
+      box-shadow: 0 2px 8px #00000008;
+    }
+
+    .inventory-stat span {
+      display: block;
+      color: var(--inv-muted);
+      font-size: 13px;
+    }
+
+    .inventory-stat strong {
+      display: block;
+      font-size: 21px;
+      margin-top: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .inventory-toolbar {
+      display: flex;
+      gap: 10px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .inventory-toolbar input { flex: 1; min-width: 180px; }
+    .inventory-toolbar select { min-width: 145px; }
+
+    .inventory-toolbar input,
+    .inventory-toolbar select,
+    .inventory-field input:not([type="checkbox"]),
+    .inventory-field select {
+      width: 100%;
+      max-width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--inv-border);
+      border-radius: 9px;
+      background: var(--input-bg, var(--inv-card));
+      color: var(--inv-text);
+      font: inherit;
+    }
+
+    .inventory-toolbar input::placeholder,
+    .inventory-field input::placeholder {
+      color: var(--inv-muted);
+      opacity: 1;
+    }
+
+    .inventory-toolbar select option,
+    .inventory-field select option {
+      background: var(--inv-card);
+      color: var(--inv-text);
+    }
+
+    .inventory-toolbar input:focus,
+    .inventory-toolbar select:focus,
+    .inventory-field input:focus,
+    .inventory-field select:focus {
+      outline: 2px solid var(--inv-accent);
+      outline-offset: 1px;
+    }
+
+    .inventory-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--inv-border);
+      border-radius: 10px;
+    }
+
+    .inventory-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 850px;
+      color: var(--inv-text);
+      background: var(--inv-card);
+    }
+
+    .inventory-table th,
+    .inventory-table td {
+      padding: 12px 11px;
+      border-bottom: 1px solid var(--inv-border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .inventory-table th {
+      background: var(--table-header-bg, var(--inv-hover));
+      font-size: 13px;
+      color: var(--inv-muted);
+      white-space: nowrap;
+    }
+
+    .inventory-table tbody tr:last-child td { border-bottom: 0; }
+    .inventory-table tbody tr:hover { background: var(--inv-hover); }
+
+    .inventory-product-name {
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    .inventory-subtext {
+      font-size: 12px;
+      color: var(--inv-muted);
+      margin-top: 4px;
+    }
+
+    .inventory-status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .inventory-status.in { background: #dcfce7; color: #166534; }
+    .inventory-status.low { background: #ffedd5; color: #9a3412; }
+    .inventory-status.out { background: #fee2e2; color: #991b1b; }
+
+    .inventory-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: #0008;
+      overflow: auto;
+      padding: 20px;
+    }
+
+    .inventory-modal.show { display: block; }
+
+    .inventory-dialog {
+      width: min(850px, 100%);
+      margin: 20px auto;
+      padding: 22px;
+      border: 1px solid var(--inv-border);
+      border-radius: 16px;
+      background: var(--inv-card);
+      color: var(--inv-text);
+      box-shadow: 0 20px 60px #0003;
+    }
+
+    .inventory-dialog-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .inventory-dialog-head h2 { margin: 0 0 6px; }
+    .inventory-dialog-head p { margin: 0; color: var(--inv-muted); font-size: 13px; }
+
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .inventory-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .inventory-field label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .inventory-field input[type="checkbox"] {
+      accent-color: var(--inv-accent);
+      margin-right: 7px;
+    }
+
+    .inventory-full { grid-column: 1 / -1; }
+
+    .inventory-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .inventory-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 10px 15px;
+      border: 1px solid var(--inv-border);
+      border-radius: 9px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--inv-text);
+      font: inherit;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .inventory-btn:hover { background: var(--inv-hover); }
+
+    .inventory-btn.primary {
+      background: var(--inv-accent);
+      color: #fff;
+      border-color: var(--inv-accent);
+    }
+
+    .inventory-btn.primary:hover { filter: brightness(.93); }
+    .inventory-btn.view { min-height: 34px; padding: 7px 11px; font-size: 12px; }
+
+    .inventory-btn:focus-visible {
+      outline: 3px solid var(--inv-accent);
+      outline-offset: 2px;
+    }
+
+    .inventory-empty {
+      text-align: center;
+      padding: 35px !important;
+      color: var(--inv-muted) !important;
+    }
+
+    .inventory-details {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .inventory-detail {
+      padding: 12px;
+      border: 1px solid var(--inv-border);
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+      min-width: 0;
+    }
+
+    .inventory-detail span {
+      display: block;
+      color: var(--inv-muted);
+      font-size: 12px;
+    }
+
+    .inventory-detail strong {
+      display: block;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .inventory-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .inventory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .inventory-wrap { padding: 14px; }
+    }
+
+    @media (max-width: 600px) {
+      .inventory-wrap { padding: 12px; }
+      .inventory-top h1 { font-size: 23px; }
+      .inventory-top > button { width: 100%; }
+      .inventory-stat { padding: 13px; }
+      .inventory-stat strong { font-size: 17px; }
+      .inventory-panel { padding: 12px; }
+      .inventory-grid,
+      .inventory-details { grid-template-columns: minmax(0, 1fr); }
+      .inventory-full { grid-column: auto; }
+      .inventory-modal { padding: 8px; }
+      .inventory-dialog { padding: 16px; margin: 5px auto; }
+      .inventory-toolbar { display: grid; grid-template-columns: 1fr; }
+      .inventory-toolbar input,
+      .inventory-toolbar select { min-width: 0; width: 100%; }
+      .inventory-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .inventory-actions .primary { grid-column: 1 / -1; }
+      .inventory-actions .inventory-btn { width: 100%; }
+    }
+
+    @media (max-width: 380px) {
+      .inventory-stats { grid-template-columns: minmax(0, 1fr); }
     }
   </style>
 </head>
 
 <body>
-  <aside class="sidebar">
-    <h2>General Store</h2>
-    <nav>
-      <a class="menu-item" href="index.html">Dashboard</a>
-      <a class="menu-item" href="sale.html">New Sale</a>
-      <a class="menu-item" href="purchase.html">Purchase</a>
-      <a class="menu-item active" href="inventory.html">Inventory</a>
-      <a class="menu-item" href="sales-return.html">Sales Return</a>
-      <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
-      <a class="menu-item" href="customers.html">Customers</a>
-      <a class="menu-item" href="suppliers.html">Suppliers</a>
-      <a class="menu-item" href="finance.html">Finance</a>
-      <a class="menu-item" href="reports.html">Reports</a>
-      <a class="menu-item" href="whatsapp.html">WhatsApp</a>
-      <a class="menu-item" href="ai.html">AI Assistant</a>
-      <a class="menu-item" href="settings.html">Settings</a>
-    </nav>
-  </aside>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>General Store</h2>
+      </div>
+      <nav class="sidebar-menu">
+        <a class="menu-item" href="index.html"><span class="menu-icon">🏠</span><span>Dashboard</span></a>
+        <a class="menu-item" href="sale.html"><span class="menu-icon">🧾</span><span>New Sale</span></a>
+        <a class="menu-item" href="purchase.html"><span class="menu-icon">🛒</span><span>Purchase</span></a>
+        <a class="menu-item active" href="inventory.html"><span class="menu-icon">📦</span><span>Inventory</span></a>
+        <a class="menu-item" href="sales-return.html"><span class="menu-icon">↩️</span><span>Sales Return</span></a>
+        <a class="menu-item" href="stock-lots.html"><span class="menu-icon">📚</span><span>FIFO Lots</span></a>
+        <a class="menu-item" href="customers.html"><span class="menu-icon">👥</span><span>Customers</span></a>
+        <a class="menu-item" href="suppliers.html"><span class="menu-icon">🚚</span><span>Suppliers</span></a>
+        <a class="menu-item" href="finance.html"><span class="menu-icon">💰</span><span>Finance</span></a>
+        <a class="menu-item" href="reports.html"><span class="menu-icon">📊</span><span>Reports</span></a>
+        <a class="menu-item" href="whatsapp.html"><span class="menu-icon">📱</span><span>WhatsApp</span></a>
+        <a class="menu-item" href="ai.html"><span class="menu-icon">🤖</span><span>AI Assistant</span></a>
+        <a class="menu-item" href="settings.html"><span class="menu-icon">⚙️</span><span>Settings</span></a>
+      </nav>
+    </aside>
 
-  <main class="inventory-wrap">
-    <header class="inventory-top">
-      <div>
-        <h1>Inventory Management</h1>
-        <p>Product, Stock र मूल्य व्यवस्थापन</p>
-      </div>
-      <button id="addProductBtn" class="inventory-btn primary" type="button">+ New Product</button>
-    </header>
+    <main class="main-content inventory-wrap">
+      <header class="inventory-top">
+        <div>
+          <h1>Inventory Management</h1>
+          <p>Product, Stock र मूल्य व्यवस्थापन</p>
+        </div>
+        <button id="addProductBtn" class="inventory-btn primary" type="button">+ New Product</button>
+      </header>
 
-    <section class="inventory-stats">
-      <div class="inventory-stat">
-        <span>कुल Products</span>
-        <strong id="totalProducts">0</strong>
-      </div>
-      <div class="inventory-stat">
-        <span>Stock उपलब्ध</span>
-        <strong id="inStockProducts">0</strong>
-      </div>
-      <div class="inventory-stat">
-        <span>Low Stock</span>
-        <strong id="lowStockProducts">0</strong>
-      </div>
-      <div class="inventory-stat">
-        <span>अनुमानित Stock Value</span>
-        <strong id="stockValue">Rs. 0.00</strong>
-      </div>
-    </section>
+      <section class="inventory-stats">
+        <div class="inventory-stat">
+          <span>कुल Products</span>
+          <strong id="totalProducts">0</strong>
+        </div>
+        <div class="inventory-stat">
+          <span>Stock उपलब्ध</span>
+          <strong id="inStockProducts">0</strong>
+        </div>
+        <div class="inventory-stat">
+          <span>Low Stock</span>
+          <strong id="lowStockProducts">0</strong>
+        </div>
+        <div class="inventory-stat">
+          <span>अनुमानित Stock Value</span>
+          <strong id="stockValue">Rs. 0.00</strong>
+        </div>
+      </section>
 
-    <section class="inventory-panel">
-      <div class="inventory-top" style="margin-bottom:16px">
-        <h2>Product List</h2>
-        <span id="productCount">0 Products</span>
-      </div>
+      <section class="inventory-panel">
+        <div class="inventory-top" style="margin-bottom:16px">
+          <h2>Product List</h2>
+          <span id="productCount">0 Products</span>
+        </div>
 
-      <div class="inventory-toolbar">
-        <input id="productSearch" type="search" placeholder="Product, Brand वा Category खोज्नुहोस्">
-        <select id="categoryFilter">
-          <option value="">सबै Category</option>
-          <option value="Grocery">Grocery</option>
-          <option value="Beverages">Beverages</option>
-          <option value="Snacks">Snacks</option>
-          <option value="Personal Care">Personal Care</option>
-          <option value="Household">Household</option>
-          <option value="Other">Other</option>
-        </select>
-        <select id="stockFilter">
-          <option value="">सबै Stock Status</option>
-          <option value="in">In Stock</option>
-          <option value="low">Low Stock</option>
-          <option value="out">Out of Stock</option>
-        </select>
-      </div>
+        <div class="inventory-toolbar">
+          <input id="productSearch" type="search" placeholder="Product, Brand वा Category खोज्नुहोस्" aria-label="Search products">
+          <select id="categoryFilter" aria-label="Filter by category">
+            <option value="">सबै Category</option>
+            <option value="Grocery">Grocery</option>
+            <option value="Beverages">Beverages</option>
+            <option value="Snacks">Snacks</option>
+            <option value="Personal Care">Personal Care</option>
+            <option value="Household">Household</option>
+            <option value="Other">Other</option>
+          </select>
+          <select id="stockFilter" aria-label="Filter by stock status">
+            <option value="">सबै Stock Status</option>
+            <option value="in">In Stock</option>
+            <option value="low">Low Stock</option>
+            <option value="out">Out of Stock</option>
+          </select>
+        </div>
 
-      <div class="inventory-table-wrap">
-        <table class="inventory-table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Category</th>
-              <th>Unit / Size</th>
-              <th>Purchase Price</th>
-              <th>Sale Price</th>
-              <th>Stock</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="productTableBody">
-            <tr>
-              <td colspan="8" class="inventory-empty">Inventory लोड हुँदैछ...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+        <div class="inventory-table-wrap">
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Unit / Size</th>
+                <th>Purchase Price</th>
+                <th>Sale Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="productTableBody">
+              <tr><td colspan="8" class="inventory-empty">Inventory लोड हुँदैछ...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <div class="inventory-modal" id="productModal" aria-hidden="true">
-    <section class="inventory-dialog">
+    <section class="inventory-dialog" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
       <div class="inventory-dialog-head">
         <div>
           <h2 id="productModalTitle">New Product</h2>
           <p>नयाँ सामानको विवरण भर्नुहोस्।</p>
         </div>
-        <button type="button" id="closeProductModal" class="inventory-btn" aria-label="Close">✕</button>
+        <button type="button" id="closeProductModal" class="inventory-btn" aria-label="Close product form">✕</button>
       </div>
 
       <form id="productForm">
@@ -225,12 +493,12 @@
 
           <div class="inventory-field">
             <label for="purchasePrice">Purchase Price *</label>
-            <input id="purchasePrice" type="number" min="0" step="0.01" required>
+            <input id="purchasePrice" type="number" min="0" step="0.01" required placeholder="0.00">
           </div>
 
           <div class="inventory-field">
             <label for="salePrice">Sale Price *</label>
-            <input id="salePrice" type="number" min="0" step="0.01" required>
+            <input id="salePrice" type="number" min="0" step="0.01" required placeholder="0.00">
           </div>
 
           <div class="inventory-field">
@@ -259,11 +527,11 @@
     </section>
   </div>
 
-  <div class="inventory-modal" id="productViewModal" aria-hidden="true">
-    <section class="inventory-dialog">
+  <div class="inventory-modal" id="productViewModal" class="inventory-modal" aria-hidden="true">
+    <section class="inventory-dialog" role="dialog" aria-modal="true" aria-labelledby="productViewTitle">
       <div class="inventory-dialog-head">
         <h2 id="productViewTitle">Product Details</h2>
-        <button type="button" id="closeProductView" class="inventory-btn" aria-label="Close">✕</button>
+        <button type="button" id="closeProductView" class="inventory-btn" aria-label="Close product details">✕</button>
       </div>
 
       <div id="productDetails" class="inventory-details"></div>
