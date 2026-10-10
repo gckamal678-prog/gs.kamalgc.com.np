@@ -4,663 +4,469 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#166534">
   <title>AI Assistant | General Store</title>
-
   <style>
     :root {
-      --primary: #166534;
-      --primary-hover: #14532d;
-      --bg: #f3f6f4;
-      --surface: #ffffff;
-      --surface-soft: #f8faf9;
-      --text: #1f2937;
-      --muted: #64748b;
-      --border: #dbe3dd;
-      --green-soft: #dcfce7;
-      --green-text: #166534;
-      --orange-soft: #fff7ed;
-      --orange-border: #fed7aa;
-      --red-soft: #fef2f2;
-      --red-border: #fecaca;
-      --blue-soft: #eff6ff;
-      --shadow: 0 4px 18px rgba(15, 23, 42, .05);
-      --font-family: Arial, sans-serif;
-      --font-size: 15px;
+      --green: #166534;
+      --green-dark: #14532d;
+      --green-light: #dcfce7;
+      --bg: #f5f7f5;
+      --white: #ffffff;
+      --text: #17221a;
+      --muted: #6b756d;
+      --border: #e3e9e4;
+      --user: #e8f5e9;
+      --shadow: 0 4px 20px rgba(20, 83, 45, .06);
     }
 
-    body.dark-theme {
-      --bg: #111827;
-      --surface: #1f2937;
-      --surface-soft: #273449;
-      --text: #f3f4f6;
-      --muted: #c0cad8;
-      --border: #475569;
-      --green-soft: #123b2a;
-      --green-text: #bbf7d0;
-      --orange-soft: #422b12;
-      --orange-border: #854d0e;
-      --red-soft: #451a1a;
-      --red-border: #7f1d1d;
-      --blue-soft: #172554;
-      --shadow: 0 4px 18px rgba(0, 0, 0, .15);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
+      font-family: system-ui, -apple-system, "Noto Sans Devanagari",
+        "Segoe UI", sans-serif;
       background: var(--bg);
       color: var(--text);
-      font-family: var(--font-family);
-      font-size: var(--font-size);
-      line-height: 1.55;
+      height: 100dvh;
+      overflow: hidden;
     }
 
-    button, input {
-      font: inherit;
-    }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; }
 
-    button, a {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .page-shell {
-      width: min(1200px, 100%);
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 22px;
+      background: var(--white);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
     }
 
     .topbar {
+      min-height: 68px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 18px;
-      padding: 18px 20px;
-      margin-bottom: 22px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.96);
     }
 
-    .brand-area {
+    .brand {
       display: flex;
       align-items: center;
-      gap: 13px;
+      gap: 11px;
       min-width: 0;
     }
 
     .brand-icon {
       display: grid;
       place-items: center;
-      width: 48px;
-      height: 48px;
-      flex: 0 0 48px;
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
       border-radius: 14px;
-      background: var(--green-soft);
-      font-size: 25px;
-    }
-
-    .brand-area h1 {
-      margin: 0;
-      font-size: clamp(20px, 3vw, 27px);
-      line-height: 1.25;
-    }
-
-    .subtitle {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .header-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 9px;
-    }
-
-    .btn {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      gap: 7px;
-      min-height: 42px;
-      padding: 10px 15px;
-      border: 1px solid transparent;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background .15s, transform .15s;
-    }
-
-    .btn:active {
-      transform: scale(.98);
-    }
-
-    .btn-primary {
-      background: var(--primary);
+      background: var(--green);
       color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-secondary {
-      background: var(--surface-soft);
-      color: var(--text);
-      border-color: var(--border);
-    }
-
-    .btn-secondary:hover {
-      background: var(--green-soft);
-    }
-
-    .welcome {
-      margin-bottom: 20px;
-    }
-
-    .welcome h2 {
-      margin: 0;
       font-size: 22px;
     }
 
-    .welcome p {
-      margin: 5px 0 0;
-      color: var(--muted);
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(280px, .85fr);
-      gap: 18px;
-      align-items: start;
-    }
-
-    .main-column, .side-column {
-      min-width: 0;
-    }
-
-    .card {
-      min-width: 0;
-      margin-bottom: 18px;
-      padding: 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-    }
-
-    .card-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .card-heading h2,
-    .card-heading h3 {
+    .brand h1 {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
+      font-weight: 750;
     }
 
-    .card-description {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .status-pill {
-      flex-shrink: 0;
-      padding: 5px 9px;
-      border-radius: 999px;
-      background: var(--green-soft);
-      color: var(--green-text);
+    .brand p {
+      margin: 3px 0 0;
       font-size: 12px;
-      font-weight: 700;
-    }
-
-    .question-box {
-      display: flex;
-      gap: 10px;
-    }
-
-    .question-box input {
-      flex: 1;
-      min-width: 0;
-      width: 100%;
-      padding: 13px 14px;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      background: var(--surface);
-      color: var(--text);
-      outline: none;
-    }
-
-    .question-box input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(22, 101, 52, .12);
-    }
-
-    .quick-heading {
-      margin: 20px 0 10px;
-      font-size: 13px;
-      font-weight: 700;
       color: var(--muted);
     }
 
-    .quick-actions {
+    .top-actions { display: flex; gap: 8px; }
+
+    .top-btn {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      border-radius: 11px;
+      padding: 9px 12px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .top-btn:hover { background: #f5f8f5; }
+    .top-btn.new-chat {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+
+    .chat-area {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      padding: 26px 20px 18px;
+    }
+
+    .messages {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .welcome {
+      text-align: center;
+      padding: 8vh 10px 20px;
+    }
+
+    .welcome-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 17px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      background: var(--green-light);
+      font-size: 32px;
+    }
+
+    .welcome h2 {
+      font-size: clamp(23px, 4vw, 31px);
+      margin: 0 0 10px;
+      letter-spacing: -.5px;
+    }
+
+    .welcome p {
+      margin: 0 auto;
+      max-width: 470px;
+      line-height: 1.8;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .quick-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+      max-width: 570px;
+      margin: 25px auto 0;
+      text-align: left;
     }
 
     .quick-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-      min-height: 66px;
-      padding: 12px;
-      text-align: left;
-      color: var(--text);
-      background: var(--surface-soft);
+      background: white;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
+      border-radius: 14px;
+      padding: 14px;
+      color: var(--text);
+      text-align: left;
+      transition: .15s ease;
     }
 
     .quick-btn:hover {
-      background: var(--green-soft);
-      border-color: var(--primary);
+      border-color: #86b99a;
+      background: #f7fbf7;
+      transform: translateY(-1px);
     }
 
-    .quick-icon {
-      display: grid;
-      place-items: center;
-      width: 38px;
-      height: 38px;
-      flex: 0 0 38px;
-      border-radius: 10px;
-      background: var(--surface);
-      font-size: 19px;
-    }
-
-    .quick-title {
+    .quick-btn strong {
       display: block;
       font-size: 13px;
-      font-weight: 700;
+      margin-bottom: 5px;
     }
 
-    .quick-subtitle {
+    .quick-btn span {
       display: block;
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 400;
-    }
-
-    .answer {
-      min-height: 180px;
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--surface-soft);
-      color: var(--text);
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      line-height: 1.8;
-    }
-
-    .answer-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
       color: var(--muted);
       font-size: 12px;
+      line-height: 1.6;
     }
 
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 11px;
-    }
-
-    .summary-card {
-      min-width: 0;
-      padding: 15px;
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-
-    .summary-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .summary-icon {
-      font-size: 20px;
-    }
-
-    .summary-label {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .summary-value {
-      margin-top: 6px;
-      font-size: 26px;
-      font-weight: 800;
-      overflow-wrap: anywhere;
-    }
-
-    .summary-foot {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .alerts-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .alert {
+    .message {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      padding: 12px;
-      border: 1px solid var(--orange-border);
-      border-radius: 11px;
-      background: var(--orange-soft);
-      overflow-wrap: anywhere;
+      gap: 11px;
+      animation: appear .18s ease;
     }
 
-    .alert.danger {
-      border-color: var(--red-border);
-      background: var(--red-soft);
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .alert.good {
-      border-color: var(--border);
-      background: var(--green-soft);
+    .message.user { flex-direction: row-reverse; }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      font-size: 16px;
     }
 
-    .alert-icon {
-      font-size: 18px;
+    .assistant .avatar {
+      background: var(--green);
+      color: white;
     }
 
-    .alert-text {
-      font-size: 13px;
+    .user .avatar {
+      background: var(--green-light);
     }
 
-    .alert-text strong {
-      display: block;
-      margin-bottom: 2px;
+    .message-body {
+      min-width: 0;
+      max-width: calc(100% - 45px);
     }
 
-    .helper-note {
-      margin: 12px 0 0;
-      color: var(--muted);
+    .message-name {
       font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin: 2px 0 7px;
+    }
+
+    .user .message-name { text-align: right; }
+
+    .bubble {
+      font-size: 14px;
+      line-height: 1.9;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .user .bubble {
+      background: var(--user);
+      padding: 11px 15px;
+      border-radius: 17px 5px 17px 17px;
+    }
+
+    .assistant .bubble { padding: 0 2px; }
+
+    .bubble strong { color: var(--green-dark); }
+
+    .typing {
+      display: inline-flex;
+      gap: 5px;
+      padding: 9px 2px;
+    }
+
+    .typing span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #7a9680;
+      animation: bounce .9s infinite alternate;
+    }
+
+    .typing span:nth-child(2) { animation-delay: .2s; }
+    .typing span:nth-child(3) { animation-delay: .4s; }
+
+    @keyframes bounce {
+      from { opacity: .35; transform: translateY(0); }
+      to { opacity: 1; transform: translateY(-4px); }
+    }
+
+    .composer-wrap {
+      padding: 12px 20px 10px;
+      background: white;
+      border-top: 1px solid var(--border);
+    }
+
+    .composer {
+      max-width: 760px;
+      margin: 0 auto;
+      border: 1px solid #d5dfd6;
+      border-radius: 19px;
+      padding: 9px 10px 9px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      transition: border-color .15s;
+    }
+
+    .composer:focus-within {
+      border-color: #6da47c;
+      box-shadow: 0 0 0 3px rgba(22,101,52,.07);
+    }
+
+    #questionInput {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      resize: none;
+      max-height: 160px;
+      min-height: 29px;
+      padding: 5px 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
       line-height: 1.7;
     }
 
-    .footer {
-      padding: 8px 0 20px;
+    #questionInput::placeholder { color: #89928b; }
+
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--green);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      transition: .15s;
+    }
+
+    .send-btn:hover { background: var(--green-dark); }
+    .send-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    .hint {
       text-align: center;
+      color: #8b948d;
+      font-size: 11px;
+      margin: 8px 0 0;
+    }
+
+    .status {
+      display: none;
+      max-width: 760px;
+      margin: 0 auto 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .status.show { display: block; }
+
+    .message-tools {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .small-btn {
+      border: 0;
+      background: transparent;
       color: var(--muted);
       font-size: 12px;
+      padding: 4px 0;
     }
 
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .side-column {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 18px;
-        align-items: start;
-      }
-
-      .side-column .card {
-        margin-bottom: 0;
-      }
-    }
+    .small-btn:hover { color: var(--green); }
 
     @media (max-width: 600px) {
-      .page-shell {
-        padding: 10px;
-      }
+      .topbar { min-height: 60px; padding: 10px 12px; }
+      .brand-icon { width: 37px; height: 37px; border-radius: 12px; }
+      .brand h1 { font-size: 15px; }
+      .brand p { font-size: 11px; }
+      .top-btn { padding: 9px; font-size: 12px; }
+      .top-btn .btn-text { display: none; }
+      .chat-area { padding: 18px 13px 15px; }
+      .welcome { padding-top: 5vh; }
+      .welcome-icon { width: 56px; height: 56px; }
+      .quick-grid { gap: 8px; margin-top: 21px; }
+      .quick-btn { padding: 11px; border-radius: 12px; }
+      .quick-btn strong { font-size: 12px; }
+      .quick-btn span { font-size: 11px; }
+      .message { gap: 8px; }
+      .avatar { width: 30px; height: 30px; flex-basis: 30px; }
+      .message-body { max-width: calc(100% - 38px); }
+      .bubble { font-size: 13px; }
+      .composer-wrap { padding: 10px 11px 8px; }
+      .composer { border-radius: 17px; padding-left: 13px; }
+      .hint { font-size: 10px; }
+    }
 
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-        padding: 15px;
-        gap: 14px;
-        margin-bottom: 17px;
-      }
-
-      .header-actions {
-        width: 100%;
-      }
-
-      .header-actions .btn {
-        flex: 1;
-      }
-
-      .welcome h2 {
-        font-size: 20px;
-      }
-
-      .card {
-        padding: 15px;
-        margin-bottom: 14px;
-        border-radius: 13px;
-      }
-
-      .question-box {
-        flex-direction: column;
-      }
-
-      .question-box .btn {
-        width: 100%;
-      }
-
-      .quick-actions {
-        grid-template-columns: 1fr;
-      }
-
-      .quick-btn {
-        min-height: 58px;
-      }
-
-      .side-column {
-        display: block;
-      }
-
-      .side-column .card {
-        margin-bottom: 14px;
-      }
-
-      .summary-value {
-        font-size: 23px;
-      }
+    @media (max-width: 360px) {
+      .quick-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
-
 <body>
-  <div class="page-shell">
+  <div class="app">
     <header class="topbar">
-      <div class="brand-area">
-        <div class="brand-icon">🤖</div>
+      <div class="brand">
+        <div class="brand-icon">✦</div>
         <div>
           <h1>AI Assistant</h1>
-          <p class="subtitle">General Store · Business Insights</p>
+          <p>General Store · पसलको सहायक</p>
         </div>
       </div>
 
-      <div class="header-actions">
-        <a class="btn btn-secondary" href="index.html">🏠 Dashboard</a>
-        <a class="btn btn-primary" href="settings.html">⚙️ Settings</a>
+      <div class="top-actions">
+        <button class="top-btn new-chat" id="newChatBtn" type="button">
+          <span>＋</span><span class="btn-text">नयाँ च्याट</span>
+        </button>
+        <a class="top-btn" href="index.html" title="Dashboard">
+          <span>⌂</span><span class="btn-text">Dashboard</span>
+        </a>
       </div>
     </header>
 
-    <section class="welcome">
-      <h2>नमस्ते! 👋</h2>
-      <p>तपाईंको स्टोरको रेकर्डबाट कारोबार, स्टक र बाँकी रकमबारे जानकारी लिनुहोस्।</p>
-    </section>
+    <main class="chat-area" id="chatArea">
+      <div class="messages" id="messages">
+        <section class="welcome" id="welcome">
+          <div class="welcome-icon">✦</div>
+          <h2>नमस्कार! 👋</h2>
+          <p>
+            तपाईंको पसलको स्टक, बिक्री, उधारो र हिसाबबारे सोध्नुहोस्।
+            म उपलब्ध पसलको डाटाका आधारमा सहयोग गर्नेछु।
+          </p>
 
-    <div class="layout">
-      <main class="main-column">
-        <section class="card">
-          <div class="card-heading">
-            <div>
-              <h2>💬 Business Assistant</h2>
-              <p class="card-description">प्रश्न लेख्नुहोस् वा तलका विकल्प छान्नुहोस्।</p>
-            </div>
-            <span class="status-pill">Local Data</span>
-          </div>
-
-          <form id="questionForm" class="question-box">
-            <input
-              type="text"
-              id="questionInput"
-              maxlength="300"
-              placeholder="जस्तै: कुन सामान कम stock मा छ?"
-              autocomplete="off"
-              aria-label="आफ्नो प्रश्न लेख्नुहोस्"
-            >
-            <button type="submit" class="btn btn-primary" id="askBtn">🔎 सोध्नुहोस्</button>
-          </form>
-
-          <p class="quick-heading">QUICK ACTIONS</p>
-
-          <div class="quick-actions">
-            <button class="quick-btn" type="button" data-question="आजको business summary देखाऊ">
-              <span class="quick-icon">📊</span>
-              <span><span class="quick-title">Business Summary</span><span class="quick-subtitle">कारोबारको सारांश</span></span>
+          <div class="quick-grid">
+            <button class="quick-btn" type="button" data-question="अहिले कुन सामानको स्टक कम छ?">
+              <strong>📦 स्टक जाँच</strong>
+              <span>कम स्टक भएका सामान पत्ता लगाउनुहोस्</span>
             </button>
-
-            <button class="quick-btn" type="button" data-question="कुन सामान कम stock मा छ?">
-              <span class="quick-icon">⚠️</span>
-              <span><span class="quick-title">Low Stock</span><span class="quick-subtitle">कम भएको स्टक</span></span>
+            <button class="quick-btn" type="button" data-question="आजको बिक्री कति भयो?">
+              <strong>💰 बिक्री विवरण</strong>
+              <span>बिक्रीको उपलब्ध विवरण हेर्नुहोस्</span>
             </button>
-
-            <button class="quick-btn" type="button" data-question="कुन customer बाट पैसा लिन बाँकी छ?">
-              <span class="quick-icon">👥</span>
-              <span><span class="quick-title">Customer Due</span><span class="quick-subtitle">ग्राहकबाट उठाउनुपर्ने</span></span>
+            <button class="quick-btn" type="button" data-question="कसकसको उधारो बाँकी छ?">
+              <strong>🧾 उधारो जाँच</strong>
+              <span>ग्राहकको बाँकी रकमबारे जानकारी</span>
             </button>
-
-            <button class="quick-btn" type="button" data-question="कुन supplier लाई पैसा तिर्न बाँकी छ?">
-              <span class="quick-icon">🚚</span>
-              <span><span class="quick-title">Supplier Payable</span><span class="quick-subtitle">सप्लायरलाई तिर्नुपर्ने</span></span>
-            </button>
-
-            <button class="quick-btn" type="button" data-question="कुन सामान धेरै बिक्री भएको छ?">
-              <span class="quick-icon">🔥</span>
-              <span><span class="quick-title">Fast Moving</span><span class="quick-subtitle">धेरै बिक्री भएका सामान</span></span>
-            </button>
-
-            <button class="quick-btn" type="button" data-question="कुन सामान कम बिक्री भएको छ?">
-              <span class="quick-icon">🐢</span>
-              <span><span class="quick-title">Slow Moving</span><span class="quick-subtitle">कम बिक्री भएका सामान</span></span>
-            </button>
-
-            <button class="quick-btn" type="button" data-question="कुल खर्च कति छ?">
-              <span class="quick-icon">💸</span>
-              <span><span class="quick-title">Expense Summary</span><span class="quick-subtitle">खर्चको विवरण</span></span>
-            </button>
-
-            <button class="quick-btn" type="button" data-question="कुन सामान stock out भएको छ?">
-              <span class="quick-icon">📦</span>
-              <span><span class="quick-title">Out of Stock</span><span class="quick-subtitle">स्टक सकिएका सामान</span></span>
+            <button class="quick-btn" type="button" data-question="मेरो पसलको छोटो रिपोर्ट दिनुहोस्।">
+              <strong>📊 पसलको रिपोर्ट</strong>
+              <span>सामान, ग्राहक, बिक्री र सप्लायर</span>
             </button>
           </div>
         </section>
+      </div>
+    </main>
 
-        <section class="card" aria-labelledby="answerHeading">
-          <div class="card-heading">
-            <div>
-              <h2 id="answerHeading">✨ Assistant Answer</h2>
-              <p class="card-description">तपाईंको प्रश्नको जवाफ यहाँ देखिन्छ।</p>
-            </div>
-            <button type="button" class="btn btn-secondary" id="clearAnswerBtn">Clear</button>
-          </div>
-
-          <div class="answer-label">🤖 <span>स्टोरको उपलब्ध रेकर्डमा आधारित जवाफ</span></div>
-          <div id="answerBox" class="answer" role="status" aria-live="polite">नमस्ते! Quick Action छान्नुहोस् वा आफ्नो प्रश्न लेखेर सोध्नुहोस्।</div>
-          <p class="helper-note">यो पेजले ब्राउजरमा सुरक्षित स्टोर डेटा मात्र विश्लेषण गर्छ। यसमा बाह्य AI सेवा जोडिएको छैन।</p>
-        </section>
-      </main>
-
-      <aside class="side-column">
-        <section class="card">
-          <div class="card-heading">
-            <div>
-              <h3>📊 Store Snapshot</h3>
-              <p class="card-description">हाल सुरक्षित भएका रेकर्ड</p>
-            </div>
-          </div>
-
-          <div class="summary-grid">
-            <div class="summary-card">
-              <div class="summary-top"><span class="summary-label">Products</span><span class="summary-icon">📦</span></div>
-              <div class="summary-value" id="productCount">0</div>
-              <div class="summary-foot">सामानका रेकर्ड</div>
-            </div>
-
-            <div class="summary-card">
-              <div class="summary-top"><span class="summary-label">Customers</span><span class="summary-icon">👥</span></div>
-              <div class="summary-value" id="customerCount">0</div>
-              <div class="summary-foot">ग्राहकका रेकर्ड</div>
-            </div>
-
-            <div class="summary-card">
-              <div class="summary-top"><span class="summary-label">Suppliers</span><span class="summary-icon">🚚</span></div>
-              <div class="summary-value" id="supplierCount">0</div>
-              <div class="summary-foot">सप्लायरका रेकर्ड</div>
-            </div>
-
-            <div class="summary-card">
-              <div class="summary-top"><span class="summary-label">Sales</span><span class="summary-icon">🧾</span></div>
-              <div class="summary-value" id="salesCount">0</div>
-              <div class="summary-foot">बिक्री रेकर्ड</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="card">
-          <div class="card-heading">
-            <div>
-              <h3>⚠️ Important Alerts</h3>
-              <p class="card-description">ध्यान दिनुपर्ने स्टोर विवरण</p>
-            </div>
-          </div>
-          <div id="alertsBox" class="alerts-list">
-            <div class="alert">डेटा जाँच हुँदैछ...</div>
-          </div>
-          <p class="helper-note">स्टक र बाँकी रकमका अलर्ट तपाईंको हालको रेकर्डमा आधारित हुन्छन्।</p>
-        </section>
-      </aside>
-    </div>
-
-    <footer class="footer">
-      General Store Management System · AI Assistant
+    <footer class="composer-wrap">
+      <div class="status" id="statusText">उत्तर तयार हुँदैछ...</div>
+      <form class="composer" id="questionForm">
+        <textarea
+          id="questionInput"
+          rows="1"
+          maxlength="2000"
+          placeholder="यहाँ आफ्नो प्रश्न लेख्नुहोस्..."
+          aria-label="आफ्नो प्रश्न लेख्नुहोस्"
+          required
+        ></textarea>
+        <button class="send-btn" id="sendBtn" type="submit" aria-label="प्रश्न पठाउनुहोस्">↑</button>
+      </form>
+      <p class="hint">Enter = पठाउनुहोस् · Shift + Enter = नयाँ लाइन</p>
     </footer>
   </div>
 
