@@ -1,442 +1,669 @@
+
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Assistant - General Store</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#166534">
+  <title>AI Assistant | General Store</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <style>
+    :root {
+      --primary: #166534;
+      --primary-hover: #14532d;
+      --bg: #f3f6f4;
+      --surface: #ffffff;
+      --surface-soft: #f8faf9;
+      --text: #1f2937;
+      --muted: #64748b;
+      --border: #dbe3dd;
+      --green-soft: #dcfce7;
+      --green-text: #166534;
+      --orange-soft: #fff7ed;
+      --orange-border: #fed7aa;
+      --red-soft: #fef2f2;
+      --red-border: #fecaca;
+      --blue-soft: #eff6ff;
+      --shadow: 0 4px 18px rgba(15, 23, 42, .05);
+      --font-family: Arial, sans-serif;
+      --font-size: 15px;
+    }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fa;
-            color: #1f2937;
-        }
+    body.dark-theme {
+      --bg: #111827;
+      --surface: #1f2937;
+      --surface-soft: #273449;
+      --text: #f3f4f6;
+      --muted: #c0cad8;
+      --border: #475569;
+      --green-soft: #123b2a;
+      --green-text: #bbf7d0;
+      --orange-soft: #422b12;
+      --orange-border: #854d0e;
+      --red-soft: #451a1a;
+      --red-border: #7f1d1d;
+      --blue-soft: #172554;
+      --shadow: 0 4px 18px rgba(0, 0, 0, .15);
+    }
 
-        .app {
-            display: flex;
-            min-height: 100vh;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        .sidebar {
-            width: 240px;
-            background: #111827;
-            color: white;
-            padding: 18px 12px;
-            flex-shrink: 0;
-        }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-family);
+      font-size: var(--font-size);
+      line-height: 1.55;
+    }
 
-        .brand {
-            font-size: 20px;
-            font-weight: bold;
-            padding: 10px 12px 20px;
-        }
+    button, input {
+      font: inherit;
+    }
 
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #d1d5db;
-            text-decoration: none;
-            padding: 11px 12px;
-            margin: 4px 0;
-            border-radius: 8px;
-        }
+    button, a {
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        .menu-item:hover,
-        .menu-item.active {
-            background: #1f2937;
-            color: white;
-        }
+    .page-shell {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      padding: 22px;
+    }
 
-        .menu-icon {
-            width: 24px;
-            text-align: center;
-        }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
 
-        .main {
-            flex: 1;
-            padding: 20px;
-            min-width: 0;
-        }
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+    }
 
-        .topbar {
-            margin-bottom: 20px;
-        }
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      flex: 0 0 48px;
+      border-radius: 14px;
+      background: var(--green-soft);
+      font-size: 25px;
+    }
 
-        .page-title {
-            margin: 0;
-            font-size: 26px;
-        }
+    .brand-area h1 {
+      margin: 0;
+      font-size: clamp(20px, 3vw, 27px);
+      line-height: 1.25;
+    }
 
-        .subtitle {
-            margin: 5px 0 0;
-            color: #6b7280;
-            font-size: 14px;
-        }
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
 
-        .card h3 {
-            margin-top: 0;
-        }
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      min-height: 42px;
+      padding: 10px 15px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background .15s, transform .15s;
+    }
 
-        .question-box {
-            display: flex;
-            gap: 10px;
-        }
+    .btn:active {
+      transform: scale(.98);
+    }
 
-        .question-box input {
-            flex: 1;
-        }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
 
-        input,
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-        }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
 
-        input:focus,
-        select:focus {
-            border-color: #2563eb;
-        }
+    .btn-secondary {
+      background: var(--surface-soft);
+      color: var(--text);
+      border-color: var(--border);
+    }
 
-        button {
-            border: none;
-            border-radius: 8px;
-            padding: 11px 17px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-        }
+    .btn-secondary:hover {
+      background: var(--green-soft);
+    }
 
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-        }
+    .welcome {
+      margin-bottom: 20px;
+    }
 
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
+    .welcome h2 {
+      margin: 0;
+      font-size: 22px;
+    }
 
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #111827;
-        }
+    .welcome p {
+      margin: 5px 0 0;
+      color: var(--muted);
+    }
 
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, .85fr);
+      gap: 18px;
+      align-items: start;
+    }
 
-        .quick-btn {
-            background: #f3f4f6;
-            text-align: left;
-        }
+    .main-column, .side-column {
+      min-width: 0;
+    }
 
-        .quick-btn:hover {
-            background: #e5e7eb;
-        }
+    .card {
+      min-width: 0;
+      margin-bottom: 18px;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
 
-        .answer {
-            min-height: 150px;
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 16px;
-            white-space: pre-line;
-            line-height: 1.7;
-        }
+    .card-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
 
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
+    .card-heading h2,
+    .card-heading h3 {
+      margin: 0;
+      font-size: 18px;
+    }
 
-        .summary-card {
-            padding: 15px;
-            background: #f8fafc;
-            border-radius: 10px;
-        }
+    .card-description {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
-        .summary-label {
-            color: #6b7280;
-            font-size: 13px;
-        }
+    .status-pill {
+      flex-shrink: 0;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green-text);
+      font-size: 12px;
+      font-weight: 700;
+    }
 
-        .summary-value {
-            margin-top: 7px;
-            font-size: 22px;
-            font-weight: bold;
-        }
+    .question-box {
+      display: flex;
+      gap: 10px;
+    }
 
-        .alert {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            background: #fff7ed;
-            border: 1px solid #fed7aa;
-        }
+    .question-box input {
+      flex: 1;
+      min-width: 0;
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
 
-        .good {
-            background: #f0fdf4;
-            border-color: #bbf7d0;
-        }
+    .question-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(22, 101, 52, .12);
+    }
 
-        .danger {
-            background: #fef2f2;
-            border-color: #fecaca;
-        }
+    .quick-heading {
+      margin: 20px 0 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
 
-        @media (max-width: 800px) {
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
 
-            .app {
-                display: block;
-            }
+    .quick-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      min-height: 66px;
+      padding: 12px;
+      text-align: left;
+      color: var(--text);
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
 
-            .sidebar {
-                width: 100%;
-                padding: 10px;
-                overflow-x: auto;
-            }
+    .quick-btn:hover {
+      background: var(--green-soft);
+      border-color: var(--primary);
+    }
 
-            .brand {
-                padding: 8px 10px;
-            }
+    .quick-icon {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      border-radius: 10px;
+      background: var(--surface);
+      font-size: 19px;
+    }
 
-            .menu-item {
-                display: inline-flex;
-                margin: 2px;
-            }
+    .quick-title {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+    }
 
-            .main {
-                padding: 14px;
-            }
+    .quick-subtitle {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 400;
+    }
 
-            .question-box {
-                flex-direction: column;
-            }
+    .answer {
+      min-height: 180px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface-soft);
+      color: var(--text);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.8;
+    }
 
-            .quick-actions {
-                grid-template-columns: 1fr;
-            }
+    .answer-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
 
-            .summary-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 11px;
+    }
+
+    .summary-card {
+      min-width: 0;
+      padding: 15px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .summary-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-icon {
+      font-size: 20px;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .summary-value {
+      margin-top: 6px;
+      font-size: 26px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .summary-foot {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .alerts-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--orange-border);
+      border-radius: 11px;
+      background: var(--orange-soft);
+      overflow-wrap: anywhere;
+    }
+
+    .alert.danger {
+      border-color: var(--red-border);
+      background: var(--red-soft);
+    }
+
+    .alert.good {
+      border-color: var(--border);
+      background: var(--green-soft);
+    }
+
+    .alert-icon {
+      font-size: 18px;
+    }
+
+    .alert-text {
+      font-size: 13px;
+    }
+
+    .alert-text strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .helper-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .footer {
+      padding: 8px 0 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-column {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        align-items: start;
+      }
+
+      .side-column .card {
+        margin-bottom: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .page-shell {
+        padding: 10px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 15px;
+        gap: 14px;
+        margin-bottom: 17px;
+      }
+
+      .header-actions {
+        width: 100%;
+      }
+
+      .header-actions .btn {
+        flex: 1;
+      }
+
+      .welcome h2 {
+        font-size: 20px;
+      }
+
+      .card {
+        padding: 15px;
+        margin-bottom: 14px;
+        border-radius: 13px;
+      }
+
+      .question-box {
+        flex-direction: column;
+      }
+
+      .question-box .btn {
+        width: 100%;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-btn {
+        min-height: 58px;
+      }
+
+      .side-column {
+        display: block;
+      }
+
+      .side-column .card {
+        margin-bottom: 14px;
+      }
+
+      .summary-value {
+        font-size: 23px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-
-<div class="app">
-
-    <aside class="sidebar">
-
-        <div class="brand">🏪 General Store</div>
-
-        <a href="index.html" class="menu-item">
-            <span class="menu-icon">🏠</span>
-            <span>Dashboard</span>
-        </a>
-
-        <a href="sale.html" class="menu-item">
-            <span class="menu-icon">🧾</span>
-            <span>New Sale</span>
-        </a>
-
-        <a href="purchase.html" class="menu-item">
-            <span class="menu-icon">📦</span>
-            <span>Purchase</span>
-        </a>
-
-        <a href="inventory.html" class="menu-item">
-            <span class="menu-icon">📋</span>
-            <span>Inventory</span>
-        </a>
-
-        <a href="customers.html" class="menu-item">
-            <span class="menu-icon">👥</span>
-            <span>Customers</span>
-        </a>
-
-        <a href="suppliers.html" class="menu-item">
-            <span class="menu-icon">🚚</span>
-            <span>Suppliers</span>
-        </a>
-
-        <a href="finance.html" class="menu-item">
-            <span class="menu-icon">💰</span>
-            <span>Finance</span>
-        </a>
-
-        <a href="reports.html" class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span>Reports</span>
-        </a>
-
-        <a href="whatsapp.html" class="menu-item">
-            <span class="menu-icon">💬</span>
-            <span>WhatsApp</span>
-        </a>
-
-        <a href="ai.html" class="menu-item active">
-            <span class="menu-icon">🤖</span>
-            <span>AI Assistant</span>
-        </a>
-
-        <a href="settings.html" class="menu-item">
-            <span class="menu-icon">⚙️</span>
-            <span>Settings</span>
-        </a>
-
-    </aside>
-
-
-    <main class="main">
-
-        <div class="topbar">
-
-            <h1 class="page-title">🤖 AI Assistant</h1>
-
-            <p class="subtitle">
-                तपाईंको store data हेरेर business सम्बन्धी सुझाव
-            </p>
-
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand-area">
+        <div class="brand-icon">🤖</div>
+        <div>
+          <h1>AI Assistant</h1>
+          <p class="subtitle">General Store · Business Insights</p>
         </div>
+      </div>
 
+      <div class="header-actions">
+        <a class="btn btn-secondary" href="index.html">🏠 Dashboard</a>
+        <a class="btn btn-primary" href="settings.html">⚙️ Settings</a>
+      </div>
+    </header>
 
-        <div class="card">
+    <section class="welcome">
+      <h2>नमस्ते! 👋</h2>
+      <p>तपाईंको स्टोरको रेकर्डबाट कारोबार, स्टक र बाँकी रकमबारे जानकारी लिनुहोस्।</p>
+    </section>
 
-            <h3>💬 Business Assistant</h3>
+    <div class="layout">
+      <main class="main-column">
+        <section class="card">
+          <div class="card-heading">
+            <div>
+              <h2>💬 Business Assistant</h2>
+              <p class="card-description">प्रश्न लेख्नुहोस् वा तलका विकल्प छान्नुहोस्।</p>
+            </div>
+            <span class="status-pill">Local Data</span>
+          </div>
 
-            <div class="question-box">
+          <form id="questionForm" class="question-box">
+            <input
+              type="text"
+              id="questionInput"
+              maxlength="300"
+              placeholder="जस्तै: कुन सामान कम stock मा छ?"
+              autocomplete="off"
+              aria-label="आफ्नो प्रश्न लेख्नुहोस्"
+            >
+            <button type="submit" class="btn btn-primary" id="askBtn">🔎 सोध्नुहोस्</button>
+          </form>
 
-                <input
-                    type="text"
-                    id="questionInput"
-                    placeholder="जस्तै: कुन सामान कम छ?"
-                >
+          <p class="quick-heading">QUICK ACTIONS</p>
 
-                <button
-                    type="button"
-                    class="btn-primary"
-                    id="askBtn">
-                    Ask
-                </button>
+          <div class="quick-actions">
+            <button class="quick-btn" type="button" data-question="आजको business summary देखाऊ">
+              <span class="quick-icon">📊</span>
+              <span><span class="quick-title">Business Summary</span><span class="quick-subtitle">कारोबारको सारांश</span></span>
+            </button>
 
+            <button class="quick-btn" type="button" data-question="कुन सामान कम stock मा छ?">
+              <span class="quick-icon">⚠️</span>
+              <span><span class="quick-title">Low Stock</span><span class="quick-subtitle">कम भएको स्टक</span></span>
+            </button>
+
+            <button class="quick-btn" type="button" data-question="कुन customer बाट पैसा लिन बाँकी छ?">
+              <span class="quick-icon">👥</span>
+              <span><span class="quick-title">Customer Due</span><span class="quick-subtitle">ग्राहकबाट उठाउनुपर्ने</span></span>
+            </button>
+
+            <button class="quick-btn" type="button" data-question="कुन supplier लाई पैसा तिर्न बाँकी छ?">
+              <span class="quick-icon">🚚</span>
+              <span><span class="quick-title">Supplier Payable</span><span class="quick-subtitle">सप्लायरलाई तिर्नुपर्ने</span></span>
+            </button>
+
+            <button class="quick-btn" type="button" data-question="कुन सामान धेरै बिक्री भएको छ?">
+              <span class="quick-icon">🔥</span>
+              <span><span class="quick-title">Fast Moving</span><span class="quick-subtitle">धेरै बिक्री भएका सामान</span></span>
+            </button>
+
+            <button class="quick-btn" type="button" data-question="कुन सामान कम बिक्री भएको छ?">
+              <span class="quick-icon">🐢</span>
+              <span><span class="quick-title">Slow Moving</span><span class="quick-subtitle">कम बिक्री भएका सामान</span></span>
+            </button>
+
+            <button class="quick-btn" type="button" data-question="कुल खर्च कति छ?">
+              <span class="quick-icon">💸</span>
+              <span><span class="quick-title">Expense Summary</span><span class="quick-subtitle">खर्चको विवरण</span></span>
+            </button>
+
+            <button class="quick-btn" type="button" data-question="कुन सामान stock out भएको छ?">
+              <span class="quick-icon">📦</span>
+              <span><span class="quick-title">Out of Stock</span><span class="quick-subtitle">स्टक सकिएका सामान</span></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="answerHeading">
+          <div class="card-heading">
+            <div>
+              <h2 id="answerHeading">✨ Assistant Answer</h2>
+              <p class="card-description">तपाईंको प्रश्नको जवाफ यहाँ देखिन्छ।</p>
+            </div>
+            <button type="button" class="btn btn-secondary" id="clearAnswerBtn">Clear</button>
+          </div>
+
+          <div class="answer-label">🤖 <span>स्टोरको उपलब्ध रेकर्डमा आधारित जवाफ</span></div>
+          <div id="answerBox" class="answer" role="status" aria-live="polite">नमस्ते! Quick Action छान्नुहोस् वा आफ्नो प्रश्न लेखेर सोध्नुहोस्।</div>
+          <p class="helper-note">यो पेजले ब्राउजरमा सुरक्षित स्टोर डेटा मात्र विश्लेषण गर्छ। यसमा बाह्य AI सेवा जोडिएको छैन।</p>
+        </section>
+      </main>
+
+      <aside class="side-column">
+        <section class="card">
+          <div class="card-heading">
+            <div>
+              <h3>📊 Store Snapshot</h3>
+              <p class="card-description">हाल सुरक्षित भएका रेकर्ड</p>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-top"><span class="summary-label">Products</span><span class="summary-icon">📦</span></div>
+              <div class="summary-value" id="productCount">0</div>
+              <div class="summary-foot">सामानका रेकर्ड</div>
             </div>
 
-
-            <div class="quick-actions">
-
-                <button class="quick-btn" data-question="आजको business summary देखाऊ">
-                    📊 Business Summary
-                </button>
-
-                <button class="quick-btn" data-question="कुन सामान कम stock मा छ?">
-                    ⚠️ Low Stock
-                </button>
-
-                <button class="quick-btn" data-question="कुन customer बाट पैसा लिन बाँकी छ?">
-                    👥 Customer Due
-                </button>
-
-                <button class="quick-btn" data-question="कुन supplier लाई पैसा तिर्न बाँकी छ?">
-                    🚚 Supplier Payable
-                </button>
-
-                <button class="quick-btn" data-question="कुन सामान धेरै बिक्री भएको छ?">
-                    🔥 Fast Moving
-                </button>
-
-                <button class="quick-btn" data-question="कुन सामान कम बिक्री भएको छ?">
-                    🐢 Slow Moving
-                </button>
-
+            <div class="summary-card">
+              <div class="summary-top"><span class="summary-label">Customers</span><span class="summary-icon">👥</span></div>
+              <div class="summary-value" id="customerCount">0</div>
+              <div class="summary-foot">ग्राहकका रेकर्ड</div>
             </div>
 
-        </div>
-
-
-        <div class="card">
-
-            <h3>🤖 Assistant Answer</h3>
-
-            <div id="answerBox" class="answer">
-                नमस्ते 👋
-
-                तपाईंको store सम्बन्धी प्रश्न सोध्नुहोस्।
-                माथिका Quick Actions पनि प्रयोग गर्न सक्नुहुन्छ।
+            <div class="summary-card">
+              <div class="summary-top"><span class="summary-label">Suppliers</span><span class="summary-icon">🚚</span></div>
+              <div class="summary-value" id="supplierCount">0</div>
+              <div class="summary-foot">सप्लायरका रेकर्ड</div>
             </div>
 
-        </div>
-
-
-        <div class="card">
-
-            <h3>📊 Store Snapshot</h3>
-
-            <div class="summary-grid">
-
-                <div class="summary-card">
-                    <div class="summary-label">Products</div>
-                    <div class="summary-value" id="productCount">0</div>
-                </div>
-
-                <div class="summary-card">
-                    <div class="summary-label">Customers</div>
-                    <div class="summary-value" id="customerCount">0</div>
-                </div>
-
-                <div class="summary-card">
-                    <div class="summary-label">Suppliers</div>
-                    <div class="summary-value" id="supplierCount">0</div>
-                </div>
-
-                <div class="summary-card">
-                    <div class="summary-label">Sales</div>
-                    <div class="summary-value" id="salesCount">0</div>
-                </div>
-
+            <div class="summary-card">
+              <div class="summary-top"><span class="summary-label">Sales</span><span class="summary-icon">🧾</span></div>
+              <div class="summary-value" id="salesCount">0</div>
+              <div class="summary-foot">बिक्री रेकर्ड</div>
             </div>
+          </div>
+        </section>
 
-        </div>
-
-
-        <div class="card">
-
-            <h3>⚠️ Important Alerts</h3>
-
-            <div id="alertsBox">
-                Loading...
+        <section class="card">
+          <div class="card-heading">
+            <div>
+              <h3>⚠️ Important Alerts</h3>
+              <p class="card-description">ध्यान दिनुपर्ने स्टोर विवरण</p>
             </div>
+          </div>
+          <div id="alertsBox" class="alerts-list">
+            <div class="alert">डेटा जाँच हुँदैछ...</div>
+          </div>
+          <p class="helper-note">स्टक र बाँकी रकमका अलर्ट तपाईंको हालको रेकर्डमा आधारित हुन्छन्।</p>
+        </section>
+      </aside>
+    </div>
 
-        </div>
+    <footer class="footer">
+      General Store Management System · AI Assistant
+    </footer>
+  </div>
 
-    </main>
-
-</div>
-
-<script src="ai.js"></script>
-
+  <script src="ai.js"></script>
 </body>
 </html>
