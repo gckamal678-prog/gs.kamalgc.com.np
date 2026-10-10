@@ -2,406 +2,542 @@
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-    <title>General Store Management - Dashboard</title>
-    <meta name="description" content="General Store Management and Billing System">
+  <title>General Store Management - Dashboard</title>
+  <meta name="description" content="General Store Management and Billing System">
+  <meta name="theme-color" content="#071b35">
 
-    <!-- PWA -->
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#071b35">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./gs192.png">
+  <link rel="apple-touch-icon" href="./gs192.png">
 
-    <!-- App Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="./gs192.png">
-    <link rel="apple-touch-icon" href="./gs192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="./gs512.png">
+  <link rel="stylesheet" href="./style.css?v=20261010-3">
+  <script src="./appearance.js?v=20261010-3"></script>
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
+  <style>
+    #appSplash {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      background: #071b35;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      transition: opacity .25s ease;
+    }
 
-    <!-- Shared Appearance Settings -->
-    <script src="appearance.js"></script>
+    #appSplash .splash-logo {
+      width: 76px;
+      height: 76px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      background: #ec00ed;
+      color: white;
+      font-size: 27px;
+      font-weight: 800;
+    }
+
+    #appSplash .splash-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    #appSplash .splash-loading {
+      font-size: 13px;
+      opacity: .75;
+    }
+
+    #dashboardError {
+      display: none;
+      margin: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #7f1d1d;
+      color: white;
+      overflow-wrap: anywhere;
+    }
+
+    .bottom-navigation {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      body.dashboard-page {
+        padding-bottom: calc(76px + env(safe-area-inset-bottom));
+      }
+
+      .bottom-navigation {
+        position: fixed;
+        z-index: 5000;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        padding: 8px 5px calc(8px + env(safe-area-inset-bottom));
+        background: #111b2d;
+        border-top: 1px solid #354056;
+      }
+
+      .bottom-navigation a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 4px;
+        min-height: 48px;
+        color: #cbd5e1;
+        text-decoration: none;
+        font-size: 11px;
+      }
+
+      .bottom-navigation a .nav-icon {
+        font-size: 20px;
+      }
+
+      .bottom-navigation a.active {
+        color: #ff00ee;
+        font-weight: 700;
+      }
+    }
+  </style>
 </head>
 
 <body class="dashboard-page">
 
-<!-- Mobile Overlay -->
-<div class="overlay" id="overlay"></div>
+  <!-- Splash screen -->
+  <div id="appSplash" role="status" aria-live="polite">
+    <div class="splash-logo">GS</div>
+    <div class="splash-title">General Store</div>
+    <div class="splash-loading">Dashboard खुल्दैछ...</div>
+  </div>
 
-<!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
+  <div id="dashboardError" role="alert"></div>
+
+  <!-- Mobile overlay -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
     <div class="logo-area">
-        <div class="logo-icon">GS</div>
-        <div>
-            <h2>General Store</h2>
-            <span>Management System</span>
-        </div>
+      <div class="logo-icon">GS</div>
+      <div>
+        <h2>General Store</h2>
+        <span>Management System</span>
+      </div>
     </div>
 
     <nav class="sidebar-menu">
-        <a href="index.html" class="menu-item active">
-            <span class="menu-icon">⌂</span>
-            <span>Dashboard</span>
-        </a>
-        <a href="sale.html" class="menu-item">
-            <span class="menu-icon">🛒</span>
-            <span>New Sale</span>
-        </a>
-        <a href="sales-return.html" class="menu-item">
-            <span class="menu-icon">↩️</span>
-            <span>Sales Return</span>
-        </a>
-        <a href="purchase.html" class="menu-item">
-            <span class="menu-icon">📦</span>
-            <span>Purchase</span>
-        </a>
-        <a href="inventory.html" class="menu-item">
-            <span class="menu-icon">▣</span>
-            <span>Inventory</span>
-        </a>
-        <a href="stock-lots.html" class="menu-item">
-            <span class="menu-icon">🧮</span>
-            <span>FIFO Lots</span>
-        </a>
-        <a href="customers.html" class="menu-item">
-            <span class="menu-icon">👥</span>
-            <span>Customers</span>
-        </a>
-        <a href="suppliers.html" class="menu-item">
-            <span class="menu-icon">🏢</span>
-            <span>Suppliers</span>
-        </a>
-        <a href="finance.html" class="menu-item">
-            <span class="menu-icon">💰</span>
-            <span>Finance</span>
-        </a>
-        <a href="reports.html" class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span>Reports</span>
-        </a>
-        <a href="whatsapp.html" class="menu-item">
-            <span class="menu-icon">💬</span>
-            <span>WhatsApp</span>
-        </a>
-        <a href="ai.html" class="menu-item">
-            <span class="menu-icon">🤖</span>
-            <span>AI Assistant</span>
-        </a>
-        <a href="settings.html" class="menu-item">
-            <span class="menu-icon">⚙️</span>
-            <span>Settings</span>
-        </a>
+      <a href="index.html" class="menu-item active">
+        <span class="menu-icon">⌂</span><span>Dashboard</span>
+      </a>
+      <a href="sale.html" class="menu-item">
+        <span class="menu-icon">🛒</span><span>New Sale</span>
+      </a>
+      <a href="sales-return.html" class="menu-item">
+        <span class="menu-icon">↩️</span><span>Sales Return</span>
+      </a>
+      <a href="purchase.html" class="menu-item">
+        <span class="menu-icon">📦</span><span>Purchase</span>
+      </a>
+      <a href="inventory.html" class="menu-item">
+        <span class="menu-icon">▣</span><span>Inventory</span>
+      </a>
+      <a href="stock-lots.html" class="menu-item">
+        <span class="menu-icon">🧮</span><span>FIFO Lots</span>
+      </a>
+      <a href="customers.html" class="menu-item">
+        <span class="menu-icon">👥</span><span>Customers</span>
+      </a>
+      <a href="suppliers.html" class="menu-item">
+        <span class="menu-icon">🏢</span><span>Suppliers</span>
+      </a>
+      <a href="finance.html" class="menu-item">
+        <span class="menu-icon">💰</span><span>Finance</span>
+      </a>
+      <a href="reports.html" class="menu-item">
+        <span class="menu-icon">📊</span><span>Reports</span>
+      </a>
+      <a href="whatsapp.html" class="menu-item">
+        <span class="menu-icon">💬</span><span>WhatsApp</span>
+      </a>
+      <a href="ai.html" class="menu-item">
+        <span class="menu-icon">🤖</span><span>AI Assistant</span>
+      </a>
+      <a href="settings.html" class="menu-item">
+        <span class="menu-icon">⚙️</span><span>Settings</span>
+      </a>
+
+      <!-- Store Profile sidebar मा मात्रै -->
+      <a href="settings.html#store-profile" class="menu-item">
+        <span class="menu-icon">🏪</span><span>Store Profile</span>
+      </a>
     </nav>
 
     <div class="sidebar-bottom">
-        <div class="store-status">
-            <span class="status-dot"></span>
-            <div>
-                <strong>Store Online</strong>
-                <small>Local data ready</small>
-            </div>
+      <div class="store-status">
+        <span class="status-dot"></span>
+        <div>
+          <strong>Store Online</strong>
+          <small>Local data ready</small>
         </div>
-        <div class="version">General Store v1.0</div>
+      </div>
+      <div class="version">General Store v1.0</div>
     </div>
-</aside>
+  </aside>
 
-<!-- MAIN CONTENT -->
-<main class="main-content">
-
+  <!-- Main content -->
+  <main class="main-content">
     <header class="topbar">
-        <div class="topbar-left">
-            <button class="mobile-menu-btn" id="menuBtn" type="button"
-                    aria-label="Open navigation">☰</button>
-            <div>
-                <h1>Dashboard</h1>
-                <p id="todayDate">आजको व्यापारको अवस्था</p>
-            </div>
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" id="menuBtn"
+          type="button" aria-label="Open navigation">☰</button>
+        <div>
+          <h1>Dashboard</h1>
+          <p id="todayDate">आजको व्यापारको अवस्था</p>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="search-box">
+          <span>⌕</span>
+          <input type="search" id="searchInput"
+            placeholder="Product, customer, bill..."
+            aria-label="Search">
         </div>
 
-        <div class="topbar-right">
-            <div class="search-box">
-                <span>⌕</span>
-                <input type="text" id="searchInput"
-                       placeholder="Product, customer, bill..."
-                       aria-label="Search">
-            </div>
+        <button class="dash-tool-btn" id="themeBtn"
+          type="button" title="Dark / Light Mode">🌙</button>
 
-            <button class="dash-tool-btn" id="themeBtn" type="button"
-                    title="Dark / Light Mode">🌙</button>
+        <button class="dash-tool-btn" id="lockBtn"
+          type="button" title="Lock Dashboard">🔒</button>
 
-            <button class="dash-tool-btn" id="lockBtn" type="button"
-                    title="Lock Dashboard">🔒</button>
-
-            <div class="profile">
-                <div class="profile-avatar">A</div>
-                <div class="profile-info">
-                    <strong>Admin</strong>
-                    <small>Owner</small>
-                </div>
-            </div>
-        </div>
+        <a class="profile" href="settings.html#store-profile"
+          aria-label="Open profile settings">
+          <div class="profile-avatar" id="profileAvatar">👤</div>
+          <div class="profile-info">
+            <strong id="profileName">Admin</strong>
+            <small>Owner</small>
+          </div>
+        </a>
+      </div>
     </header>
 
     <section class="dashboard-content">
 
-        <div class="welcome-section">
+      <div class="welcome-section">
+        <div>
+          <h2 id="welcomeTitle">नमस्ते, Admin 👋</h2>
+          <p>आजको पसलको अवस्था यहाँबाट हेर्नुहोस्।</p>
+        </div>
+        <a href="sale.html" class="primary-btn">+ New Sale</a>
+      </div>
+
+      <!-- आजको बिक्री र नाफा -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon sales-icon">🛒</div>
+            <span class="stat-label">आजको बिक्री</span>
+          </div>
+          <div class="stat-value">Rs. <span id="todaySales">0</span></div>
+          <div class="stat-bottom">
+            <span class="positive" id="salesChange">आज</span>
+            <span>आजको कारोबार</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon profit-icon">📈</div>
+            <span class="stat-label">Gross Profit</span>
+          </div>
+          <div class="stat-value">Rs. <span id="grossProfit">0</span></div>
+          <div class="stat-bottom">
+            <span>FIFO</span><span>आज</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon expense-icon">💸</div>
+            <span class="stat-label">Expenses</span>
+          </div>
+          <div class="stat-value">Rs. <span id="expenses">0</span></div>
+          <div class="stat-bottom"><span>आजको खर्च</span></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon net-profit-icon">💰</div>
+            <span class="stat-label">Net Profit</span>
+          </div>
+          <div class="stat-value">Rs. <span id="netProfit">0</span></div>
+          <div class="stat-bottom">
+            <span>Gross − Expense</span><span>आज</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial overview -->
+      <div class="section-title">
+        <div>
+          <h3>Financial Overview</h3>
+          <p>पसलको पैसा, stock र बाँकी रकम</p>
+        </div>
+      </div>
+
+      <div class="finance-grid">
+        <div class="finance-card">
+          <div class="finance-icon">👤</div>
+          <div>
+            <span>Customer Receivable</span>
+            <strong>Rs. <span id="customerReceivable">0</span></strong>
+            <small>ग्राहकबाट लिन बाँकी</small>
+          </div>
+        </div>
+
+        <div class="finance-card">
+          <div class="finance-icon">🏢</div>
+          <div>
+            <span>Supplier Payable</span>
+            <strong>Rs. <span id="supplierPayable">0</span></strong>
+            <small>Supplier लाई दिन बाँकी</small>
+          </div>
+        </div>
+
+        <div class="finance-card">
+          <div class="finance-icon">📦</div>
+          <div>
+            <span>Stock Value</span>
+            <strong>Rs. <span id="stockValue">0</span></strong>
+            <small>FIFO cost based</small>
+          </div>
+        </div>
+
+        <div class="finance-card">
+          <div class="finance-icon">💳</div>
+          <div>
+            <span>Cash / Bank / QR</span>
+            <strong>Rs. <span id="availableBalance">0</span></strong>
+            <small>उपलब्ध balance</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales chart and alerts -->
+      <div class="dashboard-grid">
+        <div class="dashboard-card sales-overview">
+          <div class="card-header">
             <div>
-                <h2 id="welcomeTitle">नमस्ते, Admin 👋</h2>
-                <p>आजको पसलको अवस्था यहाँबाट हेर्नुहोस्।</p>
+              <h3>Sales Overview</h3>
+              <p>पछिल्लो अवधिको बिक्री</p>
             </div>
-            <a href="sale.html" class="primary-btn">+ New Sale</a>
+            <select id="salesPeriod" aria-label="Sales period">
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+            </select>
+          </div>
+          <div class="chart-area" id="salesChart"></div>
         </div>
 
-        <!-- SALES AND PROFIT -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-top">
-                    <div class="stat-icon sales-icon">🛒</div>
-                    <span class="stat-label">आजको बिक्री</span>
-                </div>
-                <div class="stat-value">Rs. <span id="todaySales">0</span></div>
-                <div class="stat-bottom">
-                    <span class="positive" id="salesChange">Live</span>
-                    <span>आज</span>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-top">
-                    <div class="stat-icon profit-icon">📈</div>
-                    <span class="stat-label">Gross Profit</span>
-                </div>
-                <div class="stat-value">Rs. <span id="grossProfit">0</span></div>
-                <div class="stat-bottom">
-                    <span class="positive">FIFO</span><span>आज</span>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-top">
-                    <div class="stat-icon expense-icon">💸</div>
-                    <span class="stat-label">Expenses</span>
-                </div>
-                <div class="stat-value">Rs. <span id="expenses">0</span></div>
-                <div class="stat-bottom"><span>आजको खर्च</span></div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-top">
-                    <div class="stat-icon net-profit-icon">💰</div>
-                    <span class="stat-label">Net Profit</span>
-                </div>
-                <div class="stat-value">Rs. <span id="netProfit">0</span></div>
-                <div class="stat-bottom">
-                    <span class="positive">Gross − Expense</span><span>आज</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- FINANCIAL OVERVIEW -->
-        <div class="section-title">
+        <div class="dashboard-card attention-card">
+          <div class="card-header">
             <div>
-                <h3>Financial Overview</h3>
-                <p>पसलको पैसा, stock र बाँकी रकम</p>
+              <h3>Attention Required</h3>
+              <p>तुरुन्त हेर्नुपर्ने कुरा</p>
             </div>
+          </div>
+
+          <div class="attention-list">
+            <div class="attention-item">
+              <div class="attention-icon warning">⚠️</div>
+              <div class="attention-text">
+                <strong>Low Stock</strong>
+                <span id="lowStockCount">0 products</span>
+              </div>
+              <a href="inventory.html">View</a>
+            </div>
+
+            <div class="attention-item">
+              <div class="attention-icon danger">⏰</div>
+              <div class="attention-text">
+                <strong>Expiry Near</strong>
+                <span id="expiryCount">0 products</span>
+              </div>
+              <a href="inventory.html">View</a>
+            </div>
+
+            <div class="attention-item">
+              <div class="attention-icon money">💰</div>
+              <div class="attention-text">
+                <strong>Credit Due</strong>
+                <span id="creditDueCount">0 customers</span>
+              </div>
+              <a href="customers.html">View</a>
+            </div>
+
+            <div class="attention-item">
+              <div class="attention-icon supplier">🏢</div>
+              <div class="attention-text">
+                <strong>Supplier Payment</strong>
+                <span id="supplierDueCount">0 suppliers</span>
+              </div>
+              <a href="suppliers.html">View</a>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="finance-grid">
-            <div class="finance-card">
-                <div class="finance-icon">👤</div>
-                <div>
-                    <span>Customer Receivable</span>
-                    <strong>Rs. <span id="customerReceivable">0</span></strong>
-                    <small>ग्राहकबाट लिन बाँकी</small>
-                </div>
-            </div>
-
-            <div class="finance-card">
-                <div class="finance-icon">🏢</div>
-                <div>
-                    <span>Supplier Payable</span>
-                    <strong>Rs. <span id="supplierPayable">0</span></strong>
-                    <small>Supplier लाई दिन बाँकी</small>
-                </div>
-            </div>
-
-            <div class="finance-card">
-                <div class="finance-icon">📦</div>
-                <div>
-                    <span>Stock Value</span>
-                    <strong>Rs. <span id="stockValue">0</span></strong>
-                    <small>FIFO cost based</small>
-                </div>
-            </div>
-
-            <div class="finance-card">
-                <div class="finance-icon">💳</div>
-                <div>
-                    <span>Cash / Bank / QR</span>
-                    <strong>Rs. <span id="availableBalance">0</span></strong>
-                    <small>उपलब्ध balance</small>
-                </div>
-            </div>
+      <!-- Fast moving products -->
+      <div class="dashboard-card" style="margin-top:22px">
+        <div class="card-header">
+          <div>
+            <h3>Fast Moving Products</h3>
+            <p>बिक्रीको आधारमा छिटो चलिरहेका सामान</p>
+          </div>
+          <a href="inventory.html" class="text-btn">View All →</a>
         </div>
+        <div class="data-table-wrap" id="fastMovingArea"></div>
+      </div>
 
-        <!-- CHART AND ATTENTION -->
-        <div class="dashboard-grid">
-            <div class="dashboard-card sales-overview">
-                <div class="card-header">
-                    <div>
-                        <h3>Sales Overview</h3>
-                        <p>पछिल्लो ७ दिनको वास्तविक बिक्री</p>
-                    </div>
-                    <select id="salesPeriod">
-                        <option value="7">Last 7 Days</option>
-                        <option value="30">Last 30 Days</option>
-                    </select>
-                </div>
-                <div class="chart-area" id="salesChart"></div>
-            </div>
-
-            <div class="dashboard-card attention-card">
-                <div class="card-header">
-                    <div>
-                        <h3>Attention Required</h3>
-                        <p>तुरुन्त हेर्नुपर्ने कुरा</p>
-                    </div>
-                </div>
-
-                <div class="attention-list">
-                    <div class="attention-item">
-                        <div class="attention-icon warning">⚠️</div>
-                        <div class="attention-text">
-                            <strong>Low Stock</strong>
-                            <span id="lowStockCount">0 products</span>
-                        </div>
-                        <a href="inventory.html">View</a>
-                    </div>
-
-                    <div class="attention-item">
-                        <div class="attention-icon danger">⏰</div>
-                        <div class="attention-text">
-                            <strong>Expiry Near</strong>
-                            <span id="expiryCount">0 products</span>
-                        </div>
-                        <a href="inventory.html">View</a>
-                    </div>
-
-                    <div class="attention-item">
-                        <div class="attention-icon money">💰</div>
-                        <div class="attention-text">
-                            <strong>Credit Due</strong>
-                            <span id="creditDueCount">0 customers</span>
-                        </div>
-                        <a href="customers.html">View</a>
-                    </div>
-
-                    <div class="attention-item">
-                        <div class="attention-icon supplier">🏢</div>
-                        <div class="attention-text">
-                            <strong>Supplier Payment</strong>
-                            <span id="supplierDueCount">0 suppliers</span>
-                        </div>
-                        <a href="suppliers.html">View</a>
-                    </div>
-                </div>
-            </div>
+      <!-- Recent activity -->
+      <div class="dashboard-card" style="margin-top:22px">
+        <div class="card-header">
+          <div>
+            <h3>Recent Activity</h3>
+            <p>पछिल्ला बिक्री, खरिद र finance कारोबार</p>
+          </div>
+          <a href="reports.html" class="text-btn">View All →</a>
         </div>
+        <div class="data-table-wrap" id="recentActivityArea"></div>
+      </div>
 
-        <!-- FAST MOVING PRODUCTS -->
-        <div class="dashboard-card" style="margin-top:22px;">
-            <div class="card-header">
-                <div>
-                    <h3>Fast Moving Products</h3>
-                    <p>बिक्रीको आधारमा छिटो चलिरहेका सामान</p>
-                </div>
-                <a href="inventory.html" class="text-btn">View All →</a>
-            </div>
-            <div class="data-table-wrap" id="fastMovingArea"></div>
+      <!-- Quick actions -->
+      <div class="section-title quick-title">
+        <div>
+          <h3>Quick Actions</h3>
+          <p>बारम्बार प्रयोग हुने काम</p>
         </div>
+      </div>
 
-        <!-- RECENT ACTIVITY -->
-        <div class="dashboard-card" style="margin-top:22px;">
-            <div class="card-header">
-                <div>
-                    <h3>Recent Activity</h3>
-                    <p>पछिल्ला बिक्री, खरीद र finance कारोबार</p>
-                </div>
-                <a href="reports.html" class="text-btn">View All →</a>
-            </div>
-            <div class="data-table-wrap" id="recentActivityArea"></div>
-        </div>
+      <div class="quick-actions">
+        <a href="sale.html" class="quick-action">
+          <span>🛒</span><strong>New Sale</strong><small>नयाँ बिक्री</small>
+        </a>
+        <a href="sales-return.html" class="quick-action">
+          <span>↩️</span><strong>Sales Return</strong><small>बिक्री फिर्ता</small>
+        </a>
+        <a href="purchase.html" class="quick-action">
+          <span>📦</span><strong>Purchase</strong><small>नयाँ खरिद</small>
+        </a>
+        <a href="stock-lots.html" class="quick-action">
+          <span>🧮</span><strong>FIFO Lots</strong><small>Stock cost</small>
+        </a>
+        <a href="customers.html" class="quick-action">
+          <span>👤</span><strong>Customer</strong><small>ग्राहक रकम</small>
+        </a>
+        <a href="suppliers.html" class="quick-action">
+          <span>🏢</span><strong>Supplier</strong><small>Supplier payment</small>
+        </a>
+        <a href="finance.html" class="quick-action">
+          <span>💸</span><strong>Expense</strong><small>खर्च राख्नुहोस्</small>
+        </a>
+        <a href="inventory.html" class="quick-action">
+          <span>🔧</span><strong>Stock</strong><small>Stock मिलाउनुहोस्</small>
+        </a>
+      </div>
 
-        <!-- QUICK ACTIONS -->
-        <div class="section-title quick-title">
-            <div>
-                <h3>Quick Actions</h3>
-                <p>बारम्बार प्रयोग हुने काम</p>
-            </div>
+      <!-- AI assistant -->
+      <div class="ai-card">
+        <div class="ai-content">
+          <div class="ai-icon">🤖</div>
+          <div>
+            <h3>AI Shop Assistant</h3>
+            <p>आजको व्यापार र सामानको बारेमा प्रश्न सोध्नुहोस्।</p>
+          </div>
         </div>
-
-        <div class="quick-actions">
-            <a href="sale.html" class="quick-action">
-                <span>🛒</span><strong>New Sale</strong><small>नयाँ बिक्री</small>
-            </a>
-            <a href="sales-return.html" class="quick-action">
-                <span>↩️</span><strong>Sales Return</strong><small>बिक्री फिर्ता</small>
-            </a>
-            <a href="purchase.html" class="quick-action">
-                <span>📦</span><strong>Purchase</strong><small>नयाँ खरीद</small>
-            </a>
-            <a href="stock-lots.html" class="quick-action">
-                <span>🧮</span><strong>FIFO Lots</strong><small>Stock cost</small>
-            </a>
-            <a href="customers.html" class="quick-action">
-                <span>👤</span><strong>Customer</strong><small>ग्राहक रकम</small>
-            </a>
-            <a href="suppliers.html" class="quick-action">
-                <span>🏢</span><strong>Supplier</strong><small>Supplier payment</small>
-            </a>
-            <a href="finance.html" class="quick-action">
-                <span>💸</span><strong>Expense</strong><small>खर्च राख्नुहोस्</small>
-            </a>
-            <a href="inventory.html" class="quick-action">
-                <span>🔧</span><strong>Stock</strong><small>Stock मिलाउनुहोस्</small>
-            </a>
-        </div>
-
-        <!-- AI ASSISTANT -->
-        <div class="ai-card">
-            <div class="ai-content">
-                <div class="ai-icon">🤖</div>
-                <div>
-                    <h3>AI Shop Assistant</h3>
-                    <p>"आजको व्यापार कस्तो भयो?", "कुन सामान order गर्नुपर्छ?" जस्ता प्रश्न सोध्न सक्नुहुन्छ।</p>
-                </div>
-            </div>
-            <a href="ai.html" class="ai-btn">Ask AI →</a>
-        </div>
+        <a href="ai.html" class="ai-btn">Ask AI →</a>
+      </div>
 
     </section>
 
     <footer class="footer">
-        <span>© 2026 General Store Management System</span>
-        <span>v1.0</span>
+      <span>© 2026 General Store Management System</span>
+      <span>v1.0</span>
     </footer>
-</main>
+  </main>
 
-<!-- Dashboard JavaScript -->
-<script src="dashboard.js"></script>
+  <!-- Mobile bottom navigation -->
+  <nav class="bottom-navigation" aria-label="Main navigation">
+    <a href="index.html" class="active" aria-current="page">
+      <span class="nav-icon">⌂</span>
+      <span>Overview</span>
+    </a>
+    <a href="customers.html">
+      <span class="nav-icon">👥</span>
+      <span>Customer</span>
+    </a>
+    <a href="suppliers.html">
+      <span class="nav-icon">🏢</span>
+      <span>Supplier</span>
+    </a>
+    <a href="settings.html">
+      <span class="nav-icon">⚙️</span>
+      <span>Setting</span>
+    </a>
+  </nav>
 
-<!-- PWA Service Worker -->
-<script>
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js")
-            .catch(function (error) {
-                console.error("Service worker registration failed:", error);
-            });
+  <!-- Show errors instead of silently hiding them -->
+  <script>
+    window.addEventListener("error", function (event) {
+      const box = document.getElementById("dashboardError");
+      if (!box) return;
+
+      box.style.display = "block";
+      box.textContent =
+        "Dashboard मा JavaScript त्रुटि भयो: " +
+        (event.message || "अज्ञात त्रुटि") +
+        " । dashboard.js र अन्य script जाँच गर्नुहोस्।";
     });
-}
-</script>
 
+    window.addEventListener("unhandledrejection", function (event) {
+      const box = document.getElementById("dashboardError");
+      if (!box) return;
+
+      box.style.display = "block";
+      box.textContent =
+        "Dashboard को प्रक्रिया पूरा भएन। JavaScript त्रुटि जाँच गर्नुहोस्।";
+    });
+
+    window.addEventListener("load", function () {
+      const splash = document.getElementById("appSplash");
+      if (splash) {
+        splash.style.opacity = "0";
+        setTimeout(function () {
+          splash.remove();
+        }, 300);
+      }
+    });
+
+    // Existing data सुरक्षित राख्न कुनै localStorage key मेटाइएको छैन।
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js")
+          .catch(function (error) {
+            console.error("Service worker registration failed:", error);
+          });
+      });
+    }
+  </script>
+
+  <script src="./dashboard.js?v=20261010-3"></script>
 </body>
 </html>
