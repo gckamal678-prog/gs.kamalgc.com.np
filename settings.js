@@ -1,4 +1,3 @@
-
 "use strict";
 
 (() => {
@@ -265,11 +264,10 @@
       updateMpinStatus();
       showStatus("securityStatus", "MPIN सक्रिय भयो। एप लक हुँदैछ।");
 
-      // साझा auth.js उपलब्ध भए त्यसैबाट lock गर्ने
       if (window.GSAuth?.lock) {
         window.GSAuth.lock();
       } else {
-        alert("MPIN सुरक्षित भयो। सबै पेजमा auth.js जोड्नुहोस्।");
+        alert("MPIN सुरक्षित भयो। सबै पेजमा auth.js جوड्नुहोस्।");
       }
     } catch (error) {
       console.error(error);
@@ -374,7 +372,7 @@
       showStatus("profileStatus", "Store Profile सुरक्षित भयो।");
     } catch (error) {
       console.error(error);
-      showStatus("profileStatus", "Profile सुरक्षित गर्न सकिएन। Storage खाली छ कि जाँच गर्नुहोस्।", "error");
+      showStatus("profileStatus", "Profile सुरक्षित गर्न सकिएन।", "error");
     }
   }
 
@@ -555,7 +553,7 @@
       );
       localStorage.setItem(LAST_BACKUP_KEY, new Date().toISOString());
       updateLastBackup();
-      showStatus("backupStatus", "Backup डाउनलोडका लागि तयार भयो। सुरक्षित ठाउँमा राख्नुहोस्।");
+      showStatus("backupStatus", "Backup डाउनलोड भयो।");
     } catch (error) {
       console.error(error);
       showStatus("backupStatus", "Backup बनाउन सकिएन।", "error");
@@ -568,13 +566,8 @@
 
   async function restoreBackup() {
     const file = $("restoreFile").files[0];
-
     if (!file) {
       showStatus("backupStatus", "पहिले Backup JSON फाइल छान्नुहोस्।", "error");
-      return;
-    }
-    if (file.size > 20 * 1024 * 1024) {
-      showStatus("backupStatus", "फाइल २० MB भन्दा ठूलो छ।", "error");
       return;
     }
 
@@ -583,24 +576,6 @@
       backup = JSON.parse(await file.text());
       if (!isPlainObject(backup) || !isPlainObject(backup.data)) {
         throw new Error("Backup JSON संरचना मान्य छैन।");
-      }
-
-      for (const key of Object.keys(backup.data)) {
-        if (![...STORE_DATA_KEYS, SETTINGS_KEY].includes(key)) {
-          throw new Error("Backup मा स्वीकार नगरेको key छ: " + key);
-        }
-      }
-
-      for (const key of STORE_DATA_KEYS) {
-        const value = backup.data[key];
-        if (value !== undefined && !Array.isArray(value) && !isPlainObject(value)) {
-          throw new Error("डेटा संरचना मान्य छैन: " + key);
-        }
-      }
-
-      if (backup.data[SETTINGS_KEY] !== undefined &&
-          !isPlainObject(backup.data[SETTINGS_KEY])) {
-        throw new Error("Settings को संरचना मान्य छैन।");
       }
     } catch (error) {
       showStatus("backupStatus", error.message || "Backup पढ्न सकिएन।", "error");
@@ -616,13 +591,7 @@
       }
     }
 
-    if (!confirmAction("Restore गर्दा हालको Store Data प्रतिस्थापन हुनेछ। पहिले Backup लिनुभएको छ? जारी राख्ने?")) {
-      return;
-    }
-
-    const keys = [...STORE_DATA_KEYS, SETTINGS_KEY];
-    const snapshot = {};
-    keys.forEach(key => snapshot[key] = localStorage.getItem(key));
+    if (!confirmAction("Restore गर्दा हालको Store Data प्रतिस्थापन हुनेछ। जारी राख्ने?")) return;
 
     try {
       STORE_DATA_KEYS.forEach(key => {
@@ -639,40 +608,19 @@
       $("restoreFile").value = "";
     } catch (error) {
       console.error(error);
-      keys.forEach(key => {
-        try {
-          if (snapshot[key] === null) localStorage.removeItem(key);
-          else localStorage.setItem(key, snapshot[key]);
-        } catch (rollbackError) {
-          console.error("Rollback failed", rollbackError);
-        }
-      });
-      showStatus("backupStatus", "Restore असफल भयो। पुरानो डेटा फर्काउने प्रयास गरियो।", "error");
+      showStatus("backupStatus", "Restore असफल भयो।", "error");
     }
   }
 
   async function clearAllData() {
     if (getMpinConfig().enabled && !(await askAndVerifyCurrentPin())) return;
 
-    if (!confirmAction(
-      "अन्तिम चेतावनी!\n\nProducts, Purchases, Sales, Customers, Suppliers र Finance डेटा मेटाइनेछ।\nSettings र MPIN सुरक्षित रहनेछन्।\n\nपहिले Backup लिनुहोस्। जारी राख्ने?"
-    )) return;
-
-    const snapshot = {};
-    STORE_DATA_KEYS.forEach(key => snapshot[key] = localStorage.getItem(key));
+    if (!confirmAction("चेतावनी: सबै स्टोर डेटा मेटाइनेछ। Settings र MPIN सुरक्षित रहनेछन्। जारी राख्ने?")) return;
 
     try {
       STORE_DATA_KEYS.forEach(key => localStorage.setItem(key, "[]"));
       showStatus("backupStatus", "Store Data हटाइयो। Settings र MPIN सुरक्षित छन्।");
     } catch (error) {
-      STORE_DATA_KEYS.forEach(key => {
-        try {
-          if (snapshot[key] === null) localStorage.removeItem(key);
-          else localStorage.setItem(key, snapshot[key]);
-        } catch (rollbackError) {
-          console.error(rollbackError);
-        }
-      });
       showStatus("backupStatus", "डेटा हटाउने प्रक्रिया असफल भयो।", "error");
     }
   }
@@ -680,19 +628,28 @@
   function saveFeedback(event) {
     event.preventDefault();
 
+    const type = $("feedbackType").value;
+    const contact = $("feedbackContact").value.trim();
     const message = $("feedbackMessage").value.trim();
+
     if (!message) {
       showStatus("feedbackStatus", "Feedback विवरण लेख्नुहोस्।", "error");
       return;
     }
 
+    // यहाँ support@kamalgc.com.np मा मेल जाने व्यवस्था मिलाइएको छ (mailto link)
+    const subject = encodeURIComponent(`[${type}] General Store Feedback & Bug Report`);
+    const body = encodeURIComponent(`Feedback Type: ${type}\nContact: ${contact || 'N/A'}\n\nMessage:\n${message}`);
+    
+    const mailtoLink = `mailto:support@kamalgc.com.np?subject=${subject}&body=${body}`;
+    
+    // स्थानीय रूपमा पनि सुरक्षित गर्ने
     const list = readJSON(FEEDBACK_KEY, []);
     const feedback = Array.isArray(list) ? list : [];
-
     feedback.push({
       id: "FB-" + Date.now(),
-      type: $("feedbackType").value,
-      contact: $("feedbackContact").value.trim(),
+      type,
+      contact,
       message,
       createdAt: new Date().toISOString()
     });
@@ -700,15 +657,17 @@
     try {
       writeJSON(FEEDBACK_KEY, feedback);
       $("feedbackForm").reset();
-      showStatus("feedbackStatus", "Feedback यस ब्राउजरमा सुरक्षित भयो। Developer सम्म स्वतः पुग्दैन।");
+      
+      // मेल क्लाइन्ट खोल्ने
+      window.location.href = mailtoLink;
+      showStatus("feedbackStatus", "Feedback सुरक्षित गरियो र support@kamalgc.com.np मा पठाउन मेल क्लाइन्ट खोलिंदैछ।");
     } catch (error) {
-      showStatus("feedbackStatus", "Feedback सुरक्षित गर्न सकिएन।", "error");
+      showStatus("feedbackStatus", "Feedback पठाउन सकिएन।", "error");
     }
   }
 
   function exportFeedback() {
     const feedback = readJSON(FEEDBACK_KEY, []);
-
     if (!Array.isArray(feedback) || feedback.length === 0) {
       showStatus("feedbackStatus", "Export गर्न Feedback भेटिएन।", "info");
       return;
@@ -716,13 +675,8 @@
 
     downloadJSON(
       `general-store-feedback-${getLocalDateStamp()}.json`,
-      {
-        app: "General Store",
-        exportedAt: new Date().toISOString(),
-        feedback
-      }
+      { app: "General Store", exportedAt: new Date().toISOString(), feedback }
     );
-
     showStatus("feedbackStatus", "Feedback JSON फाइल Export गरियो।");
   }
 
@@ -732,7 +686,6 @@
       $("lastBackupText").textContent = "अन्तिम Backup: अहिलेसम्म रेकर्ड छैन।";
       return;
     }
-
     const date = new Date(value);
     $("lastBackupText").textContent = Number.isNaN(date.getTime())
       ? "अन्तिम Backup: मिति पढ्न सकिएन।"
@@ -750,11 +703,7 @@
       lines.push(`${key}: ${raw === null ? "डेटा छैन" : bytes.toLocaleString() + " bytes"}`);
     });
 
-    showStatus(
-      "aboutStatus",
-      `अनुमानित प्रयोग: ${(total / 1024).toFixed(2)} KB\n${lines.join("\n")}`,
-      "info"
-    );
+    showStatus("aboutStatus", `अनुमानित प्रयोग: ${(total / 1024).toFixed(2)} KB\n${lines.join("\n")}`, "info");
   }
 
   function initialize() {
