@@ -5,82 +5,479 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finance | General Store</title>
+
     <link rel="stylesheet" href="style.css">
     <script src="appearance.js"></script>
 
     <style>
-        .finance-wrap{max-width:1400px;margin:auto;padding:20px}
-        .finance-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-        .finance-top h1{margin-bottom:6px}
-        .finance-top p{margin-top:0;color:#6b7280}
-        .finance-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
-        .finance-stat,.finance-panel{background:var(--card-bg,#fff);border:1px solid #e5e7eb;border-radius:14px;padding:16px;min-width:0}
-        .finance-stat span{display:block;color:#6b7280;font-size:13px}
-        .finance-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
-        .finance-toolbar{margin-bottom:14px}
-        .finance-toolbar input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
-        .finance-table-wrap{overflow-x:auto}
-        .finance-table{width:100%;min-width:850px;border-collapse:collapse}
-        .finance-table th,.finance-table td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:middle}
-        .finance-table th{font-size:13px;color:#6b7280;white-space:nowrap}
-        .finance-table td{overflow-wrap:anywhere}
-        .finance-modal{display:none;position:fixed;inset:0;z-index:9999;background:#0008;overflow-y:auto;padding:20px;box-sizing:border-box}
-        .finance-modal.show{display:block}
-        .finance-dialog{background:var(--card-bg,#fff);color:inherit;width:min(760px,100%);margin:20px auto;border:1px solid #e5e7eb;border-radius:16px;padding:22px;box-sizing:border-box;box-shadow:0 20px 60px #0003}
-        .finance-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
-        .finance-dialog-head h2{margin:0 0 6px}
-        .finance-dialog-head p{margin:0;color:#6b7280;font-size:13px}
-        .finance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-        .finance-field{display:flex;flex-direction:column;gap:6px;min-width:0}
-        .finance-field label{font-size:13px;font-weight:600}
-        .finance-field input,.finance-field select,.finance-field textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit;font:inherit;min-width:0}
-        .finance-field select option{background:var(--card-bg,#fff);color:#111827}
-        .finance-field input:focus,.finance-field select:focus,.finance-field textarea:focus,.finance-toolbar input:focus{outline:none;border-color:#166534;box-shadow:0 0 0 3px #1665341f}
-        .finance-field textarea{resize:vertical}
-        .finance-full{grid-column:1/-1}
-        .finance-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin-top:22px}
-        .finance-btn{display:inline-flex;justify-content:center;align-items:center;gap:6px;padding:10px 15px;border:1px solid #d1d5db;border-radius:9px;cursor:pointer;background:transparent;color:inherit;font:inherit;font-size:14px;text-decoration:none;transition:background .15s}
-        .finance-btn:hover{background:#6b728014}
-        .finance-btn.primary{background:#166534;color:#fff;border-color:#166534}
-        .finance-btn.primary:hover{background:#14532d}
-        .finance-btn.danger{color:#b91c1c}
-        .finance-btn:focus-visible{outline:3px solid #16653440;outline-offset:2px}
-        .finance-type{display:inline-block;padding:4px 9px;border-radius:7px;font-size:12px;font-weight:700}
-        .finance-type.income{background:#dcfce7;color:#166534}
-        .finance-type.expense{background:#fee2e2;color:#b91c1c}
-        .finance-type.payment{background:#fef3c7;color:#92400e}
-        .finance-positive{color:#15803d}
-        .finance-negative{color:#b91c1c}
-        .finance-empty{text-align:center;padding:35px!important;color:#6b7280}
-        .finance-message{display:none;padding:12px;border:1px solid #e5e7eb;border-radius:9px;margin-bottom:14px;font-size:13px}
-        .finance-message.show{display:block}
-        .finance-message.error{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
-        .finance-message.success{background:#f0fdf4;color:#166534;border-color:#bbf7d0}
-        body.finance-modal-open{overflow:hidden}
-        @media(max-width:800px){
-            .finance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-            .finance-wrap{padding:12px}
-            .finance-dialog{padding:15px;margin:5px auto}
+        :root {
+            --finance-accent: var(--accent-color, #166534);
+            --finance-bg: var(--body-bg, #f3f6fa);
+            --finance-card: var(--card-bg, #ffffff);
+            --finance-text: var(--text-color, #111827);
+            --finance-muted: var(--muted-color, #6b7280);
+            --finance-border: var(--border-color, #e5e7eb);
+            --finance-hover: var(--hover-bg, #f1f5f9);
         }
-        @media(max-width:520px){
-            .finance-modal{padding:8px}
-            .finance-grid{grid-template-columns:1fr}
-            .finance-full{grid-column:auto}
-            .finance-stat strong{font-size:17px}
-            .finance-actions .finance-btn{flex:1}
-            .finance-top>button{width:100%}
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--finance-bg);
+            color: var(--finance-text);
+            font-family: var(--font-family, Arial, sans-serif);
+        }
+
+        .finance-wrap {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .finance-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .finance-top h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .finance-top p {
+            margin: 0;
+            color: var(--finance-muted);
+            line-height: 1.5;
+        }
+
+        .finance-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .finance-stat,
+        .finance-panel {
+            min-width: 0;
+            background: var(--finance-card);
+            color: var(--finance-text);
+            border: 1px solid var(--finance-border);
+            border-radius: 14px;
+            box-shadow: 0 2px 8px #00000008;
+        }
+
+        .finance-stat {
+            padding: 18px;
+        }
+
+        .finance-stat span {
+            display: block;
+            color: var(--finance-muted);
+            font-size: 13px;
+        }
+
+        .finance-stat strong {
+            display: block;
+            margin-top: 10px;
+            font-size: 21px;
+            overflow-wrap: anywhere;
+        }
+
+        .finance-panel {
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .finance-panel h2 {
+            margin: 0 0 18px;
+            font-size: 19px;
+        }
+
+        .finance-toolbar {
+            margin-bottom: 16px;
+        }
+
+        .finance-toolbar input,
+        .finance-field input,
+        .finance-field select,
+        .finance-field textarea {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--finance-border);
+            border-radius: 9px;
+            background: var(--input-bg, var(--finance-card));
+            color: var(--finance-text);
+            font: inherit;
+        }
+
+        .finance-toolbar input:focus,
+        .finance-field input:focus,
+        .finance-field select:focus,
+        .finance-field textarea:focus {
+            outline: none;
+            border-color: var(--finance-accent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--finance-accent) 16%, transparent);
+        }
+
+        .finance-field select option {
+            background: var(--finance-card);
+            color: var(--finance-text);
+        }
+
+        .finance-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--finance-border);
+            border-radius: 10px;
+        }
+
+        .finance-table {
+            width: 100%;
+            min-width: 850px;
+            border-collapse: collapse;
+            background: var(--finance-card);
+            color: var(--finance-text);
+        }
+
+        .finance-table th,
+        .finance-table td {
+            padding: 13px 12px;
+            text-align: left;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--finance-border);
+        }
+
+        .finance-table th {
+            background: var(--table-header-bg, #f8fafc);
+            color: var(--finance-muted);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .finance-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .finance-table tbody tr:hover {
+            background: var(--finance-hover);
+        }
+
+        .finance-table td {
+            overflow-wrap: anywhere;
+        }
+
+        .finance-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 40px;
+            padding: 10px 15px;
+            border: 1px solid var(--finance-border);
+            border-radius: 9px;
+            background: transparent;
+            color: var(--finance-text);
+            font: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: filter .15s ease, background .15s ease;
+        }
+
+        .finance-btn:hover {
+            background: var(--finance-hover);
+        }
+
+        .finance-btn.primary {
+            background: var(--finance-accent);
+            color: #fff;
+            border-color: var(--finance-accent);
+        }
+
+        .finance-btn.primary:hover {
+            filter: brightness(.92);
+        }
+
+        .finance-btn.danger {
+            color: #dc2626;
+        }
+
+        .finance-btn:focus-visible {
+            outline: 3px solid var(--finance-accent);
+            outline-offset: 2px;
+        }
+
+        .finance-type {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .finance-type.income {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .finance-type.expense {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .finance-type.payment {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .finance-positive {
+            color: #16a34a;
+        }
+
+        .finance-negative {
+            color: #dc2626;
+        }
+
+        .finance-empty {
+            padding: 35px !important;
+            text-align: center !important;
+            color: var(--finance-muted);
+        }
+
+        .finance-message {
+            display: none;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            border: 1px solid var(--finance-border);
+            border-radius: 9px;
+            font-size: 14px;
+        }
+
+        .finance-message.show {
+            display: block;
+        }
+
+        .finance-message.error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .finance-message.success {
+            background: #f0fdf4;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        .finance-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 20px;
+            background: #0008;
+        }
+
+        .finance-modal.show {
+            display: block;
+        }
+
+        .finance-dialog {
+            width: min(760px, 100%);
+            margin: 20px auto;
+            padding: 24px;
+            border: 1px solid var(--finance-border);
+            border-radius: 16px;
+            background: var(--finance-card);
+            color: var(--finance-text);
+            box-shadow: 0 20px 60px #0003;
+        }
+
+        .finance-dialog-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .finance-dialog-head h2 {
+            margin: 0 0 7px;
+        }
+
+        .finance-dialog-head p {
+            margin: 0;
+            color: var(--finance-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .finance-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .finance-field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .finance-field label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .finance-field textarea {
+            resize: vertical;
+        }
+
+        .finance-full {
+            grid-column: 1 / -1;
+        }
+
+        .finance-actions {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        body.finance-modal-open {
+            overflow: hidden;
+        }
+
+        html[data-theme="dark"] .finance-message.error {
+            background: #451a1a;
+            color: #fecaca;
+            border-color: #7f1d1d;
+        }
+
+        html[data-theme="dark"] .finance-message.success {
+            background: #142e21;
+            color: #bbf7d0;
+            border-color: #166534;
+        }
+
+        html[data-theme="dark"] .finance-type.income {
+            background: #14532d;
+            color: #dcfce7;
+        }
+
+        html[data-theme="dark"] .finance-type.expense {
+            background: #7f1d1d;
+            color: #fee2e2;
+        }
+
+        html[data-theme="dark"] .finance-type.payment {
+            background: #78350f;
+            color: #fef3c7;
+        }
+
+        @media (max-width: 900px) {
+            .finance-wrap {
+                padding: 16px;
+            }
+
+            .finance-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .finance-wrap {
+                padding: 12px;
+            }
+
+            .finance-top h1 {
+                font-size: 23px;
+            }
+
+            .finance-top > button {
+                width: 100%;
+            }
+
+            .finance-panel {
+                padding: 13px;
+            }
+
+            .finance-stat {
+                padding: 13px;
+            }
+
+            .finance-stat strong {
+                font-size: 17px;
+            }
+
+            .finance-dialog {
+                padding: 16px;
+                margin: 4px auto;
+            }
+
+            .finance-modal {
+                padding: 8px;
+            }
+
+            .finance-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .finance-full {
+                grid-column: auto;
+            }
+
+            .finance-actions {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .finance-actions .primary {
+                grid-column: 1 / -1;
+            }
+
+            .finance-actions .finance-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .finance-stats {
+                grid-template-columns: minmax(0, 1fr);
+            }
         }
     </style>
 </head>
+
 <body>
 <div class="app">
     <aside class="sidebar">
-        <div class="sidebar-header"><h2>General Store</h2></div>
+        <div class="sidebar-header">
+            <h2>General Store</h2>
+        </div>
+
         <nav class="sidebar-menu">
             <a href="index.html" class="menu-item"><span class="menu-icon">🏠</span><span>Dashboard</span></a>
             <a href="sale.html" class="menu-item"><span class="menu-icon">🧾</span><span>New Sale</span></a>
             <a href="purchase.html" class="menu-item"><span class="menu-icon">🛒</span><span>Purchase</span></a>
             <a href="inventory.html" class="menu-item"><span class="menu-icon">📦</span><span>Inventory</span></a>
+            <a href="sales-return.html" class="menu-item"><span class="menu-icon">↩️</span><span>Sales Return</span></a>
+            <a href="stock-lots.html" class="menu-item"><span class="menu-icon">📚</span><span>FIFO Lots</span></a>
             <a href="customers.html" class="menu-item"><span class="menu-icon">👥</span><span>Customers</span></a>
             <a href="suppliers.html" class="menu-item"><span class="menu-icon">🚚</span><span>Suppliers</span></a>
             <a href="finance.html" class="menu-item active"><span class="menu-icon">💰</span><span>Finance</span></a>
@@ -95,40 +492,82 @@
         <header class="finance-top">
             <div>
                 <h1>Finance</h1>
-                <p>Manage cash, bank, QR and financial transactions.</p>
+                <p>Cash, bank, QR र वित्तीय कारोबार व्यवस्थापन</p>
             </div>
-            <button type="button" id="newFinanceBtn" class="finance-btn primary">+ New Transaction</button>
+
+            <button type="button" id="newFinanceBtn" class="finance-btn primary">
+                + New Transaction
+            </button>
         </header>
 
         <section class="finance-stats">
-            <div class="finance-stat"><span>Cash Balance</span><strong id="cashBalance">Rs. 0.00</strong></div>
-            <div class="finance-stat"><span>Bank Balance</span><strong id="bankBalance">Rs. 0.00</strong></div>
-            <div class="finance-stat"><span>QR Balance</span><strong id="qrBalance">Rs. 0.00</strong></div>
-            <div class="finance-stat"><span>Total Balance</span><strong id="totalBalance">Rs. 0.00</strong></div>
+            <div class="finance-stat">
+                <span>Cash Balance</span>
+                <strong id="cashBalance">Rs. 0.00</strong>
+            </div>
+            <div class="finance-stat">
+                <span>Bank Balance</span>
+                <strong id="bankBalance">Rs. 0.00</strong>
+            </div>
+            <div class="finance-stat">
+                <span>QR Balance</span>
+                <strong id="qrBalance">Rs. 0.00</strong>
+            </div>
+            <div class="finance-stat">
+                <span>Total Balance</span>
+                <strong id="totalBalance">Rs. 0.00</strong>
+            </div>
         </section>
 
         <section class="finance-stats">
-            <div class="finance-stat"><span>Total Income</span><strong id="totalIncome">Rs. 0.00</strong></div>
-            <div class="finance-stat"><span>Total Expense</span><strong id="totalExpense">Rs. 0.00</strong></div>
-            <div class="finance-stat"><span>Total Payment</span><strong id="totalPayment">Rs. 0.00</strong></div>
-            <div class="finance-stat"><span>Transactions</span><strong id="totalTransactions">0</strong></div>
+            <div class="finance-stat">
+                <span>Total Income</span>
+                <strong id="totalIncome">Rs. 0.00</strong>
+            </div>
+            <div class="finance-stat">
+                <span>Total Expense</span>
+                <strong id="totalExpense">Rs. 0.00</strong>
+            </div>
+            <div class="finance-stat">
+                <span>Total Payment</span>
+                <strong id="totalPayment">Rs. 0.00</strong>
+            </div>
+            <div class="finance-stat">
+                <span>Transactions</span>
+                <strong id="totalTransactions">0</strong>
+            </div>
         </section>
 
         <section class="finance-panel">
-            <div class="section-header"><h2>Finance History</h2></div>
+            <h2>Finance History</h2>
+
             <div id="financeMessage" class="finance-message" role="status" aria-live="polite"></div>
+
             <div class="finance-toolbar">
-                <input type="search" id="financeSearch" placeholder="Search date, category, note, reference or account..." aria-label="Search finance transactions">
+                <input
+                    type="search"
+                    id="financeSearch"
+                    placeholder="Date, category, note, reference वा account खोज्नुहोस्..."
+                    aria-label="Search finance transactions">
             </div>
+
             <div class="finance-table-wrap">
                 <table class="finance-table">
                     <thead>
                         <tr>
-                            <th>Date</th><th>Type</th><th>Category</th><th>Account</th><th>Amount</th><th>Note / Reference</th><th>Action</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Account</th>
+                            <th>Amount</th>
+                            <th>Note / Reference</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="financeTableBody">
-                        <tr><td colspan="7" class="finance-empty">No transactions found.</td></tr>
+                        <tr>
+                            <td colspan="7" class="finance-empty">No transactions found.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -137,13 +576,24 @@
 </div>
 
 <div id="financeModal" class="finance-modal" aria-hidden="true">
-    <section class="finance-dialog" role="dialog" aria-modal="true" aria-labelledby="financeModalTitle" aria-describedby="financeModalDescription">
+    <section
+        class="finance-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="financeModalTitle"
+        aria-describedby="financeModalDescription">
+
         <div class="finance-dialog-head">
             <div>
                 <h2 id="financeModalTitle">New Transaction</h2>
-                <p id="financeModalDescription">Enter the transaction and payment details.</p>
+                <p id="financeModalDescription">कारोबार र भुक्तानीको विवरण राख्नुहोस्।</p>
             </div>
-            <button type="button" id="closeFinanceModal" class="finance-btn" aria-label="Close transaction form">✕</button>
+
+            <button
+                type="button"
+                id="closeFinanceModal"
+                class="finance-btn"
+                aria-label="Close transaction form">✕</button>
         </div>
 
         <div id="financeFormMessage" class="finance-message" role="alert" aria-live="assertive"></div>
@@ -191,17 +641,32 @@
 
                 <div class="finance-field finance-full">
                     <label for="financeAmount">Amount (Rs.) *</label>
-                    <input type="number" id="financeAmount" min="0.01" step="0.01" required placeholder="0.00" inputmode="decimal">
+                    <input
+                        type="number"
+                        id="financeAmount"
+                        min="0.01"
+                        step="0.01"
+                        required
+                        placeholder="0.00"
+                        inputmode="decimal">
                 </div>
 
                 <div class="finance-field finance-full">
                     <label for="financeReference">Reference / Bill Number</label>
-                    <input type="text" id="financeReference" maxlength="100" placeholder="Optional reference or bill number">
+                    <input
+                        type="text"
+                        id="financeReference"
+                        maxlength="100"
+                        placeholder="Optional reference or bill number">
                 </div>
 
                 <div class="finance-field finance-full">
                     <label for="financeNote">Note</label>
-                    <textarea id="financeNote" rows="3" maxlength="500" placeholder="Enter transaction details (optional)"></textarea>
+                    <textarea
+                        id="financeNote"
+                        rows="3"
+                        maxlength="500"
+                        placeholder="वैकल्पिक टिप्पणी"></textarea>
                 </div>
             </div>
 
