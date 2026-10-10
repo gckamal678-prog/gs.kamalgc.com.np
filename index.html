@@ -3,23 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>General Store Management - Dashboard</title>
-
+    <script src="appearance.js"></script>
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* =====================================================
-           DASHBOARD V2 - PREMIUM UI
-           ===================================================== */
-
         :root {
             --dash-bg: #f5f7fb;
             --dash-card: #ffffff;
             --dash-text: #172033;
             --dash-muted: #718096;
             --dash-border: #e7ebf2;
-            --dash-primary: #2563eb;
+            --dash-primary: var(--accent-color, #2563eb);
             --dash-primary-soft: #eff6ff;
             --dash-green: #16a34a;
             --dash-green-soft: #ecfdf3;
@@ -36,60 +31,27 @@
         body.dashboard-page {
             background: var(--dash-bg);
             color: var(--dash-text);
+            font-family: var(--font-family, Arial, sans-serif);
+            font-size: var(--font-size, 15px);
         }
 
-        /* ---------- DARK MODE ---------- */
-
-        body.dashboard-dark {
-            --dash-bg: #0b1120;
-            --dash-card: #111827;
+        body.dark-theme, body.dashboard-dark {
+            --dash-bg: #111827;
+            --dash-card: #1f2937;
             --dash-text: #f3f4f6;
             --dash-muted: #9ca3af;
-            --dash-border: #263244;
-            --dash-primary: #60a5fa;
-            --dash-primary-soft: #172554;
-            --dash-green: #4ade80;
-            --dash-green-soft: #052e16;
-            --dash-red: #f87171;
-            --dash-red-soft: #450a0a;
-            --dash-orange: #fb923c;
-            --dash-orange-soft: #431407;
-            --dash-purple: #a78bfa;
-            --dash-purple-soft: #2e1065;
+            --dash-border: #374151;
             --dash-shadow: 0 12px 35px rgba(0,0,0,.22);
         }
-
-        body.dashboard-dark .main-content {
-            background: var(--dash-bg);
-        }
-
-        body.dashboard-dark .topbar,
-        body.dashboard-dark .dashboard-card,
-        body.dashboard-dark .stat-card,
-        body.dashboard-dark .finance-card,
-        body.dashboard-dark .ai-card {
-            background: var(--dash-card);
-            border-color: var(--dash-border);
-        }
-
-        body.dashboard-dark input,
-        body.dashboard-dark select {
-            background: #0f172a;
-            color: #f3f4f6;
-            border-color: var(--dash-border);
-        }
-
-        /* ---------- DASHBOARD CONTENT ---------- */
 
         .dashboard-content {
             max-width: 1500px;
             margin: auto;
+            padding: 20px;
         }
 
         .welcome-section {
-            background:
-                radial-gradient(circle at 85% 20%, rgba(96,165,250,.22), transparent 35%),
-                linear-gradient(135deg, #1d4ed8, #2563eb 55%, #3b82f6);
+            background: linear-gradient(135deg, var(--dash-primary), #1d4ed8);
             color: white;
             border-radius: 24px;
             padding: 28px;
@@ -99,41 +61,20 @@
             align-items: center;
             gap: 20px;
             box-shadow: 0 18px 45px rgba(37,99,235,.18);
-            overflow: hidden;
-            position: relative;
         }
 
-        .welcome-section::after {
-            content: "";
-            position: absolute;
-            width: 180px;
-            height: 180px;
-            border: 1px solid rgba(255,255,255,.18);
-            border-radius: 50%;
-            right: 80px;
-            top: -80px;
-        }
-
-        .welcome-section h2 {
-            margin: 0 0 7px;
-            font-size: 27px;
-        }
-
-        .welcome-section p {
-            margin: 0;
-            opacity: .88;
-        }
-
+        .welcome-section h2 { margin: 0 0 7px; font-size: 27px; }
+        .welcome-section p { margin: 0; opacity: .88; }
         .welcome-section .primary-btn {
             background: white;
-            color: #1d4ed8;
+            color: var(--dash-primary);
             border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-decoration: none;
             box-shadow: 0 8px 22px rgba(0,0,0,.12);
-            position: relative;
-            z-index: 2;
         }
-
-        /* ---------- STAT CARDS ---------- */
 
         .stats-grid {
             display: grid;
@@ -151,87 +92,22 @@
             transition: .2s ease;
         }
 
-        .stat-card:hover {
-            transform: translateY(-3px);
-        }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .stat-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px; font-size: 21px; }
+        .sales-icon { background: var(--dash-primary-soft); }
+        .profit-icon { background: var(--dash-green-soft); }
+        .expense-icon { background: var(--dash-orange-soft); }
+        .net-profit-icon { background: var(--dash-purple-soft); }
 
-        .stat-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
+        .stat-label { color: var(--dash-muted); font-size: 13px; }
+        .stat-value { font-size: 25px; font-weight: 800; margin: 18px 0 8px; }
+        .stat-bottom { display: flex; justify-content: space-between; color: var(--dash-muted); font-size: 12px; }
+        .positive { color: var(--dash-green); font-weight: 700; }
 
-        .stat-icon {
-            width: 44px;
-            height: 44px;
-            display: grid;
-            place-items: center;
-            border-radius: 13px;
-            font-size: 21px;
-        }
-
-        .sales-icon {
-            background: var(--dash-primary-soft);
-        }
-
-        .profit-icon {
-            background: var(--dash-green-soft);
-        }
-
-        .expense-icon {
-            background: var(--dash-orange-soft);
-        }
-
-        .net-profit-icon {
-            background: var(--dash-purple-soft);
-        }
-
-        .stat-label {
-            color: var(--dash-muted);
-            font-size: 13px;
-        }
-
-        .stat-value {
-            font-size: 27px;
-            font-weight: 800;
-            margin: 18px 0 8px;
-            letter-spacing: -.5px;
-        }
-
-        .stat-bottom {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            color: var(--dash-muted);
-            font-size: 12px;
-        }
-
-        .positive {
-            color: var(--dash-green);
-            font-weight: 700;
-        }
-
-        /* ---------- SECTION ---------- */
-
-        .section-title {
-            margin: 26px 0 13px;
-        }
-
-        .section-title h3,
-        .card-header h3 {
-            margin: 0 0 4px;
-            font-size: 18px;
-        }
-
-        .section-title p,
-        .card-header p {
-            margin: 0;
-            color: var(--dash-muted);
-            font-size: 13px;
-        }
-
-        /* ---------- FINANCE ---------- */
+        .section-title { margin: 26px 0 13px; }
+        .section-title h3 { margin: 0 0 4px; font-size: 18px; }
+        .section-title p { margin: 0; color: var(--dash-muted); font-size: 13px; }
 
         .finance-grid {
             display: grid;
@@ -251,34 +127,14 @@
         }
 
         .finance-icon {
-            width: 44px;
-            height: 44px;
-            min-width: 44px;
-            border-radius: 13px;
-            display: grid;
-            place-items: center;
-            background: var(--dash-primary-soft);
-            font-size: 20px;
+            width: 44px; height: 44px; min-width: 44px;
+            border-radius: 13px; display: grid; place-items: center;
+            background: var(--dash-primary-soft); font-size: 20px;
         }
 
-        .finance-card span {
-            display: block;
-            color: var(--dash-muted);
-            font-size: 12px;
-        }
-
-        .finance-card strong {
-            display: block;
-            margin: 5px 0;
-            font-size: 20px;
-        }
-
-        .finance-card small {
-            color: var(--dash-muted);
-            font-size: 11px;
-        }
-
-        /* ---------- MAIN GRID ---------- */
+        .finance-card span { display: block; color: var(--dash-muted); font-size: 12px; }
+        .finance-card strong { display: block; margin: 5px 0; font-size: 19px; }
+        .finance-card small { color: var(--dash-muted); font-size: 11px; }
 
         .dashboard-grid {
             display: grid;
@@ -287,8 +143,7 @@
             margin-top: 22px;
         }
 
-        .dashboard-card,
-        .ai-card {
+        .dashboard-card, .ai-card {
             background: var(--dash-card);
             border: 1px solid var(--dash-border);
             border-radius: var(--dash-radius);
@@ -305,2513 +160,323 @@
             border-bottom: 1px solid var(--dash-border);
         }
 
-        .card-header select {
+        .card-header select, .card-header input {
             padding: 8px 11px;
             border: 1px solid var(--dash-border);
             border-radius: 9px;
-        }
-
-        /* ---------- SALES CHART ---------- */
-
-        .chart-area {
-            padding: 18px;
-            min-height: 255px;
-        }
-
-        .mini-chart {
-            height: 215px;
-            display: flex;
-            align-items: end;
-            gap: 9px;
-            padding: 15px 8px 5px;
-        }
-
-        .chart-column {
-            flex: 1;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: end;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .chart-bar-wrap {
-            width: 100%;
-            height: 180px;
-            display: flex;
-            align-items: end;
-            justify-content: center;
-        }
-
-        .chart-bar {
-            width: min(38px, 65%);
-            min-height: 4px;
-            border-radius: 8px 8px 3px 3px;
-            background: linear-gradient(180deg, #60a5fa, #2563eb);
-            box-shadow: 0 5px 12px rgba(37,99,235,.18);
-        }
-
-        .chart-day {
-            color: var(--dash-muted);
-            font-size: 10px;
-        }
-
-        .chart-value {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--dash-text);
-        }
-
-        .chart-empty {
-            min-height: 215px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: var(--dash-muted);
-        }
-
-        .chart-empty-icon {
-            font-size: 40px;
-            margin-bottom: 8px;
-        }
-
-        .chart-empty strong {
-            color: var(--dash-text);
-        }
-
-        /* ---------- ATTENTION ---------- */
-
-        .attention-list {
-            padding: 7px 20px 15px;
-        }
-
-        .attention-item {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 13px 0;
-            border-bottom: 1px solid var(--dash-border);
-        }
-
-        .attention-item:last-child {
-            border-bottom: 0;
-        }
-
-        .attention-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 11px;
-            display: grid;
-            place-items: center;
-        }
-
-        .attention-icon.warning {
-            background: var(--dash-orange-soft);
-        }
-
-        .attention-icon.danger {
-            background: var(--dash-red-soft);
-        }
-
-        .attention-icon.money {
-            background: var(--dash-green-soft);
-        }
-
-        .attention-icon.supplier {
-            background: var(--dash-purple-soft);
-        }
-
-        .attention-text {
-            flex: 1;
-        }
-
-        .attention-text strong {
-            display: block;
-            font-size: 13px;
-        }
-
-        .attention-text span {
-            display: block;
-            color: var(--dash-muted);
-            font-size: 11px;
-            margin-top: 3px;
-        }
-
-        .attention-item a,
-        .text-btn {
-            color: var(--dash-primary);
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        /* ---------- TABLES ---------- */
-
-        .data-table-wrap {
-            overflow-x: auto;
-        }
-
-        .dash-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 650px;
-        }
-
-        .dash-table th,
-        .dash-table td {
-            padding: 13px 17px;
-            text-align: left;
-            border-bottom: 1px solid var(--dash-border);
-            font-size: 12px;
-        }
-
-        .dash-table th {
-            color: var(--dash-muted);
-            font-weight: 600;
-            background: rgba(127,127,127,.035);
-        }
-
-        .dash-table td strong {
-            font-size: 12px;
-        }
-
-        .empty-table {
-            min-height: 170px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            text-align: center;
-            color: var(--dash-muted);
-            padding: 30px;
-        }
-
-        .empty-icon {
-            font-size: 35px;
-            margin-bottom: 7px;
-        }
-
-        .empty-table strong {
-            color: var(--dash-text);
-            margin-bottom: 4px;
-        }
-
-        /* ---------- QUICK ACTIONS ---------- */
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 13px;
-        }
-
-        .quick-action {
             background: var(--dash-card);
-            border: 1px solid var(--dash-border);
-            border-radius: 15px;
-            padding: 17px 10px;
-            text-align: center;
-            text-decoration: none;
             color: var(--dash-text);
-            box-shadow: var(--dash-shadow);
-            transition: .2s ease;
         }
 
-        .quick-action:hover {
-            transform: translateY(-3px);
-            border-color: var(--dash-primary);
-        }
+        .chart-area { padding: 18px; min-height: 255px; }
+        .mini-chart { height: 215px; display: flex; align-items: flex-end; gap: 9px; padding: 15px 8px 5px; }
+        .chart-column { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+        .chart-bar-wrap { width: 100%; height: 180px; display: flex; align-items: flex-end; justify-content: center; }
+        .chart-bar { width: min(38px, 65%); min-height: 4px; border-radius: 8px 8px 3px 3px; background: var(--dash-primary); }
+        .chart-day, .chart-value { color: var(--dash-muted); font-size: 10px; }
 
-        .quick-action span {
-            display: block;
-            font-size: 25px;
-            margin-bottom: 8px;
-        }
+        .attention-list { padding: 7px 20px 15px; }
+        .attention-item { display: flex; align-items: center; gap: 11px; padding: 13px 0; border-bottom: 1px solid var(--dash-border); }
+        .attention-item:last-child { border-bottom: 0; }
+        .attention-icon { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; }
+        .attention-icon.warning { background: var(--dash-orange-soft); }
+        .attention-icon.danger { background: var(--dash-red-soft); }
+        .attention-icon.money { background: var(--dash-green-soft); }
+        .attention-icon.supplier { background: var(--dash-purple-soft); }
+        .attention-text { flex: 1; }
+        .attention-text strong { display: block; font-size: 13px; }
+        .attention-text span { display: block; color: var(--dash-muted); font-size: 11px; margin-top: 3px; }
+        .attention-item a, .text-btn { color: var(--dash-primary); font-size: 12px; font-weight: 700; text-decoration: none; }
 
-        .quick-action strong {
-            display: block;
-            font-size: 12px;
-        }
+        .data-table-wrap { overflow-x: auto; }
+        .dash-table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        .dash-table th, .dash-table td { padding: 13px 17px; text-align: left; border-bottom: 1px solid var(--dash-border); font-size: 12px; }
+        .dash-table th { color: var(--dash-muted); font-weight: 600; background: rgba(127,127,127,.035); }
 
-        .quick-action small {
-            display: block;
-            color: var(--dash-muted);
-            font-size: 10px;
-            margin-top: 3px;
+        .quick-actions { display: grid; grid-template-columns: repeat(6, 1fr); gap: 13px; }
+        .quick-action {
+            background: var(--dash-card); border: 1px solid var(--dash-border);
+            border-radius: 15px; padding: 17px 10px; text-align: center;
+            text-decoration: none; color: var(--dash-text); box-shadow: var(--dash-shadow); transition: .2s ease;
         }
-
-        /* ---------- AI ---------- */
+        .quick-action:hover { transform: translateY(-3px); border-color: var(--dash-primary); }
+        .quick-action span { display: block; font-size: 25px; margin-bottom: 8px; }
+        .quick-action strong { display: block; font-size: 12px; }
+        .quick-action small { display: block; color: var(--dash-muted); font-size: 10px; margin-top: 3px; }
 
         .ai-card {
-            margin-top: 22px;
-            padding: 21px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            background:
-                radial-gradient(circle at 80% 30%, rgba(124,58,237,.12), transparent 35%),
-                var(--dash-card);
+            margin-top: 22px; padding: 21px; display: flex; align-items: center; justify-content: space-between; gap: 20px;
         }
-
-        .ai-content {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .ai-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 16px;
-            display: grid;
-            place-items: center;
-            background: var(--dash-purple-soft);
-            font-size: 27px;
-        }
-
-        .ai-content h3 {
-            margin: 0 0 5px;
-        }
-
-        .ai-content p {
-            margin: 0;
-            color: var(--dash-muted);
-            font-size: 12px;
-            line-height: 1.6;
-        }
-
-        .ai-btn {
-            background: var(--dash-primary);
-            color: white;
-            text-decoration: none;
-            padding: 11px 17px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 12px;
-            white-space: nowrap;
-        }
-
-        /* ---------- DASHBOARD TOOLBAR ---------- */
-
-        .dashboard-tools {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .dash-tool-btn {
-            border: 1px solid var(--dash-border);
-            background: var(--dash-card);
-            color: var(--dash-text);
-            border-radius: 9px;
-            padding: 8px 11px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .dash-tool-btn:hover {
-            border-color: var(--dash-primary);
-        }
-
-        /* ---------- PIN LOCK ---------- */
+        .ai-content { display: flex; align-items: center; gap: 15px; }
+        .ai-icon { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--dash-purple-soft); font-size: 27px; }
+        .ai-content h3 { margin: 0 0 5px; }
+        .ai-content p { margin: 0; color: var(--dash-muted); font-size: 12px; line-height: 1.6; }
+        .ai-btn { background: var(--dash-primary); color: white; text-decoration: none; padding: 11px 17px; border-radius: 10px; font-weight: 700; font-size: 12px; }
 
         .pin-lock-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            background:
-                radial-gradient(circle at 50% 20%, rgba(37,99,235,.25), transparent 35%),
-                #07101f;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            position: fixed; inset: 0; z-index: 99999;
+            background: rgba(7, 16, 31, 0.92); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; padding: 20px;
         }
-
-        .pin-lock-screen.show {
-            display: flex;
-        }
-
+        .pin-lock-screen.show { display: flex; }
         .pin-box {
-            width: min(390px, 100%);
-            background: #111827;
-            border: 1px solid #263244;
-            border-radius: 24px;
-            padding: 30px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 25px 70px rgba(0,0,0,.4);
+            width: min(390px, 100%); background: var(--dash-card);
+            border: 1px solid var(--dash-border); border-radius: 24px; padding: 30px; text-align: center; box-shadow: 0 25px 70px rgba(0,0,0,.4);
         }
-
-        .pin-logo {
-            width: 65px;
-            height: 65px;
-            border-radius: 20px;
-            background: linear-gradient(135deg,#2563eb,#7c3aed);
-            display: grid;
-            place-items: center;
-            margin: 0 auto 15px;
-            font-weight: 900;
-            font-size: 20px;
-        }
-
-        .pin-box h2 {
-            margin: 0 0 7px;
-        }
-
-        .pin-box p {
-            margin: 0 0 20px;
-            color: #9ca3af;
-            font-size: 13px;
-        }
-
-        .pin-input {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #374151;
-            background: #0b1120;
-            color: white;
-            text-align: center;
-            letter-spacing: 8px;
-            font-size: 22px;
-            outline: none;
-        }
-
-        .pin-unlock-btn {
-            width: 100%;
-            margin-top: 12px;
-            border: 0;
-            padding: 13px;
-            border-radius: 11px;
-            background: #2563eb;
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .pin-error {
-            color: #f87171;
-            min-height: 20px;
-            margin-top: 10px;
-            font-size: 12px;
-        }
-
-        /* ---------- RESPONSIVE ---------- */
+        .pin-logo { width: 65px; height: 65px; border-radius: 20px; background: var(--dash-primary); display: grid; place-items: center; margin: 0 auto 15px; color: white; font-weight: 900; font-size: 20px; }
+        .pin-input { width: 100%; box-sizing: border-box; padding: 15px; border-radius: 12px; border: 1px solid var(--dash-border); background: var(--dash-bg); color: var(--dash-text); text-align: center; letter-spacing: 8px; font-size: 22px; outline: none; }
+        .pin-unlock-btn { width: 100%; margin-top: 12px; border: 0; padding: 13px; border-radius: 11px; background: var(--dash-primary); color: white; font-weight: 700; cursor: pointer; }
+        .pin-error { color: var(--dash-red); min-height: 20px; margin-top: 10px; font-size: 12px; }
 
         @media (max-width: 1150px) {
-            .stats-grid,
-            .finance-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .quick-actions {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .stats-grid, .finance-grid { grid-template-columns: repeat(2, 1fr); }
+            .quick-actions { grid-template-columns: repeat(3, 1fr); }
         }
-
         @media (max-width: 850px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .welcome-section {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .ai-card {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .stats-grid,
-            .finance-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .quick-actions {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .welcome-section {
-                padding: 21px;
-            }
-
-            .welcome-section h2 {
-                font-size: 22px;
-            }
-
-            .stat-value {
-                font-size: 24px;
-            }
-
-            .topbar-right .search-box {
-                display: none;
-            }
-
-            .profile-info {
-                display: none;
-            }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .welcome-section, .ai-card { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 
 <body class="dashboard-page">
 
-<!-- =========================================================
-     PIN LOCK
-     ========================================================= -->
 <div class="pin-lock-screen" id="pinLockScreen">
-
     <div class="pin-box">
-
         <div class="pin-logo">GS</div>
-
-        <h2>Store Locked</h2>
-
-        <p>
-            Dashboard खोल्न PIN राख्नुहोस्।
-        </p>
-
-        <input
-            type="password"
-            id="dashboardPinInput"
-            class="pin-input"
-            inputmode="numeric"
-            maxlength="8"
-            placeholder="••••"
-        >
-
-        <button
-            type="button"
-            class="pin-unlock-btn"
-            id="dashboardUnlockBtn"
-        >
-            🔓 Unlock Dashboard
-        </button>
-
+        <h2>Store Locked (Control Room)</h2>
+        <p>ड्यासबोर्ड खोल्न आफ्नो MPIN राख्नुहोस्।</p>
+        <input type="password" id="dashboardPinInput" class="pin-input" inputmode="numeric" maxlength="8" placeholder="••••">
+        <button type="button" class="pin-unlock-btn" id="dashboardUnlockBtn">🔓 Unlock Dashboard</button>
         <div class="pin-error" id="pinError"></div>
-
     </div>
-
 </div>
 
-
-<!-- Mobile Overlay -->
-<div class="overlay" id="overlay"></div>
-
-
-<!-- =========================================================
-     SIDEBAR
-     ========================================================= -->
-<aside class="sidebar" id="sidebar">
-
-    <div class="logo-area">
-
-        <div class="logo-icon">GS</div>
-
-        <div>
-            <h2>General Store</h2>
-            <span>Management System</span>
-        </div>
-
-    </div>
-
-
-    <nav class="sidebar-menu">
-
-        <a href="index.html" class="menu-item active">
-            <span class="menu-icon">⌂</span>
-            <span>Dashboard</span>
-        </a>
-
-        <a href="sale.html" class="menu-item">
-            <span class="menu-icon">🛒</span>
-            <span>New Sale</span>
-        </a>
-
-        <a href="sales-return.html" class="menu-item">
-            <span class="menu-icon">↩️</span>
-            <span>Sales Return</span>
-        </a>
-
-        <a href="purchase.html" class="menu-item">
-            <span class="menu-icon">📦</span>
-            <span>Purchase</span>
-        </a>
-
-        <a href="inventory.html" class="menu-item">
-            <span class="menu-icon">▣</span>
-            <span>Inventory</span>
-        </a>
-
-        <!-- NEW FIFO -->
-        <a href="stock-lots.html" class="menu-item">
-            <span class="menu-icon">🧮</span>
-            <span>FIFO Lots</span>
-        </a>
-
-        <a href="customers.html" class="menu-item">
-            <span class="menu-icon">👥</span>
-            <span>Customers</span>
-        </a>
-
-        <a href="suppliers.html" class="menu-item">
-            <span class="menu-icon">🏢</span>
-            <span>Suppliers</span>
-        </a>
-
-        <a href="finance.html" class="menu-item">
-            <span class="menu-icon">💰</span>
-            <span>Finance</span>
-        </a>
-
-        <a href="reports.html" class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span>Reports</span>
-        </a>
-
-        <a href="whatsapp.html" class="menu-item">
-            <span class="menu-icon">💬</span>
-            <span>WhatsApp</span>
-        </a>
-
-        <a href="ai.html" class="menu-item">
-            <span class="menu-icon">🤖</span>
-            <span>AI Assistant</span>
-        </a>
-
-        <a href="settings.html" class="menu-item">
-            <span class="menu-icon">⚙️</span>
-            <span>Settings</span>
-        </a>
-
-    </nav>
-
-
-    <div class="sidebar-bottom">
-
-        <div class="store-status">
-            <span class="status-dot"></span>
-
+<main class="main-content" style="margin-left: 0; width: 100%;">
+    <header class="topbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background: var(--dash-card); border-bottom: 1px solid var(--dash-border);">
+        <div class="topbar-left" style="display: flex; align-items: center; gap: 15px;">
             <div>
-                <strong>Store Online</strong>
-                <small>Local data ready</small>
+                <h1 style="margin:0; font-size: 22px;">Dashboard</h1>
+                <p id="todayDate" style="margin:0; color: var(--dash-muted); font-size: 13px;">आजको व्यापारको अवस्था</p>
             </div>
         </div>
-
-        <div class="version">
-            General Store v1.0
+        <div class="topbar-right" style="display: flex; align-items: center; gap: 10px;">
+            <a href="settings.html" class="dash-tool-btn" style="text-decoration:none; padding: 8px 12px; border-radius: 9px; border: 1px solid var(--dash-border); background: var(--dash-card); color: var(--dash-text);">⚙️ Settings</a>
         </div>
-
-    </div>
-
-</aside>
-
-
-<!-- =========================================================
-     MAIN
-     ========================================================= -->
-<main class="main-content">
-
-    <header class="topbar">
-
-        <div class="topbar-left">
-
-            <button
-                class="mobile-menu-btn"
-                id="menuBtn"
-                type="button"
-            >
-                ☰
-            </button>
-
-            <div>
-                <h1>Dashboard</h1>
-                <p id="todayDate">आजको व्यापारको अवस्था</p>
-            </div>
-
-        </div>
-
-
-        <div class="topbar-right">
-
-            <div class="search-box">
-
-                <span>⌕</span>
-
-                <input
-                    type="text"
-                    id="searchInput"
-                    placeholder="Product, customer, bill..."
-                >
-
-            </div>
-
-
-            <button
-                class="dash-tool-btn"
-                id="themeBtn"
-                type="button"
-                title="Dark / Light Mode"
-            >
-                🌙
-            </button>
-
-
-            <button
-                class="dash-tool-btn"
-                id="lockBtn"
-                type="button"
-                title="Lock Dashboard"
-            >
-                🔒
-            </button>
-
-
-            <button
-                class="icon-btn notification-btn"
-                type="button"
-            >
-                🔔
-                <span class="notification-dot"></span>
-            </button>
-
-
-            <div class="profile">
-
-                <div class="profile-avatar">A</div>
-
-                <div class="profile-info">
-                    <strong>Admin</strong>
-                    <small>Owner</small>
-                </div>
-
-            </div>
-
-        </div>
-
     </header>
 
-
     <section class="dashboard-content">
-
-
-        <!-- WELCOME -->
-
         <div class="welcome-section">
-
             <div>
-
-                <h2 id="welcomeTitle">
-                    नमस्ते, Admin 👋
-                </h2>
-
-                <p>
-                    आजको पसलको अवस्था यहाँबाट हेर्नुहोस्।
-                </p>
-
+                <h2 id="welcomeTitle">नमस्ते, Admin 👋</h2>
+                <p>आजको पसलको अवस्था यहाँबाट हेर्नुहोस्।</p>
             </div>
-
-            <a
-                href="sale.html"
-                class="primary-btn"
-            >
-                + New Sale
-            </a>
-
+            <a href="sale.html" class="primary-btn">+ New Sale</a>
         </div>
-
-
-        <!-- MAIN STATS -->
 
         <div class="stats-grid">
-
             <div class="stat-card">
-
                 <div class="stat-top">
-
                     <div class="stat-icon sales-icon">🛒</div>
-
-                    <span class="stat-label">
-                        आजको बिक्री
-                    </span>
-
+                    <span class="stat-label">आजको बिक्री</span>
                 </div>
-
-                <div class="stat-value">
-                    Rs. <span id="todaySales">0</span>
-                </div>
-
-                <div class="stat-bottom">
-
-                    <span class="positive" id="salesChange">
-                        Live
-                    </span>
-
-                    <span>
-                        आज
-                    </span>
-
-                </div>
-
+                <div class="stat-value">Rs. <span id="todaySales">0</span></div>
+                <div class="stat-bottom"><span class="positive">Live</span><span>आज</span></div>
             </div>
-
-
             <div class="stat-card">
-
                 <div class="stat-top">
-
                     <div class="stat-icon profit-icon">📈</div>
-
-                    <span class="stat-label">
-                        Gross Profit
-                    </span>
-
+                    <span class="stat-label">Gross Profit</span>
                 </div>
-
-                <div class="stat-value">
-                    Rs. <span id="grossProfit">0</span>
-                </div>
-
-                <div class="stat-bottom">
-
-                    <span class="positive">
-                        FIFO
-                    </span>
-
-                    <span>
-                        आज
-                    </span>
-
-                </div>
-
+                <div class="stat-value">Rs. <span id="grossProfit">0</span></div>
+                <div class="stat-bottom"><span class="positive">FIFO</span><span>आज</span></div>
             </div>
-
-
             <div class="stat-card">
-
                 <div class="stat-top">
-
                     <div class="stat-icon expense-icon">💸</div>
-
-                    <span class="stat-label">
-                        Expenses
-                    </span>
-
+                    <span class="stat-label">Expenses</span>
                 </div>
-
-                <div class="stat-value">
-                    Rs. <span id="expenses">0</span>
-                </div>
-
-                <div class="stat-bottom">
-
-                    <span>
-                        आजको खर्च
-                    </span>
-
-                </div>
-
+                <div class="stat-value">Rs. <span id="expenses">0</span></div>
+                <div class="stat-bottom"><span>आजको खर्च</span></div>
             </div>
-
-
             <div class="stat-card">
-
                 <div class="stat-top">
-
                     <div class="stat-icon net-profit-icon">💰</div>
-
-                    <span class="stat-label">
-                        Net Profit
-                    </span>
-
+                    <span class="stat-label">Net Profit</span>
                 </div>
-
-                <div class="stat-value">
-                    Rs. <span id="netProfit">0</span>
-                </div>
-
-                <div class="stat-bottom">
-
-                    <span class="positive">
-                        Gross − Expense
-                    </span>
-
-                    <span>
-                        आज
-                    </span>
-
-                </div>
-
+                <div class="stat-value">Rs. <span id="netProfit">0</span></div>
+                <div class="stat-bottom"><span class="positive">Gross − Expense</span><span>आज</span></div>
             </div>
-
         </div>
-
-
-        <!-- FINANCIAL OVERVIEW -->
 
         <div class="section-title">
-
-            <div>
-                <h3>Financial Overview</h3>
-                <p>पसलको पैसा, stock र बाँकी रकम</p>
-            </div>
-
+            <h3>Financial Overview</h3>
+            <p>पसलको पैसा, stock र बाँकी रकम</p>
         </div>
-
 
         <div class="finance-grid">
-
             <div class="finance-card">
-
                 <div class="finance-icon">👤</div>
-
                 <div>
-
                     <span>Customer Receivable</span>
-
-                    <strong>
-                        Rs. <span id="customerReceivable">0</span>
-                    </strong>
-
-                    <small>
-                        ग्राहकबाट लिन बाँकी
-                    </small>
-
+                    <strong>Rs. <span id="customerReceivable">0</span></strong>
+                    <small>ग्राहकबाट लिन बाँकी</small>
                 </div>
-
             </div>
-
-
             <div class="finance-card">
-
                 <div class="finance-icon">🏢</div>
-
                 <div>
-
                     <span>Supplier Payable</span>
-
-                    <strong>
-                        Rs. <span id="supplierPayable">0</span>
-                    </strong>
-
-                    <small>
-                        Supplier लाई दिन बाँकी
-                    </small>
-
+                    <strong>Rs. <span id="supplierPayable">0</span></strong>
+                    <small>Supplier लाई दिन बाँकी</small>
                 </div>
-
             </div>
-
-
             <div class="finance-card">
-
                 <div class="finance-icon">📦</div>
-
                 <div>
-
                     <span>Stock Value</span>
-
-                    <strong>
-                        Rs. <span id="stockValue">0</span>
-                    </strong>
-
-                    <small>
-                        FIFO cost based
-                    </small>
-
+                    <strong>Rs. <span id="stockValue">0</span></strong>
+                    <small>FIFO cost based</small>
                 </div>
-
             </div>
-
-
             <div class="finance-card">
-
                 <div class="finance-icon">💳</div>
-
                 <div>
-
                     <span>Cash / Bank / QR</span>
-
-                    <strong>
-                        Rs. <span id="availableBalance">0</span>
-                    </strong>
-
-                    <small>
-                        उपलब्ध balance
-                    </small>
-
+                    <strong>Rs. <span id="availableBalance">0</span></strong>
+                    <small>उपलब्ध balance</small>
                 </div>
-
             </div>
-
         </div>
-
-
-        <!-- SALES + ATTENTION -->
 
         <div class="dashboard-grid">
-
-
             <div class="dashboard-card sales-overview">
-
                 <div class="card-header">
-
                     <div>
-
                         <h3>Sales Overview</h3>
-
-                        <p>
-                            पछिल्लो 7 दिनको वास्तविक बिक्री
-                        </p>
-
+                        <p>पछिल्लो दिनको वास्तविक बिक्री</p>
                     </div>
-
                     <select id="salesPeriod">
-
-                        <option value="7">
-                            Last 7 Days
-                        </option>
-
-                        <option value="30">
-                            Last 30 Days
-                        </option>
-
+                        <option value="7">Last 7 Days</option>
+                        <option value="30">Last 30 Days</option>
                     </select>
-
                 </div>
-
                 <div class="chart-area" id="salesChart"></div>
-
             </div>
-
 
             <div class="dashboard-card attention-card">
-
                 <div class="card-header">
-
                     <div>
-
                         <h3>Attention Required</h3>
-
-                        <p>
-                            तुरुन्त हेर्नुपर्ने कुरा
-                        </p>
-
+                        <p>तुरुन्त हेर्नुपर्ने कुरा</p>
                     </div>
-
                 </div>
-
-
                 <div class="attention-list">
-
-
                     <div class="attention-item">
-
-                        <div class="attention-icon warning">
-                            ⚠️
-                        </div>
-
+                        <div class="attention-icon warning">⚠️</div>
                         <div class="attention-text">
-
                             <strong>Low Stock</strong>
-
-                            <span id="lowStockCount">
-                                0 products
-                            </span>
-
+                            <span id="lowStockCount">0 products</span>
                         </div>
-
-                        <a href="inventory.html">
-                            View
-                        </a>
-
+                        <a href="inventory.html">View</a>
                     </div>
-
-
                     <div class="attention-item">
-
-                        <div class="attention-icon danger">
-                            ⏰
-                        </div>
-
+                        <div class="attention-icon danger">⏰</div>
                         <div class="attention-text">
-
                             <strong>Expiry Near</strong>
-
-                            <span id="expiryCount">
-                                0 products
-                            </span>
-
+                            <span id="expiryCount">0 products</span>
                         </div>
-
-                        <a href="inventory.html">
-                            View
-                        </a>
-
+                        <a href="inventory.html">View</a>
                     </div>
-
-
-                    <div class="attention-item">
-
-                        <div class="attention-icon money">
-                            💰
-                        </div>
-
-                        <div class="attention-text">
-
-                            <strong>Credit Due</strong>
-
-                            <span id="creditDueCount">
-                                0 customers
-                            </span>
-
-                        </div>
-
-                        <a href="customers.html">
-                            View
-                        </a>
-
-                    </div>
-
-
-                    <div class="attention-item">
-
-                        <div class="attention-icon supplier">
-                            🏢
-                        </div>
-
-                        <div class="attention-text">
-
-                            <strong>Supplier Payment</strong>
-
-                            <span id="supplierDueCount">
-                                0 suppliers
-                            </span>
-
-                        </div>
-
-                        <a href="suppliers.html">
-                            View
-                        </a>
-
-                    </div>
-
                 </div>
-
             </div>
-
         </div>
 
-
-        <!-- FAST MOVING -->
-
-        <div class="dashboard-card" style="margin-top:22px;">
-
-            <div class="card-header">
-
-                <div>
-
-                    <h3>Fast Moving Products</h3>
-
-                    <p>
-                        बिक्रीको आधारमा छिटो चलिरहेका सामान
-                    </p>
-
-                </div>
-
-                <a
-                    href="inventory.html"
-                    class="text-btn"
-                >
-                    View All →
-                </a>
-
-            </div>
-
-            <div
-                class="data-table-wrap"
-                id="fastMovingArea"
-            ></div>
-
-        </div>
-
-
-        <!-- RECENT ACTIVITY -->
-
-        <div class="dashboard-card" style="margin-top:22px;">
-
-            <div class="card-header">
-
-                <div>
-
-                    <h3>Recent Activity</h3>
-
-                    <p>
-                        पछिल्ला बिक्री, खरीद र finance कारोबार
-                    </p>
-
-                </div>
-
-                <a
-                    href="reports.html"
-                    class="text-btn"
-                >
-                    View All →
-                </a>
-
-            </div>
-
-            <div
-                class="data-table-wrap"
-                id="recentActivityArea"
-            ></div>
-
-        </div>
-
-
-        <!-- QUICK ACTIONS -->
-
-        <div class="section-title quick-title">
-
-            <div>
-
-                <h3>Quick Actions</h3>
-
-                <p>
-                    बारम्बार प्रयोग हुने काम
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="quick-actions">
-
+        <div class="quick-actions" style="margin-top: 22px;">
             <a href="sale.html" class="quick-action">
                 <span>🛒</span>
                 <strong>New Sale</strong>
                 <small>नयाँ बिक्री</small>
             </a>
-
-            <a href="sales-return.html" class="quick-action">
-                <span>↩️</span>
-                <strong>Sales Return</strong>
-                <small>बिक्री फिर्ता</small>
-            </a>
-
             <a href="purchase.html" class="quick-action">
                 <span>📦</span>
                 <strong>Purchase</strong>
                 <small>नयाँ खरीद</small>
             </a>
-
-            <a href="stock-lots.html" class="quick-action">
-                <span>🧮</span>
-                <strong>FIFO Lots</strong>
-                <small>Stock cost</small>
-            </a>
-
-            <a href="customers.html" class="quick-action">
-                <span>👤</span>
-                <strong>Customer</strong>
-                <small>ग्राहक रकम</small>
-            </a>
-
-            <a href="suppliers.html" class="quick-action">
-                <span>🏢</span>
-                <strong>Supplier</strong>
-                <small>Supplier payment</small>
-            </a>
-
-            <a href="finance.html" class="quick-action">
-                <span>💸</span>
-                <strong>Expense</strong>
-                <small>खर्च राख्नुहोस्</small>
-            </a>
-
             <a href="inventory.html" class="quick-action">
                 <span>🔧</span>
                 <strong>Stock</strong>
                 <small>Stock मिलाउनुहोस्</small>
             </a>
-
-        </div>
-
-
-        <!-- AI -->
-
-        <div class="ai-card">
-
-            <div class="ai-content">
-
-                <div class="ai-icon">
-                    🤖
-                </div>
-
-                <div>
-
-                    <h3>AI Shop Assistant</h3>
-
-                    <p>
-                        "आजको व्यापार कस्तो भयो?",
-                        "कुन सामान order गर्नुपर्छ?",
-                        "कसबाट पैसा लिन बाँकी छ?"
-                        जस्ता प्रश्न सोध्न सक्नुहुन्छ।
-                    </p>
-
-                </div>
-
-            </div>
-
-            <a
-                href="ai.html"
-                class="ai-btn"
-            >
-                Ask AI →
+            <a href="customers.html" class="quick-action">
+                <span>👤</span>
+                <strong>Customer</strong>
+                <small>ग्राहक रकम</small>
             </a>
-
+            <a href="suppliers.html" class="quick-action">
+                <span>🏢</span>
+                <strong>Supplier</strong>
+                <small>Supplier payment</small>
+            </a>
+            <a href="settings.html" class="quick-action">
+                <span>⚙️</span>
+                <strong>Settings</strong>
+                <small>सेटिङ्स</small>
+            </a>
         </div>
-
     </section>
-
-
-    <footer class="footer">
-
-        <span>
-            © 2026 General Store Management System
-        </span>
-
-        <span>
-            v1.0
-        </span>
-
-    </footer>
-
 </main>
 
-
-<!-- =========================================================
-     DASHBOARD JAVASCRIPT
-     ========================================================= -->
 <script>
 (function () {
-
     "use strict";
+    const SETTINGS_KEY = "gs_settings";
+    const MPIN_KEY = "gs_mpin_security";
 
-    const SALES_KEY = "gs_sales";
-    const PURCHASE_KEY = "gs_purchases";
-    const PRODUCT_KEY = "gs_products";
-    const CUSTOMER_KEY = "gs_customers";
-    const SUPPLIER_KEY = "gs_suppliers";
-    const FINANCE_KEY = "gs_finance";
-    const LOT_KEY = "gs_stock_lots";
-
-    const THEME_KEY = "gs_dashboard_theme";
-    const PIN_KEY = "gs_dashboard_pin";
-
-    function read(key) {
-
+    function checkMpinLock() {
         try {
-            const value = localStorage.getItem(key);
-
-            if (!value) {
-                return [];
+            const raw = localStorage.getItem(MPIN_KEY);
+            if (!raw) return;
+            const config = JSON.parse(raw);
+            if (config && config.enabled) {
+                document.getElementById("pinLockScreen").classList.add("show");
+                document.getElementById("dashboardPinInput").focus();
             }
+        } catch (e) {}
+    }
 
-            const parsed = JSON.parse(value);
+    async function verifyUnlockPin() {
+        const pin = document.getElementById("dashboardPinInput").value.trim();
+        if (!pin) return;
+        try {
+            const config = JSON.parse(localStorage.getItem(MPIN_KEY));
+            if (!config || !config.hash || !config.salt) return;
 
-            return Array.isArray(parsed) ? parsed : parsed;
+            const data = new TextEncoder().encode(`${config.salt}:${pin}`);
+            const digest = await window.crypto.subtle.digest("SHA-256", data);
+            const candidate = Array.from(new Uint8Array(digest))
+                .map(byte => byte.toString(16).padStart(2, "0"))
+                .join("");
 
-        } catch (error) {
-
-            console.warn("Read error:", key, error);
-
-            return [];
-
+            if (candidate === config.hash) {
+                document.getElementById("pinLockScreen").classList.remove("show");
+            } else {
+                document.getElementById("pinError").textContent = "गलत MPIN! फेरि प्रयास गर्नुहोस्।";
+                document.getElementById("dashboardPinInput").value = "";
+            }
+        } catch (e) {
+            document.getElementById("pinError").textContent = "प्रमाणीकरण त्रुटि भयो।";
         }
-
     }
 
-
-    function number(value) {
-
-        const n = Number(value);
-
-        return Number.isFinite(n) ? n : 0;
-
-    }
-
-
-    function money(value) {
-
-        return Math.round(number(value)).toLocaleString("en-IN");
-
-    }
-
-
-    function todayKey() {
-
-        const d = new Date();
-
-        const y = d.getFullYear();
-
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-
-        const day = String(d.getDate()).padStart(2, "0");
-
-        return `${y}-${m}-${day}`;
-
-    }
-
-
-    function dateKey(value) {
-
-        if (!value) {
-            return "";
-        }
-
-        const d = new Date(value);
-
-        if (Number.isNaN(d.getTime())) {
-            return String(value).slice(0, 10);
-        }
-
-        const y = d.getFullYear();
-
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-
-        const day = String(d.getDate()).padStart(2, "0");
-
-        return `${y}-${m}-${day}`;
-
-    }
-
-
-    function displayDate(value) {
-
-        if (!value) {
-            return "-";
-        }
-
-        const d = new Date(value);
-
-        if (Number.isNaN(d.getTime())) {
-            return String(value);
-        }
-
-        return d.toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-        });
-
-    }
-
-
-    function escapeHtml(value) {
-
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-
-    }
-
-
-    const sales = read(SALES_KEY) || [];
-    const purchases = read(PURCHASE_KEY) || [];
-    const products = read(PRODUCT_KEY) || [];
-    const customers = read(CUSTOMER_KEY) || [];
-    const suppliers = read(SUPPLIER_KEY) || [];
-    const finance = read(FINANCE_KEY) || [];
-    const lots = read(LOT_KEY) || [];
-
-
-    /* =====================================================
-       DATE
-       ===================================================== */
-
-    const todayDate = document.getElementById("todayDate");
-
-    if (todayDate) {
-
-        todayDate.textContent =
-            new Date().toLocaleDateString("ne-NP", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-            });
-
-    }
-
-
-    /* =====================================================
-       TODAY SALES
-       ===================================================== */
-
-    const today = todayKey();
-
-    const todaySales = sales.filter(function (sale) {
-
-        return dateKey(
-            sale.date || sale.createdAt
-        ) === today;
-
+    document.getElementById("dashboardUnlockBtn").addEventListener("click", verifyUnlockPin);
+    document.getElementById("dashboardPinInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") verifyUnlockPin();
     });
 
-
-    const todaySaleAmount = todaySales.reduce(function (sum, sale) {
-
-        return sum + number(sale.total);
-
-    }, 0);
-
-
-    document.getElementById("todaySales").textContent =
-        money(todaySaleAmount);
-
-
-    /* =====================================================
-       GROSS PROFIT
-       FIFO COST AVAILABLE भए प्रयोग गर्ने
-       नभए rate based fallback
-       ===================================================== */
-
-    const todayGrossProfit = todaySales.reduce(function (sum, sale) {
-
-        const saleTotal = number(sale.total);
-
-        let cost = number(sale.fifoCost);
-
-        if (!cost) {
-
-            cost =
-                number(sale.qty) *
-                number(sale.rate);
-
-        }
-
-        return sum + (saleTotal - cost);
-
-    }, 0);
-
-
-    document.getElementById("grossProfit").textContent =
-        money(todayGrossProfit);
-
-
-    /* =====================================================
-       EXPENSE
-       ===================================================== */
-
-    const todayExpenses = finance.filter(function (item) {
-
-        const sameDay =
-            dateKey(item.date || item.createdAt) === today;
-
-        const type =
-            String(item.type || "").toUpperCase();
-
-        return sameDay && type === "EXPENSE";
-
-    }).reduce(function (sum, item) {
-
-        return sum + number(item.amount);
-
-    }, 0);
-
-
-    document.getElementById("expenses").textContent =
-        money(todayExpenses);
-
-
-    document.getElementById("netProfit").textContent =
-        money(todayGrossProfit - todayExpenses);
-
-
-    /* =====================================================
-       CUSTOMER RECEIVABLE
-       ===================================================== */
-
-    const customerReceivable = customers.reduce(function (sum, customer) {
-
-        const balance = number(
-            customer.currentBalance
-        );
-
-        return sum + Math.max(balance, 0);
-
-    }, 0);
-
-
-    document.getElementById("customerReceivable").textContent =
-        money(customerReceivable);
-
-
-    const creditDueCount =
-        customers.filter(function (customer) {
-
-            return number(customer.currentBalance) > 0;
-
-        }).length;
-
-
-    document.getElementById("creditDueCount").textContent =
-        `${creditDueCount} customers`;
-
-
-    /* =====================================================
-       SUPPLIER PAYABLE
-       ===================================================== */
-
-    const supplierPayable = suppliers.reduce(function (sum, supplier) {
-
-        const balance = number(
-            supplier.currentBalance
-        );
-
-        return sum + Math.max(balance, 0);
-
-    }, 0);
-
-
-    document.getElementById("supplierPayable").textContent =
-        money(supplierPayable);
-
-
-    const supplierDueCount =
-        suppliers.filter(function (supplier) {
-
-            return number(supplier.currentBalance) > 0;
-
-        }).length;
-
-
-    document.getElementById("supplierDueCount").textContent =
-        `${supplierDueCount} suppliers`;
-
-
-    /* =====================================================
-       STOCK VALUE
-       FIFO LOT REMAINING भए त्यसबाट
-       ===================================================== */
-
-    let stockValue = 0;
-
-    if (lots.length) {
-
-        stockValue = lots.reduce(function (sum, lot) {
-
-            return sum +
-                number(lot.remainingQty) *
-                number(lot.effectiveCost);
-
-        }, 0);
-
-    } else {
-
-        stockValue = products.reduce(function (sum, product) {
-
-            return sum +
-                number(product.stock) *
-                number(product.purchasePrice);
-
-        }, 0);
-
-    }
-
-
-    document.getElementById("stockValue").textContent =
-        money(stockValue);
-
-
-    /* =====================================================
-       FINANCE BALANCE
-       ===================================================== */
-
-    let availableBalance = 0;
-
-    finance.forEach(function (item) {
-
-        const amount = number(item.amount);
-
-        const type =
-            String(item.type || "").toUpperCase();
-
-        if (
-            type === "INCOME"
-        ) {
-            availableBalance += amount;
-        }
-
-        if (
-            type === "EXPENSE" ||
-            type === "PAYMENT"
-        ) {
-            availableBalance -= amount;
-        }
-
-    });
-
-
-    document.getElementById("availableBalance").textContent =
-        money(availableBalance);
-
-
-    /* =====================================================
-       LOW STOCK
-       ===================================================== */
-
-    const lowStockProducts =
-        products.filter(function (product) {
-
-            const stock = number(product.stock);
-
-            const min = number(product.minStock);
-
-            return (
-                product.active !== false &&
-                (
-                    stock <= min ||
-                    stock <= 0
-                )
-            );
-
-        });
-
-
-    document.getElementById("lowStockCount").textContent =
-        `${lowStockProducts.length} products`;
-
-
-    /* =====================================================
-       EXPIRY NEAR
-       ===================================================== */
-
-    const now = new Date();
-
-    const expiryLimit = new Date();
-
-    expiryLimit.setDate(
-        expiryLimit.getDate() + 30
-    );
-
-
-    const expiryProducts =
-        products.filter(function (product) {
-
-            if (
-                product.expiryApplicable === false ||
-                !product.expiryDate
-            ) {
-                return false;
-            }
-
-            const expiry =
-                new Date(product.expiryDate);
-
-            return (
-                !Number.isNaN(expiry.getTime()) &&
-                expiry >= now &&
-                expiry <= expiryLimit
-            );
-
-        });
-
-
-    document.getElementById("expiryCount").textContent =
-        `${expiryProducts.length} products`;
-
-
-    /* =====================================================
-       SALES CHART
-       ===================================================== */
-
-    function renderSalesChart(days) {
-
-        const area =
-            document.getElementById("salesChart");
-
-        if (!area) {
-            return;
-        }
-
-        const result = [];
-
-        for (let i = days - 1; i >= 0; i--) {
-
-            const d = new Date();
-
-            d.setHours(0, 0, 0, 0);
-
-            d.setDate(
-                d.getDate() - i
-            );
-
-            const key = dateKey(d);
-
-            const amount = sales
-                .filter(function (sale) {
-
-                    return dateKey(
-                        sale.date || sale.createdAt
-                    ) === key;
-
-                })
-                .reduce(function (sum, sale) {
-
-                    return sum + number(sale.total);
-
-                }, 0);
-
-            result.push({
-                key,
-                amount,
-                label: d.toLocaleDateString(
-                    "en-IN",
-                    { day: "2-digit", month: "short" }
-                )
-            });
-
-        }
-
-
-        const max =
-            Math.max(
-                ...result.map(item => item.amount),
-                1
-            );
-
-
-        area.innerHTML = `
-            <div class="mini-chart">
-                ${result.map(function (item) {
-
-                    const height =
-                        item.amount === 0
-                            ? 3
-                            : Math.max(
-                                6,
-                                (item.amount / max) * 100
-                            );
-
-                    return `
-                        <div class="chart-column">
-
-                            <div class="chart-value">
-                                ${item.amount ? "Rs. " + money(item.amount) : ""}
-                            </div>
-
-                            <div class="chart-bar-wrap">
-                                <div
-                                    class="chart-bar"
-                                    style="height:${height}%"
-                                    title="Rs. ${money(item.amount)}"
-                                ></div>
-                            </div>
-
-                            <div class="chart-day">
-                                ${escapeHtml(item.label)}
-                            </div>
-
-                        </div>
-                    `;
-
-                }).join("")}
-            </div>
-        `;
-
-    }
-
-
-    renderSalesChart(7);
-
-
-    const salesPeriod =
-        document.getElementById("salesPeriod");
-
-    if (salesPeriod) {
-
-        salesPeriod.addEventListener(
-            "change",
-            function () {
-
-                renderSalesChart(
-                    Number(this.value) || 7
-                );
-
-            }
-        );
-
-    }
-
-
-    /* =====================================================
-       FAST MOVING PRODUCTS
-       ===================================================== */
-
-    function renderFastMoving() {
-
-        const area =
-            document.getElementById("fastMovingArea");
-
-        if (!area) {
-            return;
-        }
-
-        const map = {};
-
-        sales.forEach(function (sale) {
-
-            const productId =
-                sale.productId ||
-                sale.productName;
-
-            if (!productId) {
-                return;
-            }
-
-            if (!map[productId]) {
-
-                map[productId] = {
-                    name: sale.productName || "Unknown",
-                    qty: 0,
-                    amount: 0
-                };
-
-            }
-
-            map[productId].qty +=
-                number(sale.qty);
-
-            map[productId].amount +=
-                number(sale.total);
-
-        });
-
-
-        const items =
-            Object.values(map)
-                .sort(function (a, b) {
-
-                    return b.qty - a.qty;
-
-                })
-                .slice(0, 5);
-
-
-        if (!items.length) {
-
-            area.innerHTML = `
-                <div class="empty-table">
-
-                    <div class="empty-icon">📦</div>
-
-                    <strong>
-                        Product data छैन
-                    </strong>
-
-                    <span>
-                        बिक्री सुरु भएपछि fast moving products यहाँ देखिनेछन्।
-                    </span>
-
-                </div>
-            `;
-
-            return;
-        }
-
-
-        area.innerHTML = `
-            <table class="dash-table">
-
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Product</th>
-                        <th>Sold Qty</th>
-                        <th>Sales</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    ${items.map(function (item, index) {
-
-                        return `
-                            <tr>
-
-                                <td>
-                                    ${index + 1}
-                                </td>
-
-                                <td>
-                                    <strong>
-                                        ${escapeHtml(item.name)}
-                                    </strong>
-                                </td>
-
-                                <td>
-                                    ${money(item.qty)}
-                                </td>
-
-                                <td>
-                                    Rs. ${money(item.amount)}
-                                </td>
-
-                            </tr>
-                        `;
-
-                    }).join("")}
-
-                </tbody>
-
-            </table>
-        `;
-
-    }
-
-
-    renderFastMoving();
-
-
-    /* =====================================================
-       RECENT ACTIVITY
-       ===================================================== */
-
-    function renderRecentActivity() {
-
-        const area =
-            document.getElementById(
-                "recentActivityArea"
-            );
-
-        if (!area) {
-            return;
-        }
-
-
-        const activity = [];
-
-
-        sales.forEach(function (sale) {
-
-            activity.push({
-
-                date:
-                    sale.createdAt ||
-                    sale.date,
-
-                type: "SALE",
-
-                title:
-                    sale.billNumber ||
-                    sale.id ||
-                    "Sale",
-
-                name:
-                    sale.customerName ||
-                    sale.productName ||
-                    "Customer",
-
-                amount:
-                    number(sale.total)
-
-            });
-
-        });
-
-
-        purchases.forEach(function (purchase) {
-
-            activity.push({
-
-                date:
-                    purchase.createdAt ||
-                    purchase.date,
-
-                type: "PURCHASE",
-
-                title:
-                    purchase.billNumber ||
-                    purchase.id ||
-                    "Purchase",
-
-                name:
-                    purchase.supplierName ||
-                    purchase.productName ||
-                    "Supplier",
-
-                amount:
-                    number(purchase.total)
-
-            });
-
-        });
-
-
-        finance.forEach(function (item) {
-
-            activity.push({
-
-                date:
-                    item.createdAt ||
-                    item.date,
-
-                type:
-                    String(item.type || "FINANCE")
-                        .toUpperCase(),
-
-                title:
-                    item.reference ||
-                    item.id ||
-                    "Finance",
-
-                name:
-                    item.note ||
-                    item.category ||
-                    "Finance",
-
-                amount:
-                    number(item.amount)
-
-            });
-
-        });
-
-
-        activity.sort(function (a, b) {
-
-            return new Date(b.date || 0) -
-                   new Date(a.date || 0);
-
-        });
-
-
-        const latest =
-            activity.slice(0, 8);
-
-
-        if (!latest.length) {
-
-            area.innerHTML = `
-                <div class="empty-table">
-
-                    <div class="empty-icon">📝</div>
-
-                    <strong>
-                        कुनै activity छैन
-                    </strong>
-
-                    <span>
-                        नयाँ transaction भएपछि activity यहाँ देखिनेछ।
-                    </span>
-
-                </div>
-            `;
-
-            return;
-        }
-
-
-        area.innerHTML = `
-            <table class="dash-table">
-
-                <thead>
-
-                    <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Reference</th>
-                        <th>Details</th>
-                        <th>Amount</th>
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    ${latest.map(function (item) {
-
-                        let symbol = "📝";
-
-                        if (item.type === "SALE") {
-                            symbol = "🛒";
-                        }
-
-                        if (item.type === "PURCHASE") {
-                            symbol = "📦";
-                        }
-
-                        if (item.type === "EXPENSE") {
-                            symbol = "💸";
-                        }
-
-                        if (item.type === "INCOME") {
-                            symbol = "💰";
-                        }
-
-                        return `
-                            <tr>
-
-                                <td>
-                                    ${escapeHtml(
-                                        displayDate(item.date)
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${symbol}
-                                    ${escapeHtml(item.type)}
-                                </td>
-
-                                <td>
-                                    <strong>
-                                        ${escapeHtml(item.title)}
-                                    </strong>
-                                </td>
-
-                                <td>
-                                    ${escapeHtml(item.name)}
-                                </td>
-
-                                <td>
-                                    Rs. ${money(item.amount)}
-                                </td>
-
-                            </tr>
-                        `;
-
-                    }).join("")}
-
-                </tbody>
-
-            </table>
-        `;
-
-    }
-
-
-    renderRecentActivity();
-
-
-    /* =====================================================
-       DARK / LIGHT MODE
-       ===================================================== */
-
-    function applyTheme(theme) {
-
-        if (theme === "dark") {
-
-            document.body.classList.add(
-                "dashboard-dark"
-            );
-
-        } else {
-
-            document.body.classList.remove(
-                "dashboard-dark"
-            );
-
-        }
-
-        const btn =
-            document.getElementById("themeBtn");
-
-        if (btn) {
-
-            btn.textContent =
-                theme === "dark"
-                    ? "☀️"
-                    : "🌙";
-
-        }
-
-    }
-
-
-    const savedTheme =
-        localStorage.getItem(
-            THEME_KEY
-        ) || "light";
-
-
-    applyTheme(savedTheme);
-
-
-    document.getElementById(
-        "themeBtn"
-    ).addEventListener(
-        "click",
-        function () {
-
-            const current =
-                document.body.classList.contains(
-                    "dashboard-dark"
-                )
-                    ? "dark"
-                    : "light";
-
-            const next =
-                current === "dark"
-                    ? "light"
-                    : "dark";
-
-            localStorage.setItem(
-                THEME_KEY,
-                next
-            );
-
-            applyTheme(next);
-
-        }
-    );
-
-
-    /* =====================================================
-       PIN LOCK
-       ===================================================== */
-
-    const pinScreen =
-        document.getElementById(
-            "pinLockScreen"
-        );
-
-    const pinInput =
-        document.getElementById(
-            "dashboardPinInput"
-        );
-
-    const pinError =
-        document.getElementById(
-            "pinError"
-        );
-
-
-    function lockDashboard() {
-
-        pinScreen.classList.add("show");
-
-        pinInput.value = "";
-
-        pinError.textContent = "";
-
-        setTimeout(function () {
-
-            pinInput.focus();
-
-        }, 100);
-
-    }
-
-
-    function unlockDashboard() {
-
-        const configuredPin =
-            localStorage.getItem(
-                PIN_KEY
-            );
-
-
-        if (!configuredPin) {
-
-            pinScreen.classList.remove(
-                "show"
-            );
-
-            return;
-
-        }
-
-
-        if (
-            pinInput.value ===
-            configuredPin
-        ) {
-
-            pinScreen.classList.remove(
-                "show"
-            );
-
-            pinError.textContent = "";
-
-        } else {
-
-            pinError.textContent =
-                "गलत PIN भयो। फेरि प्रयास गर्नुहोस्।";
-
-            pinInput.value = "";
-
-            pinInput.focus();
-
-        }
-
-    }
-
-
-    document.getElementById(
-        "dashboardUnlockBtn"
-    ).addEventListener(
-        "click",
-        unlockDashboard
-    );
-
-
-    pinInput.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (event.key === "Enter") {
-
-                unlockDashboard();
-
-            }
-
-        }
-    );
-
-
-    document.getElementById(
-        "lockBtn"
-    ).addEventListener(
-        "click",
-        lockDashboard
-    );
-
-
-    /* =====================================================
-       OPTIONAL PIN SETUP
-       अहिले Settings integration आउँदासम्म
-       first-use मा PIN सेट गर्न सकिन्छ।
-       ===================================================== */
-
-    if (!localStorage.getItem(PIN_KEY)) {
-
-        const setPin =
-            localStorage.getItem(
-                "gs_pin_setup_prompted"
-            );
-
-        if (!setPin) {
-
-            setTimeout(function () {
-
-                const choice =
-                    confirm(
-                        "Dashboard PIN राख्न चाहनुहुन्छ?"
-                    );
-
-                if (choice) {
-
-                    const first =
-                        prompt(
-                            "नयाँ PIN राख्नुहोस् (4-8 digit):"
-                        );
-
-                    if (
-                        first &&
-                        /^\d{4,8}$/.test(first)
-                    ) {
-
-                        const second =
-                            prompt(
-                                "PIN फेरि confirm गर्नुहोस्:"
-                            );
-
-                        if (
-                            first === second
-                        ) {
-
-                            localStorage.setItem(
-                                PIN_KEY,
-                                first
-                            );
-
-                            alert(
-                                "Dashboard PIN सफलतापूर्वक सेट भयो।"
-                            );
-
-                        } else {
-
-                            alert(
-                                "PIN मिलेन। PIN सेट भएन।"
-                            );
-
-                        }
-
-                    } else {
-
-                        alert(
-                            "PIN 4 देखि 8 digit सम्म हुनुपर्छ।"
-                        );
-
-                    }
-
-                }
-
-                localStorage.setItem(
-                    "gs_pin_setup_prompted",
-                    "yes"
-                );
-
-            }, 700);
-
-        }
-
-    }
-
-
-    /* =====================================================
-       SAFE SIDEBAR / LINK NAVIGATION
-       पुरानो click interception ले navigation रोक्न नदिन
-       ===================================================== */
-
-    document.querySelectorAll(
-        ".sidebar a, .quick-action, .welcome-section a, .ai-btn, .text-btn"
-    ).forEach(function (link) {
-
-        link.addEventListener(
-            "click",
-            function () {
-
-                const href =
-                    this.getAttribute("href");
-
-                if (
-                    href &&
-                    href !== "#" &&
-                    !href.startsWith("javascript:")
-                ) {
-
-                    window.location.assign(href);
-
-                }
-
-            },
-            true
-        );
-
-    });
-
-
+    window.addEventListener("DOMContentLoaded", checkMpinLock);
 })();
 </script>
-
-
 <script src="script.js"></script>
-
 </body>
 </html>
