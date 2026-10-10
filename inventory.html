@@ -4,47 +4,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory | General Store</title>
+  <title>Inventory Management | General Store</title>
   <link rel="stylesheet" href="style.css">
+  <script src="appearance.js"></script>
+
   <style>
     .inventory-wrap{max-width:1400px;margin:auto;padding:20px}
     .inventory-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .inventory-top h1{margin-bottom:8px}
     .inventory-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
-    .inventory-stat,.inventory-panel{background:var(--card-bg,#fff);border:1px solid #e5e7eb;border-radius:14px;padding:16px}
-    .inventory-stat span{display:block;color:#6b7280;font-size:13px}
+    .inventory-stat,.inventory-panel{background:var(--card-bg,#fff);border:1px solid var(--border-color,#e5e7eb);border-radius:14px;padding:16px;color:var(--text-color,inherit)}
+    .inventory-stat span{display:block;color:var(--muted-color,#6b7280);font-size:13px}
     .inventory-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
     .inventory-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
     .inventory-toolbar input{flex:1;min-width:180px}
     .inventory-toolbar select{min-width:145px}
-    .inventory-toolbar input,.inventory-toolbar select{box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:var(--card-bg,#fff);color:inherit}
+    .inventory-toolbar input,.inventory-toolbar select{box-sizing:border-box;padding:10px;border:1px solid var(--border-color,#d1d5db);border-radius:8px;background:var(--input-bg,transparent);color:var(--text-color,inherit)}
     .inventory-table-wrap{overflow-x:auto}
     .inventory-table{width:100%;border-collapse:collapse;min-width:850px}
-    .inventory-table th,.inventory-table td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left}
-    .inventory-table th{font-size:13px;color:#6b7280;white-space:nowrap}
+    .inventory-table th,.inventory-table td{padding:11px;border-bottom:1px solid var(--border-color,#e5e7eb);text-align:left}
+    .inventory-table th{font-size:13px;color:var(--muted-color,#6b7280);white-space:nowrap}
     .inventory-product-name{font-weight:600}
-    .inventory-subtext{font-size:12px;color:#6b7280;margin-top:4px}
+    .inventory-subtext{font-size:12px;color:var(--muted-color,#6b7280);margin-top:4px}
     .inventory-status{display:inline-block;padding:5px 9px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
     .inventory-status.in{background:#dcfce7;color:#166534}
     .inventory-status.low{background:#ffedd5;color:#9a3412}
     .inventory-status.out{background:#fee2e2;color:#991b1b}
     .inventory-modal{display:none;position:fixed;inset:0;z-index:1000;background:#0008;overflow:auto;padding:20px}
     .inventory-modal.show{display:block}
-    .inventory-dialog{background:var(--card-bg,#fff);width:min(850px,100%);margin:20px auto;border-radius:16px;padding:22px}
+    .inventory-dialog{background:var(--card-bg,#fff);color:var(--text-color,inherit);border:1px solid var(--border-color,#e5e7eb);width:min(850px,100%);margin:20px auto;border-radius:16px;padding:22px}
     .inventory-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
     .inventory-dialog-head h2{margin:0}
     .inventory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
     .inventory-field{display:flex;flex-direction:column;gap:6px;min-width:0}
     .inventory-field label{font-size:13px;font-weight:600}
-    .inventory-field input,.inventory-field select{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:transparent;color:inherit}
+    .inventory-field input:not([type="checkbox"]),.inventory-field select{width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border-color,#d1d5db);border-radius:8px;background:var(--input-bg,transparent);color:var(--text-color,inherit)}
+    .inventory-field input:focus,.inventory-field select:focus{outline:2px solid var(--accent-color,#166534);outline-offset:1px}
     .inventory-section{margin-top:20px}
     .inventory-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
-    .inventory-btn{padding:10px 15px;border:1px solid #d1d5db;border-radius:9px;cursor:pointer;background:transparent;color:inherit}
-    .inventory-btn.primary{background:#166534;color:#fff;border-color:#166534}
+    .inventory-btn{padding:10px 15px;border:1px solid var(--border-color,#d1d5db);border-radius:9px;cursor:pointer;background:transparent;color:var(--text-color,inherit)}
+    .inventory-btn.primary{background:var(--accent-color,#166534);color:#fff;border-color:var(--accent-color,#166534)}
     .inventory-btn.view{padding:7px 10px;font-size:12px}
-    .inventory-empty{text-align:center;padding:35px;color:#6b7280}
+    .inventory-btn:focus-visible{outline:2px solid var(--accent-color,#166534);outline-offset:2px}
+    .inventory-empty{text-align:center;padding:35px;color:var(--muted-color,#6b7280)}
     .inventory-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-    .inventory-detail{padding:12px;border:1px solid #e5e7eb;border-radius:10px;overflow-wrap:anywhere}
-    .inventory-detail span{display:block;color:#6b7280;font-size:12px}
+    .inventory-detail{padding:12px;border:1px solid var(--border-color,#e5e7eb);border-radius:10px;overflow-wrap:anywhere}
+    .inventory-detail span{display:block;color:var(--muted-color,#6b7280);font-size:12px}
     .inventory-detail strong{display:block;margin-top:6px}
     .inventory-full{grid-column:1/-1}
     @media(max-width:800px){
@@ -59,18 +64,20 @@
       .inventory-stat strong{font-size:17px}
       .inventory-full{grid-column:auto}
       .inventory-toolbar input,.inventory-toolbar select{width:100%;min-width:0}
+      .inventory-top h1{font-size:23px}
+      .inventory-btn{max-width:100%}
     }
   </style>
 </head>
-<body>
 
+<body>
   <aside class="sidebar">
     <h2>General Store</h2>
     <nav>
       <a class="menu-item" href="index.html">Dashboard</a>
       <a class="menu-item" href="sale.html">New Sale</a>
       <a class="menu-item" href="purchase.html">Purchase</a>
-      <a class="menu-item" href="inventory.html">Inventory</a>
+      <a class="menu-item active" href="inventory.html">Inventory</a>
       <a class="menu-item" href="sales-return.html">Sales Return</a>
       <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
       <a class="menu-item" href="customers.html">Customers</a>
@@ -78,19 +85,19 @@
       <a class="menu-item" href="finance.html">Finance</a>
       <a class="menu-item" href="reports.html">Reports</a>
       <a class="menu-item" href="whatsapp.html">WhatsApp</a>
-      <a class="menu-item" href="ai.html">AI</a>
+      <a class="menu-item" href="ai.html">AI Assistant</a>
       <a class="menu-item" href="settings.html">Settings</a>
     </nav>
   </aside>
 
   <main class="inventory-wrap">
-    <div class="inventory-top">
+    <header class="inventory-top">
       <div>
         <h1>Inventory Management</h1>
         <p>Product, Stock र मूल्य व्यवस्थापन</p>
       </div>
       <button id="addProductBtn" class="inventory-btn primary" type="button">+ New Product</button>
-    </div>
+    </header>
 
     <section class="inventory-stats">
       <div class="inventory-stat">
@@ -151,14 +158,15 @@
             </tr>
           </thead>
           <tbody id="productTableBody">
-            <tr><td colspan="8" class="inventory-empty">Inventory लोड हुँदैछ...</td></tr>
+            <tr>
+              <td colspan="8" class="inventory-empty">Inventory लोड हुँदैछ...</td>
+            </tr>
           </tbody>
         </table>
       </div>
     </section>
   </main>
 
-  <!-- Add Product Modal -->
   <div class="inventory-modal" id="productModal" aria-hidden="true">
     <section class="inventory-dialog">
       <div class="inventory-dialog-head">
@@ -248,14 +256,15 @@
     </section>
   </div>
 
-  <!-- Product Details Modal -->
   <div class="inventory-modal" id="productViewModal" aria-hidden="true">
     <section class="inventory-dialog">
       <div class="inventory-dialog-head">
         <h2 id="productViewTitle">Product Details</h2>
         <button type="button" id="closeProductView" class="inventory-btn" aria-label="Close">✕</button>
       </div>
+
       <div id="productDetails" class="inventory-details"></div>
+
       <div class="inventory-actions">
         <button type="button" id="closeProductViewBtn" class="inventory-btn primary">Close</button>
       </div>
