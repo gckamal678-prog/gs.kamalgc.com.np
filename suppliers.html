@@ -1,525 +1,132 @@
+
 <!DOCTYPE html>
 <html lang="ne">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Suppliers - General Store</title>
-
+  <title>Suppliers | General Store</title>
   <link rel="stylesheet" href="style.css">
+  <script src="appearance.js"></script>
 
   <style>
-    :root {
-      --supplier-green: #166534;
-      --supplier-green-hover: #14532d;
-      --supplier-border: #d1d5db;
-      --supplier-muted: #6b7280;
-      --supplier-card: var(--card-bg, #ffffff);
-      --supplier-bg: var(--body-bg, #f5f7f6);
+    .supplier-wrap{max-width:1400px;margin:auto;padding:20px;color:var(--text-color,inherit)}
+    .supplier-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .supplier-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
+    .supplier-stat,.supplier-panel{background:var(--card-bg,#fff);border:1px solid var(--border-color,#e5e7eb);border-radius:14px;padding:16px;color:var(--text-color,inherit);min-width:0}
+    .supplier-stat span{display:block;color:var(--muted-color,#6b7280);font-size:13px}
+    .supplier-stat strong{display:block;font-size:21px;margin-top:8px;overflow-wrap:anywhere}
+    .supplier-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .supplier-toolbar input{flex:1;min-width:0}
+    .supplier-table-wrap{width:100%;overflow-x:auto}
+    .supplier-table{width:100%;border-collapse:collapse;min-width:850px}
+    .supplier-table th,.supplier-table td{padding:12px;border-bottom:1px solid var(--border-color,#e5e7eb);text-align:left;vertical-align:middle}
+    .supplier-table th{font-size:13px;color:var(--muted-color,#6b7280);white-space:nowrap}
+    .supplier-table tbody tr:hover{background:var(--hover-bg,#f9fafb)}
+    .supplier-btn{padding:10px 15px;border:1px solid var(--border-color,#d1d5db);border-radius:9px;cursor:pointer;background:transparent;color:inherit;font:inherit}
+    .supplier-btn.primary{background:var(--accent-color,#166534);color:#fff;border-color:var(--accent-color,#166534)}
+    .supplier-btn.small{padding:7px 10px;font-size:12px}
+    .supplier-status{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:600}
+    .supplier-status.active{background:#dcfce7;color:#166534}
+    .supplier-status.inactive{background:#fee2e2;color:#991b1b}
+    .supplier-balance-payable{color:#c2410c;font-weight:700}
+    .supplier-balance-advance{color:#15803d;font-weight:700}
+    .supplier-empty{text-align:center;padding:35px;color:var(--muted-color,#6b7280)}
+    .supplier-modal{display:none;position:fixed;inset:0;z-index:10000;background:#0008;overflow:auto;padding:20px}
+    .supplier-modal.show{display:block}
+    .supplier-dialog{background:var(--card-bg,#fff);color:var(--text-color,inherit);border:1px solid var(--border-color,#e5e7eb);width:min(1000px,100%);margin:20px auto;border-radius:16px;padding:22px;box-shadow:0 20px 60px #0003}
+    .supplier-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px}
+    .supplier-modal-head h2{margin:0 0 6px}
+    .supplier-modal-head p{margin:0;color:var(--muted-color,#6b7280);font-size:13px}
+    .supplier-close{width:36px;height:36px;border:1px solid var(--border-color,#d1d5db);border-radius:9px;background:transparent;color:inherit;font-size:22px;cursor:pointer}
+    .supplier-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .supplier-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .supplier-field.full{grid-column:1/-1}
+    .supplier-field label{font-size:13px;font-weight:600}
+    .supplier-field input,.supplier-field select,.supplier-field textarea,.supplier-toolbar input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border-color,#d1d5db);border-radius:8px;background:var(--input-bg,transparent);color:inherit;font:inherit;font-size:14px}
+    .supplier-field select option{background:#fff;color:#111827}
+    .supplier-field textarea{min-height:85px;resize:vertical}
+    .supplier-field small{font-size:12px;color:var(--muted-color,#6b7280)}
+    .supplier-checkbox{display:flex;align-items:center;gap:9px;min-height:42px}
+    .supplier-checkbox input{width:17px;height:17px;accent-color:var(--accent-color,#166534)}
+    .supplier-checkbox label{font-weight:500}
+    .supplier-message{display:none;margin-bottom:15px;padding:11px 13px;border-radius:9px;font-size:13px}
+    .supplier-message.show{display:block}
+    .supplier-message.error{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+    .supplier-message.success{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+    .supplier-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--border-color,#e5e7eb)}
+    @media(max-width:800px){
+      .supplier-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .supplier-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .supplier-wrap{padding:12px}
+      .supplier-dialog{padding:16px;margin:5px auto}
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-    }
-
-    .supplier-page {
-      padding: 24px;
-      max-width: 1500px;
-      margin: 0 auto;
-    }
-
-    .supplier-page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-
-    .supplier-page-header h1 {
-      margin: 0 0 5px;
-      font-size: 25px;
-    }
-
-    .supplier-page-header p {
-      margin: 0;
-      color: var(--supplier-muted);
-      font-size: 14px;
-    }
-
-    .supplier-btn {
-      border: 1px solid var(--supplier-border);
-      border-radius: 9px;
-      padding: 10px 15px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      background: var(--supplier-card);
-      color: inherit;
-      transition: background .15s ease;
-    }
-
-    .supplier-btn:hover {
-      background: #f3f4f6;
-    }
-
-    .supplier-btn-primary {
-      color: #fff;
-      background: var(--supplier-green);
-      border-color: var(--supplier-green);
-    }
-
-    .supplier-btn-primary:hover {
-      background: var(--supplier-green-hover);
-      color: #fff;
-    }
-
-    .supplier-btn-danger {
-      color: #b91c1c;
-      border-color: #fecaca;
-    }
-
-    .supplier-btn-small {
-      padding: 7px 10px;
-      font-size: 12px;
-    }
-
-    .supplier-stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-
-    .supplier-stat-card {
-      min-width: 0;
-      background: var(--supplier-card);
-      border: 1px solid var(--supplier-border);
-      border-radius: 14px;
-      padding: 19px;
-    }
-
-    .supplier-stat-label {
-      color: var(--supplier-muted);
-      font-size: 13px;
-      margin-bottom: 9px;
-    }
-
-    .supplier-stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      overflow-wrap: anywhere;
-    }
-
-    .supplier-stat-value.green {
-      color: #15803d;
-    }
-
-    .supplier-stat-value.orange {
-      color: #c2410c;
-    }
-
-    .supplier-card {
-      background: var(--supplier-card);
-      border: 1px solid var(--supplier-border);
-      border-radius: 16px;
-      padding: 20px;
-      min-width: 0;
-    }
-
-    .supplier-list-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .supplier-list-head h2 {
-      margin: 0;
-      font-size: 18px;
-    }
-
-    .supplier-search {
-      width: min(340px, 100%);
-      border: 1px solid var(--supplier-border);
-      border-radius: 9px;
-      padding: 10px 12px;
-      background: transparent;
-      color: inherit;
-      font: inherit;
-      outline: none;
-    }
-
-    .supplier-search:focus,
-    .supplier-field input:focus,
-    .supplier-field select:focus,
-    .supplier-field textarea:focus {
-      border-color: var(--supplier-green);
-      box-shadow: 0 0 0 3px #16653418;
-    }
-
-    .supplier-table-wrap {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    .supplier-table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 850px;
-    }
-
-    .supplier-table th,
-    .supplier-table td {
-      text-align: left;
-      padding: 13px 12px;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 13px;
-      vertical-align: middle;
-    }
-
-    .supplier-table th {
-      color: var(--supplier-muted);
-      font-weight: 600;
-      background: #f9fafb;
-      white-space: nowrap;
-    }
-
-    .supplier-table tbody tr:hover {
-      background: #f9fafb;
-    }
-
-    .supplier-status {
-      display: inline-block;
-      padding: 5px 9px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .supplier-status.active {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .supplier-status.inactive {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .supplier-balance-payable {
-      color: #c2410c;
-      font-weight: 700;
-    }
-
-    .supplier-balance-advance {
-      color: #15803d;
-      font-weight: 700;
-    }
-
-    .supplier-empty {
-      text-align: center !important;
-      padding: 35px 15px !important;
-      color: var(--supplier-muted);
-    }
-
-    /* Modal: Finance page कै जस्तै */
-    .supplier-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 10000;
-      background: rgba(0, 0, 0, .53);
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    .supplier-modal.show {
-      display: block;
-    }
-
-    .supplier-dialog {
-      background: var(--supplier-card, #fff);
-      color: inherit;
-      width: min(1000px, 100%);
-      margin: 20px auto;
-      border: 1px solid var(--supplier-border);
-      border-radius: 16px;
-      padding: 22px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, .18);
-      animation: supplierModalIn .16s ease-out;
-    }
-
-    @keyframes supplierModalIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .supplier-modal-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 15px;
-      margin-bottom: 22px;
-    }
-
-    .supplier-modal-head h2 {
-      margin: 0 0 6px;
-      font-size: 21px;
-    }
-
-    .supplier-modal-head p {
-      margin: 0;
-      color: var(--supplier-muted);
-      font-size: 13px;
-    }
-
-    .supplier-modal-close {
-      flex: 0 0 auto;
-      width: 36px;
-      height: 36px;
-      border: 1px solid var(--supplier-border);
-      border-radius: 9px;
-      background: transparent;
-      color: inherit;
-      font-size: 23px;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-    }
-
-    .supplier-modal-close:hover {
-      background: #f3f4f6;
-    }
-
-    .supplier-form-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-    }
-
-    .supplier-field {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-
-    .supplier-field.full {
-      grid-column: 1 / -1;
-    }
-
-    .supplier-field label {
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .supplier-field input,
-    .supplier-field select,
-    .supplier-field textarea {
-      width: 100%;
-      min-width: 0;
-      padding: 11px 12px;
-      border: 1px solid var(--supplier-border);
-      border-radius: 8px;
-      background: transparent;
-      color: inherit;
-      font: inherit;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .supplier-field select option {
-      color: #111827;
-      background: #fff;
-    }
-
-    .supplier-field textarea {
-      min-height: 85px;
-      resize: vertical;
-    }
-
-    .supplier-field small {
-      color: var(--supplier-muted);
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-    .supplier-checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      min-height: 43px;
-    }
-
-    .supplier-checkbox-row input {
-      width: 17px;
-      height: 17px;
-      accent-color: var(--supplier-green);
-    }
-
-    .supplier-checkbox-row label {
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .supplier-modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      flex-wrap: wrap;
-      gap: 10px;
-      border-top: 1px solid #e5e7eb;
-      margin-top: 24px;
-      padding-top: 18px;
-    }
-
-    .supplier-message {
-      display: none;
-      margin-bottom: 16px;
-      border-radius: 9px;
-      padding: 11px 13px;
-      font-size: 13px;
-    }
-
-    .supplier-message.show {
-      display: block;
-    }
-
-    .supplier-message.error {
-      color: #991b1b;
-      background: #fee2e2;
-      border: 1px solid #fecaca;
-    }
-
-    .supplier-message.success {
-      color: #166534;
-      background: #dcfce7;
-      border: 1px solid #bbf7d0;
-    }
-
-    @media (max-width: 900px) {
-      .supplier-stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .supplier-form-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 560px) {
-      .supplier-page {
-        padding: 14px;
-      }
-
-      .supplier-page-header h1 {
-        font-size: 22px;
-      }
-
-      .supplier-stats {
-        gap: 10px;
-      }
-
-      .supplier-stat-card {
-        padding: 14px;
-      }
-
-      .supplier-stat-value {
-        font-size: 20px;
-      }
-
-      .supplier-card {
-        padding: 14px;
-      }
-
-      .supplier-form-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-      }
-
-      .supplier-field.full {
-        grid-column: auto;
-      }
-
-      .supplier-modal {
-        padding: 8px;
-      }
-
-      .supplier-dialog {
-        margin: 8px auto;
-        padding: 16px;
-        border-radius: 14px;
-      }
-
-      .supplier-modal-head h2 {
-        font-size: 19px;
-      }
-
-      .supplier-modal-footer .supplier-btn {
-        flex: 1;
-      }
+    @media(max-width:520px){
+      .supplier-grid{grid-template-columns:1fr}
+      .supplier-field.full{grid-column:auto}
+      .supplier-modal{padding:8px}
+      .supplier-stat strong{font-size:17px}
+      .supplier-top h1{font-size:23px}
+      .supplier-actions .supplier-btn{flex:1}
     }
   </style>
 </head>
 
 <body>
-  <!-- तपाईंको परियोजनाको साझा sidebar/header style.css बाट आउन सक्छ -->
+  <aside class="sidebar">
+    <h2>General Store</h2>
+    <nav>
+      <a class="menu-item" href="index.html">Dashboard</a>
+      <a class="menu-item" href="sale.html">New Sale</a>
+      <a class="menu-item" href="purchase.html">Purchase</a>
+      <a class="menu-item" href="inventory.html">Inventory</a>
+      <a class="menu-item" href="sales-return.html">Sales Return</a>
+      <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
+      <a class="menu-item" href="customers.html">Customers</a>
+      <a class="menu-item active" href="suppliers.html">Suppliers</a>
+      <a class="menu-item" href="finance.html">Finance</a>
+      <a class="menu-item" href="reports.html">Reports</a>
+      <a class="menu-item" href="whatsapp.html">WhatsApp</a>
+      <a class="menu-item" href="ai.html">AI Assistant</a>
+      <a class="menu-item" href="settings.html">Settings</a>
+    </nav>
+  </aside>
 
-  <main class="supplier-page">
-    <header class="supplier-page-header">
+  <main class="supplier-wrap">
+    <header class="supplier-top">
       <div>
         <h1>Suppliers</h1>
-        <p>आपूर्तिकर्ताको विवरण, बाँकी रकम र अग्रिम रकम व्यवस्थापन गर्नुहोस्।</p>
+        <p>आपूर्तिकर्ता, बाँकी रकम र अग्रिम भुक्तानी व्यवस्थापन</p>
       </div>
-
-      <button type="button" class="supplier-btn supplier-btn-primary" id="newSupplierBtn">
-        + New Supplier
-      </button>
+      <button type="button" class="supplier-btn primary" id="newSupplierBtn">+ New Supplier</button>
     </header>
 
     <section class="supplier-stats">
-      <article class="supplier-stat-card">
-        <div class="supplier-stat-label">Total Suppliers</div>
-        <div class="supplier-stat-value" id="totalSuppliers">0</div>
+      <article class="supplier-stat">
+        <span>Total Suppliers</span>
+        <strong id="totalSuppliers">0</strong>
       </article>
-
-      <article class="supplier-stat-card">
-        <div class="supplier-stat-label">Total Payable</div>
-        <div class="supplier-stat-value orange" id="totalSupplierPayable">रु 0.00</div>
+      <article class="supplier-stat">
+        <span>Total Payable</span>
+        <strong id="totalSupplierPayable">रु 0.00</strong>
       </article>
-
-      <article class="supplier-stat-card">
-        <div class="supplier-stat-label">Total Advance</div>
-        <div class="supplier-stat-value green" id="totalSupplierPaid">रु 0.00</div>
+      <article class="supplier-stat">
+        <span>Total Advance</span>
+        <strong id="totalSupplierPaid">रु 0.00</strong>
       </article>
-
-      <article class="supplier-stat-card">
-        <div class="supplier-stat-label">Active Suppliers</div>
-        <div class="supplier-stat-value green" id="activeSuppliers">0</div>
+      <article class="supplier-stat">
+        <span>Active Suppliers</span>
+        <strong id="activeSuppliers">0</strong>
       </article>
     </section>
 
-    <section class="supplier-card">
-      <div class="supplier-list-head">
-        <h2>Supplier List</h2>
+    <section class="supplier-panel">
+      <div class="supplier-toolbar">
         <input
           type="search"
           id="supplierSearch"
-          class="supplier-search"
           placeholder="नाम, फोन वा PAN/VAT खोज्नुहोस्..."
           autocomplete="off"
+          aria-label="Search suppliers"
         >
       </div>
 
@@ -546,30 +153,14 @@
     </section>
   </main>
 
-  <!-- New/Edit Supplier Modal -->
-  <div
-    class="supplier-modal"
-    id="supplierModal"
-    aria-hidden="true"
-  >
-    <section
-      class="supplier-dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="supplierModalTitle"
-    >
+  <div class="supplier-modal" id="supplierModal" aria-hidden="true">
+    <section class="supplier-dialog" role="dialog" aria-modal="true" aria-labelledby="supplierModalTitle">
       <div class="supplier-modal-head">
         <div>
           <h2 id="supplierModalTitle">New Supplier</h2>
           <p>आपूर्तिकर्ताको विवरण भर्नुहोस्। (*) भएका विवरण आवश्यक छन्।</p>
         </div>
-
-        <button
-          type="button"
-          class="supplier-modal-close"
-          id="closeSupplierModal"
-          aria-label="Close modal"
-        >&times;</button>
+        <button type="button" class="supplier-close" id="closeSupplierModal" aria-label="Close modal">&times;</button>
       </div>
 
       <div id="supplierMessage" class="supplier-message" role="alert"></div>
@@ -577,36 +168,20 @@
       <form id="supplierForm">
         <input type="hidden" id="supplierId">
 
-        <div class="supplier-form-grid">
+        <div class="supplier-grid">
           <div class="supplier-field">
             <label for="supplierName">Supplier Name *</label>
-            <input
-              type="text"
-              id="supplierName"
-              maxlength="120"
-              placeholder="आपूर्तिकर्ताको नाम"
-              required
-            >
+            <input type="text" id="supplierName" maxlength="120" placeholder="आपूर्तिकर्ताको नाम" required>
           </div>
 
           <div class="supplier-field">
             <label for="supplierPhone">Phone Number</label>
-            <input
-              type="tel"
-              id="supplierPhone"
-              maxlength="30"
-              placeholder="फोन नम्बर"
-            >
+            <input type="tel" id="supplierPhone" maxlength="30" placeholder="फोन नम्बर">
           </div>
 
           <div class="supplier-field">
             <label for="supplierAddress">Address</label>
-            <input
-              type="text"
-              id="supplierAddress"
-              maxlength="200"
-              placeholder="ठेगाना"
-            >
+            <input type="text" id="supplierAddress" maxlength="200" placeholder="ठेगाना">
           </div>
 
           <div class="supplier-field">
@@ -620,24 +195,12 @@
 
           <div class="supplier-field">
             <label for="supplierTaxNumber">PAN / VAT Number</label>
-            <input
-              type="text"
-              id="supplierTaxNumber"
-              maxlength="40"
-              placeholder="PAN वा VAT नम्बर"
-            >
+            <input type="text" id="supplierTaxNumber" maxlength="40" placeholder="PAN वा VAT नम्बर">
           </div>
 
           <div class="supplier-field">
             <label for="supplierOpeningBalance">Opening Balance (रु)</label>
-            <input
-              type="number"
-              id="supplierOpeningBalance"
-              min="0"
-              step="0.01"
-              value="0"
-              inputmode="decimal"
-            >
+            <input type="number" id="supplierOpeningBalance" min="0" step="0.01" value="0" inputmode="decimal">
             <small>सुरुको बाँकी वा अग्रिम रकम।</small>
           </div>
 
@@ -651,7 +214,7 @@
 
           <div class="supplier-field">
             <label>Status</label>
-            <div class="supplier-checkbox-row">
+            <div class="supplier-checkbox">
               <input type="checkbox" id="supplierActive" checked>
               <label for="supplierActive">Active Supplier</label>
             </div>
@@ -659,21 +222,13 @@
 
           <div class="supplier-field full">
             <label for="supplierNote">Notes</label>
-            <textarea
-              id="supplierNote"
-              maxlength="1000"
-              placeholder="थप जानकारी..."
-            ></textarea>
+            <textarea id="supplierNote" maxlength="1000" placeholder="थप जानकारी..."></textarea>
           </div>
         </div>
 
-        <div class="supplier-modal-footer">
-          <button type="button" class="supplier-btn" id="cancelSupplierBtn">
-            Cancel
-          </button>
-          <button type="submit" class="supplier-btn supplier-btn-primary" id="saveSupplierBtn">
-            Save Supplier
-          </button>
+        <div class="supplier-actions">
+          <button type="button" class="supplier-btn" id="cancelSupplierBtn">Cancel</button>
+          <button type="submit" class="supplier-btn primary" id="saveSupplierBtn">Save Supplier</button>
         </div>
       </form>
     </section>
