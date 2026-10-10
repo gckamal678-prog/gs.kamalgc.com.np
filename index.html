@@ -4,264 +4,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>General Store Management - Dashboard</title>
-    <script src="appearance.js"></script>
     <link rel="stylesheet" href="style.css">
-
-    <style>
-        :root {
-            --dash-bg: #f5f7fb;
-            --dash-card: #ffffff;
-            --dash-text: #172033;
-            --dash-muted: #718096;
-            --dash-border: #e7ebf2;
-            --dash-primary: var(--accent-color, #2563eb);
-            --dash-primary-soft: #eff6ff;
-            --dash-green: #16a34a;
-            --dash-green-soft: #ecfdf3;
-            --dash-red: #dc2626;
-            --dash-red-soft: #fef2f2;
-            --dash-orange: #ea580c;
-            --dash-orange-soft: #fff7ed;
-            --dash-purple: #7c3aed;
-            --dash-purple-soft: #f5f3ff;
-            --dash-shadow: 0 8px 30px rgba(15, 23, 42, .06);
-            --dash-radius: 18px;
-        }
-
-        body.dashboard-page {
-            background: var(--dash-bg);
-            color: var(--dash-text);
-            font-family: var(--font-family, Arial, sans-serif);
-            font-size: var(--font-size, 15px);
-        }
-
-        body.dark-theme, body.dashboard-dark {
-            --dash-bg: #111827;
-            --dash-card: #1f2937;
-            --dash-text: #f3f4f6;
-            --dash-muted: #9ca3af;
-            --dash-border: #374151;
-            --dash-shadow: 0 12px 35px rgba(0,0,0,.22);
-        }
-
-        .dashboard-content {
-            max-width: 1500px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        .welcome-section {
-            background: linear-gradient(135deg, var(--dash-primary), #1d4ed8);
-            color: white;
-            border-radius: 24px;
-            padding: 28px;
-            margin-bottom: 22px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            box-shadow: 0 18px 45px rgba(37,99,235,.18);
-        }
-
-        .welcome-section h2 { margin: 0 0 7px; font-size: 27px; }
-        .welcome-section p { margin: 0; opacity: .88; }
-        .welcome-section .primary-btn {
-            background: white;
-            color: var(--dash-primary);
-            border: none;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-weight: 700;
-            text-decoration: none;
-            box-shadow: 0 8px 22px rgba(0,0,0,.12);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 22px;
-        }
-
-        .stat-card {
-            background: var(--dash-card);
-            border: 1px solid var(--dash-border);
-            border-radius: var(--dash-radius);
-            padding: 20px;
-            box-shadow: var(--dash-shadow);
-            transition: .2s ease;
-        }
-
-        .stat-card:hover { transform: translateY(-3px); }
-        .stat-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .stat-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px; font-size: 21px; }
-        .sales-icon { background: var(--dash-primary-soft); }
-        .profit-icon { background: var(--dash-green-soft); }
-        .expense-icon { background: var(--dash-orange-soft); }
-        .net-profit-icon { background: var(--dash-purple-soft); }
-
-        .stat-label { color: var(--dash-muted); font-size: 13px; }
-        .stat-value { font-size: 25px; font-weight: 800; margin: 18px 0 8px; }
-        .stat-bottom { display: flex; justify-content: space-between; color: var(--dash-muted); font-size: 12px; }
-        .positive { color: var(--dash-green); font-weight: 700; }
-
-        .section-title { margin: 26px 0 13px; }
-        .section-title h3 { margin: 0 0 4px; font-size: 18px; }
-        .section-title p { margin: 0; color: var(--dash-muted); font-size: 13px; }
-
-        .finance-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-
-        .finance-card {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            background: var(--dash-card);
-            border: 1px solid var(--dash-border);
-            border-radius: var(--dash-radius);
-            padding: 18px;
-            box-shadow: var(--dash-shadow);
-        }
-
-        .finance-icon {
-            width: 44px; height: 44px; min-width: 44px;
-            border-radius: 13px; display: grid; place-items: center;
-            background: var(--dash-primary-soft); font-size: 20px;
-        }
-
-        .finance-card span { display: block; color: var(--dash-muted); font-size: 12px; }
-        .finance-card strong { display: block; margin: 5px 0; font-size: 19px; }
-        .finance-card small { color: var(--dash-muted); font-size: 11px; }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1.55fr 1fr;
-            gap: 18px;
-            margin-top: 22px;
-        }
-
-        .dashboard-card, .ai-card {
-            background: var(--dash-card);
-            border: 1px solid var(--dash-border);
-            border-radius: var(--dash-radius);
-            box-shadow: var(--dash-shadow);
-            overflow: hidden;
-        }
-
-        .card-header {
-            padding: 19px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            border-bottom: 1px solid var(--dash-border);
-        }
-
-        .card-header select, .card-header input {
-            padding: 8px 11px;
-            border: 1px solid var(--dash-border);
-            border-radius: 9px;
-            background: var(--dash-card);
-            color: var(--dash-text);
-        }
-
-        .chart-area { padding: 18px; min-height: 255px; }
-        .mini-chart { height: 215px; display: flex; align-items: flex-end; gap: 9px; padding: 15px 8px 5px; }
-        .chart-column { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
-        .chart-bar-wrap { width: 100%; height: 180px; display: flex; align-items: flex-end; justify-content: center; }
-        .chart-bar { width: min(38px, 65%); min-height: 4px; border-radius: 8px 8px 3px 3px; background: var(--dash-primary); }
-        .chart-day, .chart-value { color: var(--dash-muted); font-size: 10px; }
-
-        .attention-list { padding: 7px 20px 15px; }
-        .attention-item { display: flex; align-items: center; gap: 11px; padding: 13px 0; border-bottom: 1px solid var(--dash-border); }
-        .attention-item:last-child { border-bottom: 0; }
-        .attention-icon { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; }
-        .attention-icon.warning { background: var(--dash-orange-soft); }
-        .attention-icon.danger { background: var(--dash-red-soft); }
-        .attention-icon.money { background: var(--dash-green-soft); }
-        .attention-icon.supplier { background: var(--dash-purple-soft); }
-        .attention-text { flex: 1; }
-        .attention-text strong { display: block; font-size: 13px; }
-        .attention-text span { display: block; color: var(--dash-muted); font-size: 11px; margin-top: 3px; }
-        .attention-item a, .text-btn { color: var(--dash-primary); font-size: 12px; font-weight: 700; text-decoration: none; }
-
-        .data-table-wrap { overflow-x: auto; }
-        .dash-table { width: 100%; border-collapse: collapse; min-width: 650px; }
-        .dash-table th, .dash-table td { padding: 13px 17px; text-align: left; border-bottom: 1px solid var(--dash-border); font-size: 12px; }
-        .dash-table th { color: var(--dash-muted); font-weight: 600; background: rgba(127,127,127,.035); }
-
-        .quick-actions { display: grid; grid-template-columns: repeat(6, 1fr); gap: 13px; }
-        .quick-action {
-            background: var(--dash-card); border: 1px solid var(--dash-border);
-            border-radius: 15px; padding: 17px 10px; text-align: center;
-            text-decoration: none; color: var(--dash-text); box-shadow: var(--dash-shadow); transition: .2s ease;
-        }
-        .quick-action:hover { transform: translateY(-3px); border-color: var(--dash-primary); }
-        .quick-action span { display: block; font-size: 25px; margin-bottom: 8px; }
-        .quick-action strong { display: block; font-size: 12px; }
-        .quick-action small { display: block; color: var(--dash-muted); font-size: 10px; margin-top: 3px; }
-
-        .ai-card {
-            margin-top: 22px; padding: 21px; display: flex; align-items: center; justify-content: space-between; gap: 20px;
-        }
-        .ai-content { display: flex; align-items: center; gap: 15px; }
-        .ai-icon { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--dash-purple-soft); font-size: 27px; }
-        .ai-content h3 { margin: 0 0 5px; }
-        .ai-content p { margin: 0; color: var(--dash-muted); font-size: 12px; line-height: 1.6; }
-        .ai-btn { background: var(--dash-primary); color: white; text-decoration: none; padding: 11px 17px; border-radius: 10px; font-weight: 700; font-size: 12px; }
-
-        .pin-lock-screen {
-            position: fixed; inset: 0; z-index: 99999;
-            background: rgba(7, 16, 31, 0.92); backdrop-filter: blur(5px);
-            display: none; align-items: center; justify-content: center; padding: 20px;
-        }
-        .pin-lock-screen.show { display: flex; }
-        .pin-box {
-            width: min(390px, 100%); background: var(--dash-card);
-            border: 1px solid var(--dash-border); border-radius: 24px; padding: 30px; text-align: center; box-shadow: 0 25px 70px rgba(0,0,0,.4);
-        }
-        .pin-logo { width: 65px; height: 65px; border-radius: 20px; background: var(--dash-primary); display: grid; place-items: center; margin: 0 auto 15px; color: white; font-weight: 900; font-size: 20px; }
-        .pin-input { width: 100%; box-sizing: border-box; padding: 15px; border-radius: 12px; border: 1px solid var(--dash-border); background: var(--dash-bg); color: var(--dash-text); text-align: center; letter-spacing: 8px; font-size: 22px; outline: none; }
-        .pin-unlock-btn { width: 100%; margin-top: 12px; border: 0; padding: 13px; border-radius: 11px; background: var(--dash-primary); color: white; font-weight: 700; cursor: pointer; }
-        .pin-error { color: var(--dash-red); min-height: 20px; margin-top: 10px; font-size: 12px; }
-
-        @media (max-width: 1150px) {
-            .stats-grid, .finance-grid { grid-template-columns: repeat(2, 1fr); }
-            .quick-actions { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 850px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-            .welcome-section, .ai-card { flex-direction: column; align-items: flex-start; }
-        }
-    </style>
 </head>
-
 <body class="dashboard-page">
 
-<div class="pin-lock-screen" id="pinLockScreen">
-    <div class="pin-box">
-        <div class="pin-logo">GS</div>
-        <h2>Store Locked (Control Room)</h2>
-        <p>ड्यासबोर्ड खोल्न आफ्नो MPIN राख्नुहोस्।</p>
-        <input type="password" id="dashboardPinInput" class="pin-input" inputmode="numeric" maxlength="8" placeholder="••••">
-        <button type="button" class="pin-unlock-btn" id="dashboardUnlockBtn">🔓 Unlock Dashboard</button>
-        <div class="pin-error" id="pinError"></div>
-    </div>
-</div>
+<!-- Mobile Overlay -->
+<div class="overlay" id="overlay"></div>
 
-<main class="main-content" style="margin-left: 0; width: 100%;">
-    <header class="topbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background: var(--dash-card); border-bottom: 1px solid var(--dash-border);">
-        <div class="topbar-left" style="display: flex; align-items: center; gap: 15px;">
+<!-- =========================================================
+     SIDEBAR
+     ========================================================= -->
+<aside class="sidebar" id="sidebar">
+    <div class="logo-area">
+        <div class="logo-icon">GS</div>
+        <div>
+            <h2>General Store</h2>
+            <span>Management System</span>
+        </div>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a href="index.html" class="menu-item active">
+            <span class="menu-icon">⌂</span>
+            <span>Dashboard</span>
+        </a>
+        <a href="sale.html" class="menu-item">
+            <span class="menu-icon">🛒</span>
+            <span>New Sale</span>
+        </a>
+        <a href="sales-return.html" class="menu-item">
+            <span class="menu-icon">↩️</span>
+            <span>Sales Return</span>
+        </a>
+        <a href="purchase.html" class="menu-item">
+            <span class="menu-icon">📦</span>
+            <span>Purchase</span>
+        </a>
+        <a href="inventory.html" class="menu-item">
+            <span class="menu-icon">▣</span>
+            <span>Inventory</span>
+        </a>
+        <a href="stock-lots.html" class="menu-item">
+            <span class="menu-icon">🧮</span>
+            <span>FIFO Lots</span>
+        </a>
+        <a href="customers.html" class="menu-item">
+            <span class="menu-icon">👥</span>
+            <span>Customers</span>
+        </a>
+        <a href="suppliers.html" class="menu-item">
+            <span class="menu-icon">🏢</span>
+            <span>Suppliers</span>
+        </a>
+        <a href="finance.html" class="menu-item">
+            <span class="menu-icon">💰</span>
+            <span>Finance</span>
+        </a>
+        <a href="reports.html" class="menu-item">
+            <span class="menu-icon">📊</span>
+            <span>Reports</span>
+        </a>
+        <a href="whatsapp.html" class="menu-item">
+            <span class="menu-icon">💬</span>
+            <span>WhatsApp</span>
+        </a>
+        <a href="ai.html" class="menu-item">
+            <span class="menu-icon">🤖</span>
+            <span>AI Assistant</span>
+        </a>
+        <a href="settings.html" class="menu-item">
+            <span class="menu-icon">⚙️</span>
+            <span>Settings</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="store-status">
+            <span class="status-dot"></span>
             <div>
-                <h1 style="margin:0; font-size: 22px;">Dashboard</h1>
-                <p id="todayDate" style="margin:0; color: var(--dash-muted); font-size: 13px;">आजको व्यापारको अवस्था</p>
+                <strong>Store Online</strong>
+                <small>Local data ready</small>
             </div>
         </div>
-        <div class="topbar-right" style="display: flex; align-items: center; gap: 10px;">
-            <a href="settings.html" class="dash-tool-btn" style="text-decoration:none; padding: 8px 12px; border-radius: 9px; border: 1px solid var(--dash-border); background: var(--dash-card); color: var(--dash-text);">⚙️ Settings</a>
+        <div class="version">General Store v1.0</div>
+    </div>
+</aside>
+
+<!-- =========================================================
+     MAIN
+     ========================================================= -->
+<main class="main-content">
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="mobile-menu-btn" id="menuBtn" type="button">☰</button>
+            <div>
+                <h1>Dashboard</h1>
+                <p id="todayDate">आजको व्यापारको अवस्था</p>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <div class="search-box">
+                <span>⌕</span>
+                <input type="text" id="searchInput" placeholder="Product, customer, bill...">
+            </div>
+            <button class="dash-tool-btn" id="themeBtn" type="button" title="Dark / Light Mode">🌙</button>
+            <button class="dash-tool-btn" id="lockBtn" type="button" title="Lock Dashboard">🔒</button>
+            <div class="profile">
+                <div class="profile-avatar">A</div>
+                <div class="profile-info">
+                    <strong>Admin</strong>
+                    <small>Owner</small>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -281,7 +136,7 @@
                     <span class="stat-label">आजको बिक्री</span>
                 </div>
                 <div class="stat-value">Rs. <span id="todaySales">0</span></div>
-                <div class="stat-bottom"><span class="positive">Live</span><span>आज</span></div>
+                <div class="stat-bottom"><span class="positive" id="salesChange">Live</span><span>आज</span></div>
             </div>
             <div class="stat-card">
                 <div class="stat-top">
@@ -310,8 +165,10 @@
         </div>
 
         <div class="section-title">
-            <h3>Financial Overview</h3>
-            <p>पसलको पैसा, stock र बाँकी रकम</p>
+            <div>
+                <h3>Financial Overview</h3>
+                <p>पसलको पैसा, stock र बाँकी रकम</p>
+            </div>
         </div>
 
         <div class="finance-grid">
@@ -354,7 +211,7 @@
                 <div class="card-header">
                     <div>
                         <h3>Sales Overview</h3>
-                        <p>पछिल्लो दिनको वास्तविक बिक्री</p>
+                        <p>पछिल्लो ७ दिनको वास्तविक बिक्री</p>
                     </div>
                     <select id="salesPeriod">
                         <option value="7">Last 7 Days</option>
@@ -388,25 +245,75 @@
                         </div>
                         <a href="inventory.html">View</a>
                     </div>
+                    <div class="attention-item">
+                        <div class="attention-icon money">💰</div>
+                        <div class="attention-text">
+                            <strong>Credit Due</strong>
+                            <span id="creditDueCount">0 customers</span>
+                        </div>
+                        <a href="customers.html">View</a>
+                    </div>
+                    <div class="attention-item">
+                        <div class="attention-icon supplier">🏢</div>
+                        <div class="attention-text">
+                            <strong>Supplier Payment</strong>
+                            <span id="supplierDueCount">0 suppliers</span>
+                        </div>
+                        <a href="suppliers.html">View</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="quick-actions" style="margin-top: 22px;">
+        <div class="dashboard-card" style="margin-top:22px;">
+            <div class="card-header">
+                <div>
+                    <h3>Fast Moving Products</h3>
+                    <p>बिक्रीको आधारमा छिटो चलिरहेका सामान</p>
+                </div>
+                <a href="inventory.html" class="text-btn">View All →</a>
+            </div>
+            <div class="data-table-wrap" id="fastMovingArea"></div>
+        </div>
+
+        <div class="dashboard-card" style="margin-top:22px;">
+            <div class="card-header">
+                <div>
+                    <h3>Recent Activity</h3>
+                    <p>पछिल्ला बिक्री, खरीद र finance कारोबार</p>
+                </div>
+                <a href="reports.html" class="text-btn">View All →</a>
+            </div>
+            <div class="data-table-wrap" id="recentActivityArea"></div>
+        </div>
+
+        <div class="section-title quick-title">
+            <div>
+                <h3>Quick Actions</h3>
+                <p>बारम्बार प्रयोग हुने काम</p>
+            </div>
+        </div>
+
+        <div class="quick-actions">
             <a href="sale.html" class="quick-action">
                 <span>🛒</span>
                 <strong>New Sale</strong>
                 <small>नयाँ बिक्री</small>
+            </a>
+            <a href="sales-return.html" class="quick-action">
+                <span>↩️</span>
+                <strong>Sales Return</strong>
+                <small>बिक्री फिर्ता</small>
             </a>
             <a href="purchase.html" class="quick-action">
                 <span>📦</span>
                 <strong>Purchase</strong>
                 <small>नयाँ खरीद</small>
             </a>
-            <a href="inventory.html" class="quick-action">
-                <span>🔧</span>
-                <strong>Stock</strong>
-                <small>Stock मिलाउनुहोस्</small>
+            <a href="stock-lots.html" class="quick-action">
+                <span>🧮</span>
+                <strong>FIFO Lots</strong>
+                <small>Stock cost</small>
             </a>
             <a href="customers.html" class="quick-action">
                 <span>👤</span>
@@ -418,65 +325,36 @@
                 <strong>Supplier</strong>
                 <small>Supplier payment</small>
             </a>
-            <a href="settings.html" class="quick-action">
-                <span>⚙️</span>
-                <strong>Settings</strong>
-                <small>सेटिङ्स</small>
+            <a href="finance.html" class="quick-action">
+                <span>💸</span>
+                <strong>Expense</strong>
+                <small>खर्च राख्नुहोस्</small>
+            </a>
+            <a href="inventory.html" class="quick-action">
+                <span>🔧</span>
+                <strong>Stock</strong>
+                <small>Stock मिलाउनुहोस्</small>
             </a>
         </div>
+
+        <div class="ai-card">
+            <div class="ai-content">
+                <div class="ai-icon">🤖</div>
+                <div>
+                    <h3>AI Shop Assistant</h3>
+                    <p>"आजको व्यापार कस्तो भयो?", "कुन सामान order गर्नुपर्छ?" जस्ता प्रश्न सोध्न सक्नुहुन्छ।</p>
+                </div>
+            </div>
+            <a href="ai.html" class="ai-btn">Ask AI →</a>
+        </div>
     </section>
+
+    <footer class="footer">
+        <span>© 2026 General Store Management System</span>
+        <span>v1.0</span>
+    </footer>
 </main>
 
-<script>
-(function () {
-    "use strict";
-    const SETTINGS_KEY = "gs_settings";
-    const MPIN_KEY = "gs_mpin_security";
-
-    function checkMpinLock() {
-        try {
-            const raw = localStorage.getItem(MPIN_KEY);
-            if (!raw) return;
-            const config = JSON.parse(raw);
-            if (config && config.enabled) {
-                document.getElementById("pinLockScreen").classList.add("show");
-                document.getElementById("dashboardPinInput").focus();
-            }
-        } catch (e) {}
-    }
-
-    async function verifyUnlockPin() {
-        const pin = document.getElementById("dashboardPinInput").value.trim();
-        if (!pin) return;
-        try {
-            const config = JSON.parse(localStorage.getItem(MPIN_KEY));
-            if (!config || !config.hash || !config.salt) return;
-
-            const data = new TextEncoder().encode(`${config.salt}:${pin}`);
-            const digest = await window.crypto.subtle.digest("SHA-256", data);
-            const candidate = Array.from(new Uint8Array(digest))
-                .map(byte => byte.toString(16).padStart(2, "0"))
-                .join("");
-
-            if (candidate === config.hash) {
-                document.getElementById("pinLockScreen").classList.remove("show");
-            } else {
-                document.getElementById("pinError").textContent = "गलत MPIN! फेरि प्रयास गर्नुहोस्।";
-                document.getElementById("dashboardPinInput").value = "";
-            }
-        } catch (e) {
-            document.getElementById("pinError").textContent = "प्रमाणीकरण त्रुटि भयो।";
-        }
-    }
-
-    document.getElementById("dashboardUnlockBtn").addEventListener("click", verifyUnlockPin);
-    document.getElementById("dashboardPinInput").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") verifyUnlockPin();
-    });
-
-    window.addEventListener("DOMContentLoaded", checkMpinLock);
-})();
-</script>
 <script src="script.js"></script>
 </body>
 </html>
