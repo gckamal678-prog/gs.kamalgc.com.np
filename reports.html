@@ -1,34 +1,45 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ne">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#166534">
-  <title>Reports - General Store</title>
+  <title>Reports | GS Kamal</title>
 
+  <!-- Shared styles and appearance settings -->
   <link rel="stylesheet" href="style.css">
-
-  <!-- Appearance settings: keep this in the head -->
   <script src="appearance.js"></script>
 
   <style>
+    :root {
+      color-scheme: light dark;
+      --report-bg: var(--bg-color, var(--background, #f4f6fa));
+      --report-card: var(--card-bg, var(--surface, #ffffff));
+      --report-text: var(--text-color, var(--text, #202938));
+      --report-muted: var(--muted-color, #748094);
+      --report-border: var(--border-color, #e2e7ef);
+      --report-primary: var(--primary-color, #2563eb);
+      --report-radius: 14px;
+    }
+
     * {
       box-sizing: border-box;
     }
 
-    :root {
-      --report-green: var(--accent-color, #166534);
-      --report-border: var(--border-color, #e5e7eb);
-      --report-muted: var(--muted-color, #6b7280);
-      --report-card: var(--card-bg, #fff);
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: var(--report-bg);
+      color: var(--report-text);
     }
 
     .reports-page {
-      max-width: 1600px;
+      min-height: 100vh;
+    }
+
+    .reports-page .main-content {
       min-width: 0;
-      margin: 0 auto;
-      padding: 22px;
     }
 
     .reports-page .topbar {
@@ -36,180 +47,206 @@
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 20px;
+      gap: 12px;
     }
 
-    .reports-page .topbar h1 {
+    .report-heading h1 {
       margin: 0 0 5px;
-      font-size: 25px;
+      font-size: clamp(22px, 3vw, 29px);
     }
 
-    .reports-page .topbar p {
+    .report-heading p {
       margin: 0;
       color: var(--report-muted);
-      font-size: 14px;
+      font-size: 13px;
+    }
+
+    .report-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .reports-page .card,
-    .reports-page .stat-card {
-      min-width: 0;
+    .report-panel,
+    .report-filter-card,
+    .report-stat {
       background: var(--report-card);
+      color: var(--report-text);
       border: 1px solid var(--report-border);
-      border-radius: 14px;
+      border-radius: var(--report-radius);
     }
 
-    .reports-page .card {
-      padding: 20px;
-      margin-bottom: 20px;
+    .report-filter-card {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .report-filter-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) auto auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .report-field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--report-muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .report-field input {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      border: 1px solid var(--report-border);
+      border-radius: 9px;
+      background: var(--report-card);
+      color: var(--report-text);
+      font: inherit;
     }
 
     .report-btn {
+      min-height: 42px;
       padding: 10px 15px;
       border: 1px solid var(--report-border);
       border-radius: 9px;
       background: var(--report-card);
-      color: var(--text-color, inherit);
+      color: var(--report-text);
       font: inherit;
-      font-size: 13px;
-      font-weight: 600;
+      font-weight: 650;
       cursor: pointer;
     }
 
-    .report-btn-primary {
-      background: var(--report-green);
+    .report-btn.primary {
+      background: var(--report-primary);
+      border-color: var(--report-primary);
       color: #fff;
-      border-color: var(--report-green);
     }
 
-    .report-btn:hover,
-    .report-tab:hover {
-      opacity: .88;
+    .report-btn:hover {
+      filter: brightness(.97);
     }
 
-    .report-filters {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
-      align-items: end;
-      gap: 15px;
-    }
-
-    .report-filter-group {
-      min-width: 0;
-    }
-
-    .report-filter-group label {
-      display: block;
-      margin-bottom: 7px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .report-filter-group input {
-      width: 100%;
-      min-height: 42px;
-      padding: 10px 12px;
-      border: 1px solid var(--report-border);
-      border-radius: 8px;
-      background: var(--input-bg, transparent);
-      color: var(--text-color, inherit);
-      font: inherit;
-    }
-
-    .report-period-note {
-      margin-top: 12px;
-      color: var(--report-muted);
+    .report-period {
+      margin: 12px 0 0;
       font-size: 12px;
-      line-height: 1.5;
+      color: var(--report-muted);
     }
 
-    .report-summary {
+    .report-error {
+      display: none;
+      padding: 12px 14px;
+      margin: 0 0 16px;
+      border: 1px solid #e9a3a3;
+      border-radius: 10px;
+      color: #b42318;
+      background: #fff1f0;
+      font-size: 13px;
+    }
+
+    .report-error:not(:empty) {
+      display: block;
+    }
+
+    .report-summary-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 15px;
+      gap: 14px;
       margin-bottom: 20px;
     }
 
-    .report-summary .stat-card {
-      padding: 18px;
+    .report-stat {
+      position: relative;
+      overflow: hidden;
+      padding: 17px;
     }
 
-    .stat-title {
-      margin-bottom: 9px;
+    .report-stat::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: var(--stat-accent, var(--report-primary));
+    }
+
+    .report-stat .stat-label {
+      margin: 0 0 10px;
       color: var(--report-muted);
-      font-size: 13px;
+      font-size: 12px;
+      font-weight: 650;
     }
 
-    .stat-value {
-      font-size: 22px;
-      font-weight: 700;
+    .report-stat .stat-value {
+      margin: 0;
+      font-size: clamp(20px, 2.5vw, 27px);
+      font-weight: 750;
+      line-height: 1.3;
       overflow-wrap: anywhere;
     }
 
-    .report-green {
-      color: #15803d !important;
-    }
-
-    .report-red {
-      color: #b91c1c !important;
-    }
-
-    .report-orange {
-      color: #c2410c !important;
-    }
-
-    .report-section-title {
-      margin: 0 0 17px;
-      font-size: 18px;
+    .report-stat .stat-note {
+      margin: 7px 0 0;
+      color: var(--report-muted);
+      font-size: 11px;
     }
 
     .report-tabs {
       display: flex;
-      flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 18px;
+      padding: 4px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      border: 1px solid var(--report-border);
+      border-radius: 12px;
+      background: var(--report-card);
     }
 
     .report-tab {
-      padding: 9px 13px;
-      border: 1px solid var(--report-border);
-      border-radius: 9px;
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 8px;
       background: transparent;
-      color: var(--text-color, inherit);
+      color: var(--report-muted);
+      font: inherit;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 650;
       cursor: pointer;
     }
 
     .report-tab.active {
-      background: var(--report-green);
-      border-color: var(--report-green);
+      background: var(--report-primary);
       color: #fff;
     }
 
     .report-panel {
-      display: none;
+      padding: 18px;
+      margin-bottom: 18px;
+      min-width: 0;
     }
 
-    .report-panel.active {
-      display: block;
+    .report-panel[hidden] {
+      display: none !important;
     }
 
-    .report-panel-heading {
+    .report-panel-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 15px;
     }
 
-    .report-panel-heading h3 {
+    .report-panel-header h2 {
       margin: 0;
-      font-size: 16px;
+      font-size: 17px;
     }
 
-    .report-panel-heading span {
+    .report-count {
       color: var(--report-muted);
       font-size: 12px;
     }
@@ -218,430 +255,500 @@
       width: 100%;
       overflow-x: auto;
       border: 1px solid var(--report-border);
-      border-radius: 9px;
+      border-radius: 10px;
     }
 
-    .reports-page .data-table {
+    .report-table {
       width: 100%;
-      min-width: 760px;
       border-collapse: collapse;
-    }
-
-    .reports-page .data-table th,
-    .reports-page .data-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--report-border);
       font-size: 13px;
       white-space: nowrap;
     }
 
-    .reports-page .data-table th {
-      background: var(--table-header-bg, #f8fafc);
+    .report-table th,
+    .report-table td {
+      padding: 12px 13px;
+      text-align: left;
+      border-bottom: 1px solid var(--report-border);
+    }
+
+    .report-table th {
+      background: var(--report-bg);
       color: var(--report-muted);
-      font-weight: 600;
-    }
-
-    .reports-page .data-table tbody tr:hover {
-      background: var(--hover-bg, #f8fafc);
-    }
-
-    .reports-page .data-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .report-empty {
-      padding: 30px 15px !important;
-      color: var(--report-muted);
-      text-align: center !important;
-      white-space: normal !important;
-    }
-
-    .report-status {
-      display: inline-block;
-      padding: 5px 8px;
-      border-radius: 20px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: .03em;
     }
 
-    .report-status.ok {
-      background: #dcfce7;
-      color: #166534;
+    .report-table tbody tr:last-child td {
+      border-bottom: 0;
     }
 
-    .report-status.low {
-      background: #ffedd5;
-      color: #9a3412;
+    .report-table tbody tr:hover {
+      background: var(--report-bg);
     }
 
-    .report-status.out {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .report-profit-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 15px;
-    }
-
-    .report-profit-card {
-      min-width: 0;
-      padding: 18px;
-      border: 1px solid var(--report-border);
-      border-radius: 12px;
-    }
-
-    .report-profit-card .stat-value,
-    .report-profit-card .report-profit {
-      font-size: 22px;
-      font-weight: 700;
-      overflow-wrap: anywhere;
+    .report-table td {
+      color: var(--report-text);
     }
 
     .report-warning {
-      margin-bottom: 16px;
       padding: 12px 14px;
-      border: 1px solid #fed7aa;
-      border-radius: 9px;
-      background: #fff7ed;
-      color: #9a3412;
+      margin-bottom: 15px;
+      border: 1px solid #f1d49a;
+      border-radius: 10px;
+      background: #fff8e7;
+      color: #805b10;
       font-size: 13px;
-      line-height: 1.6;
     }
 
-    .report-error {
+    .report-warning:empty {
       display: none;
-      margin-bottom: 16px;
-      padding: 12px;
-      border: 1px solid #fecaca;
-      border-radius: 9px;
-      background: #fef2f2;
-      color: #991b1b;
-      font-size: 13px;
     }
 
-    .report-error.show {
+    .profit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .profit-item {
+      padding: 15px;
+      border: 1px solid var(--report-border);
+      border-radius: 11px;
+      background: var(--report-bg);
+    }
+
+    .profit-item span {
       display: block;
+      margin-bottom: 8px;
+      color: var(--report-muted);
+      font-size: 12px;
     }
 
-    @media (max-width: 1000px) {
-      .report-summary {
+    .profit-item strong {
+      font-size: 21px;
+      overflow-wrap: anywhere;
+    }
+
+    .profit-item.net {
+      border-color: var(--report-primary);
+    }
+
+    .report-help {
+      margin: 12px 0 0;
+      color: var(--report-muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 900px) {
+      .report-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .report-filter-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
-    @media (max-width: 700px) {
-      .reports-page {
-        padding: 14px;
+    @media (max-width: 560px) {
+      .reports-page .main-content {
+        padding: 12px;
       }
 
-      .report-filters {
-        grid-template-columns: 1fr;
-      }
-
-      .reports-page .card {
-        padding: 14px;
-      }
-
-      .report-profit-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .reports-page .topbar h1 {
-        font-size: 22px;
-      }
-    }
-
-    @media (max-width: 420px) {
-      .report-summary {
-        gap: 10px;
-      }
-
-      .report-summary .stat-card {
+      .report-filter-card,
+      .report-panel {
         padding: 13px;
       }
 
-      .report-summary .stat-value {
-        font-size: 18px;
+      .report-summary-grid {
+        gap: 9px;
       }
 
-      .report-tabs {
-        gap: 6px;
+      .report-stat {
+        padding: 13px;
+      }
+
+      .report-stat .stat-value {
+        font-size: 19px;
+      }
+
+      .report-filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .report-actions {
+        width: 100%;
+      }
+
+      .report-actions .report-btn {
+        flex: 1;
+      }
+
+      .profit-grid {
+        grid-template-columns: 1fr;
       }
 
       .report-tab {
-        padding: 8px 10px;
-        font-size: 12px;
+        padding: 9px 11px;
+      }
+    }
+
+    @media print {
+      .sidebar,
+      .report-filter-card,
+      .report-actions,
+      .report-tabs {
+        display: none !important;
+      }
+
+      .reports-page .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .report-panel[hidden] {
+        display: block !important;
+      }
+
+      .report-panel,
+      .report-stat {
+        break-inside: avoid;
+        box-shadow: none !important;
+      }
+
+      body {
+        background: #fff !important;
+        color: #111 !important;
       }
     }
   </style>
 </head>
 
 <body>
-<div class="app">
-
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <h2>General Store</h2>
-    </div>
-
-    <nav class="sidebar-menu">
-      <a href="index.html" class="menu-item"><span class="menu-icon">🏠</span><span>Dashboard</span></a>
-      <a href="sale.html" class="menu-item"><span class="menu-icon">🧾</span><span>New Sale</span></a>
-      <a href="purchase.html" class="menu-item"><span class="menu-icon">🛒</span><span>Purchase</span></a>
-      <a href="inventory.html" class="menu-item"><span class="menu-icon">📦</span><span>Inventory</span></a>
-      <a href="sales-return.html" class="menu-item"><span class="menu-icon">↩️</span><span>Sales Return</span></a>
-      <a href="stock-lots.html" class="menu-item"><span class="menu-icon">🧮</span><span>FIFO Lots</span></a>
-      <a href="customers.html" class="menu-item"><span class="menu-icon">👥</span><span>Customers</span></a>
-      <a href="suppliers.html" class="menu-item"><span class="menu-icon">🚚</span><span>Suppliers</span></a>
-      <a href="finance.html" class="menu-item"><span class="menu-icon">💰</span><span>Finance</span></a>
-      <a href="reports.html" class="menu-item active"><span class="menu-icon">📊</span><span>Reports</span></a>
-      <a href="whatsapp.html" class="menu-item"><span class="menu-icon">📱</span><span>WhatsApp</span></a>
-      <a href="ai.html" class="menu-item"><span class="menu-icon">🤖</span><span>AI Assistant</span></a>
-      <a href="settings.html" class="menu-item"><span class="menu-icon">⚙️</span><span>Settings</span></a>
-    </nav>
-  </aside>
-
-  <main class="main-content reports-page">
-
-    <header class="topbar">
-      <div>
-        <h1>📊 Reports</h1>
-        <p>Sales, purchase, stock and financial reports</p>
+  <div class="app reports-page">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">GS</div>
+        <div>
+          <strong>GS Kamal</strong>
+          <small>Business Management</small>
+        </div>
       </div>
-      <button type="button" id="refreshReportsBtn" class="report-btn report-btn-primary">
-        ↻ Refresh
-      </button>
-    </header>
 
-    <div id="reportError" class="report-error" role="alert"></div>
+      <nav class="sidebar-menu" aria-label="Main navigation">
+        <a class="menu-item" href="index.html">🏠 Dashboard</a>
+        <a class="menu-item" href="sale.html">🧾 Sales</a>
+        <a class="menu-item" href="purchase.html">📥 Purchase</a>
+        <a class="menu-item" href="inventory.html">📦 Inventory</a>
+        <a class="menu-item" href="customers.html">👥 Customers</a>
+        <a class="menu-item" href="suppliers.html">🚚 Suppliers</a>
+        <a class="menu-item" href="finance.html">💰 Finance</a>
+        <a class="menu-item active" href="reports.html">📊 Reports</a>
+        <a class="menu-item" href="whatsapp.html">💬 WhatsApp</a>
+        <a class="menu-item" href="ai.html">🤖 AI Assistant</a>
+        <a class="menu-item" href="settings.html">⚙️ Settings</a>
+      </nav>
+    </aside>
 
-    <section class="card">
-      <h2 class="report-section-title">Report Period</h2>
-
-      <div class="report-filters">
-        <div class="report-filter-group">
-          <label for="reportFromDate">From Date</label>
-          <input type="date" id="reportFromDate">
+    <main class="main-content">
+      <header class="topbar">
+        <div class="report-heading">
+          <h1>📊 Business Reports</h1>
+          <p>Sales, purchases, stock, customers र profit को विवरण</p>
         </div>
 
-        <div class="report-filter-group">
-          <label for="reportToDate">To Date</label>
-          <input type="date" id="reportToDate">
+        <div class="report-actions">
+          <button class="report-btn" id="refreshReportsBtn" type="button">
+            ↻ Refresh
+          </button>
+          <button class="report-btn primary" id="printReportsBtn" type="button">
+            🖨️ Print
+          </button>
+        </div>
+      </header>
+
+      <div class="report-error" id="reportError" role="alert"></div>
+
+      <section class="report-filter-card" aria-label="Report date filters">
+        <div class="report-filter-grid">
+          <div class="report-field">
+            <label for="reportFromDate">From date</label>
+            <input id="reportFromDate" type="date">
+          </div>
+
+          <div class="report-field">
+            <label for="reportToDate">To date</label>
+            <input id="reportToDate" type="date">
+          </div>
+
+          <button class="report-btn primary" id="applyReportFilterBtn" type="button">
+            Apply Filter
+          </button>
+
+          <button class="report-btn" id="clearReportFilterBtn" type="button">
+            All Dates
+          </button>
         </div>
 
-        <button type="button" id="applyReportFilterBtn" class="report-btn report-btn-primary">
-          Apply Filter
+        <p class="report-period" id="reportPeriodNote">
+          Select a date range to filter the reports.
+        </p>
+      </section>
+
+      <section class="report-summary-grid" aria-label="Report summary">
+        <article class="report-stat" style="--stat-accent:#16a34a">
+          <p class="stat-label">💵 Total Sales</p>
+          <p class="stat-value" id="reportSales">रु 0.00</p>
+          <p class="stat-note">Selected period</p>
+        </article>
+
+        <article class="report-stat" style="--stat-accent:#2563eb">
+          <p class="stat-label">📥 Total Purchases</p>
+          <p class="stat-value" id="reportPurchases">रु 0.00</p>
+          <p class="stat-note">Selected period</p>
+        </article>
+
+        <article class="report-stat" style="--stat-accent:#ea580c">
+          <p class="stat-label">💸 Total Expenses</p>
+          <p class="stat-value" id="reportExpenses">रु 0.00</p>
+          <p class="stat-note">Selected period</p>
+        </article>
+
+        <article class="report-stat" style="--stat-accent:#7c3aed">
+          <p class="stat-label">📈 Gross Profit</p>
+          <p class="stat-value" id="reportGrossProfit">रु 0.00</p>
+          <p class="stat-note">Calculated by report logic</p>
+        </article>
+      </section>
+
+      <nav class="report-tabs" aria-label="Report categories">
+        <button class="report-tab active" type="button" data-report-tab="sales">
+          🧾 Sales
         </button>
-      </div>
+        <button class="report-tab" type="button" data-report-tab="purchases">
+          📥 Purchases
+        </button>
+        <button class="report-tab" type="button" data-report-tab="stock">
+          📦 Stock
+        </button>
+        <button class="report-tab" type="button" data-report-tab="customers">
+          👥 Customers
+        </button>
+        <button class="report-tab" type="button" data-report-tab="suppliers">
+          🚚 Suppliers
+        </button>
+        <button class="report-tab" type="button" data-report-tab="profit">
+          💰 Profit
+        </button>
+      </nav>
 
-      <div id="reportPeriodNote" class="report-period-note"></div>
-    </section>
-
-    <section class="report-summary">
-      <div class="stat-card">
-        <div class="stat-title">Sales</div>
-        <div class="stat-value" id="reportSales">Rs. 0.00</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-title">Purchases</div>
-        <div class="stat-value" id="reportPurchases">Rs. 0.00</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-title">Expenses</div>
-        <div class="stat-value report-orange" id="reportExpenses">Rs. 0.00</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-title">Gross Profit</div>
-        <div class="stat-value" id="reportGrossProfit">N/A</div>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2 class="report-section-title">Detailed Reports</h2>
-
-      <div class="report-tabs" role="tablist" aria-label="Report types">
-        <button type="button" class="report-tab active" data-report="sales" role="tab" aria-selected="true">Sales</button>
-        <button type="button" class="report-tab" data-report="purchases" role="tab" aria-selected="false">Purchases</button>
-        <button type="button" class="report-tab" data-report="stock" role="tab" aria-selected="false">Stock</button>
-        <button type="button" class="report-tab" data-report="customers" role="tab" aria-selected="false">Customer Due</button>
-        <button type="button" class="report-tab" data-report="suppliers" role="tab" aria-selected="false">Supplier Payable</button>
-        <button type="button" class="report-tab" data-report="profit" role="tab" aria-selected="false">Profit / Loss</button>
-      </div>
-
-      <!-- Sales -->
-      <div id="report-sales" class="report-panel active" role="tabpanel">
-        <div class="report-panel-heading">
-          <h3>Sales Report</h3>
-          <span id="salesReportCount">0 records</span>
+      <section class="report-panel" data-report="sales">
+        <div class="report-panel-header">
+          <h2>🧾 Sales Report</h2>
+          <span class="report-count" id="salesReportCount">0 records</span>
         </div>
 
         <div class="report-table-wrap">
-          <table class="data-table">
+          <table class="report-table">
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Bill No.</th>
+                <th>Invoice</th>
                 <th>Customer</th>
-                <th>Product</th>
-                <th>Qty</th>
                 <th>Total</th>
                 <th>Paid</th>
-                <th>Balance</th>
+                <th>Due</th>
               </tr>
             </thead>
-            <tbody id="salesReportBody"></tbody>
+            <tbody id="salesReportBody">
+              <tr><td colspan="6">Loading sales report…</td></tr>
+            </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <!-- Purchases -->
-      <div id="report-purchases" class="report-panel" role="tabpanel">
-        <div class="report-panel-heading">
-          <h3>Purchase Report</h3>
-          <span id="purchaseReportCount">0 records</span>
+      <section class="report-panel" data-report="purchases" hidden>
+        <div class="report-panel-header">
+          <h2>📥 Purchase Report</h2>
+          <span class="report-count" id="purchaseReportCount">0 records</span>
         </div>
 
         <div class="report-table-wrap">
-          <table class="data-table">
+          <table class="report-table">
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Bill No.</th>
+                <th>Bill / Invoice</th>
                 <th>Supplier</th>
-                <th>Product</th>
-                <th>Qty</th>
-                <th>Rate</th>
                 <th>Total</th>
                 <th>Paid</th>
+                <th>Due</th>
               </tr>
             </thead>
-            <tbody id="purchaseReportBody"></tbody>
+            <tbody id="purchaseReportBody">
+              <tr><td colspan="6">Loading purchase report…</td></tr>
+            </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <!-- Stock -->
-      <div id="report-stock" class="report-panel" role="tabpanel">
-        <div class="report-panel-heading">
-          <h3>Stock Report</h3>
-          <span id="stockReportCount">0 products</span>
+      <section class="report-panel" data-report="stock" hidden>
+        <div class="report-panel-header">
+          <h2>📦 Stock Report</h2>
+          <span class="report-count" id="stockReportCount">Stock overview</span>
         </div>
 
         <div class="report-table-wrap">
-          <table class="data-table">
+          <table class="report-table">
             <thead>
               <tr>
                 <th>Product</th>
-                <th>Category</th>
-                <th>Unit</th>
-                <th>Stock</th>
-                <th>Purchase Price</th>
-                <th>Sale Price</th>
-                <th>Stock Value</th>
-                <th>Status</th>
+                <th>SKU / Code</th>
+                <th>Quantity</th>
+                <th>Cost Value</th>
+                <th>Selling Value</th>
               </tr>
             </thead>
-            <tbody id="stockReportBody"></tbody>
+            <tbody id="stockReportBody">
+              <tr><td colspan="5">Loading stock report…</td></tr>
+            </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <!-- Customer balances -->
-      <div id="report-customers" class="report-panel" role="tabpanel">
-        <div class="report-panel-heading">
-          <h3>Customer Due Report</h3>
-          <span id="customerReportCount">0 customers</span>
+      <section class="report-panel" data-report="customers" hidden>
+        <div class="report-panel-header">
+          <h2>👥 Customer Report</h2>
+          <span class="report-count" id="customerReportCount">0 records</span>
         </div>
 
         <div class="report-table-wrap">
-          <table class="data-table">
+          <table class="report-table">
             <thead>
               <tr>
                 <th>Customer</th>
                 <th>Phone</th>
-                <th>Opening</th>
-                <th>Credit Sale</th>
-                <th>Payment</th>
-                <th>Current Due</th>
+                <th>Total Sales</th>
+                <th>Total Paid</th>
+                <th>Balance Due</th>
               </tr>
             </thead>
-            <tbody id="customerReportBody"></tbody>
+            <tbody id="customerReportBody">
+              <tr><td colspan="5">Loading customer report…</td></tr>
+            </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <!-- Supplier balances -->
-      <div id="report-suppliers" class="report-panel" role="tabpanel">
-        <div class="report-panel-heading">
-          <h3>Supplier Payable Report</h3>
-          <span id="supplierReportCount">0 suppliers</span>
+      <section class="report-panel" data-report="suppliers" hidden>
+        <div class="report-panel-header">
+          <h2>🚚 Supplier Report</h2>
+          <span class="report-count" id="supplierReportCount">0 records</span>
         </div>
 
         <div class="report-table-wrap">
-          <table class="data-table">
+          <table class="report-table">
             <thead>
               <tr>
                 <th>Supplier</th>
                 <th>Phone</th>
-                <th>Opening</th>
-                <th>Purchase</th>
-                <th>Payment</th>
-                <th>Current Payable</th>
+                <th>Total Purchases</th>
+                <th>Total Paid</th>
+                <th>Balance Due</th>
               </tr>
             </thead>
-            <tbody id="supplierReportBody"></tbody>
+            <tbody id="supplierReportBody">
+              <tr><td colspan="5">Loading supplier report…</td></tr>
+            </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <!-- Profit and loss -->
-      <div id="report-profit" class="report-panel" role="tabpanel">
-        <div class="report-panel-heading">
-          <h3>Profit / Loss Summary</h3>
-          <span>Selected date range</span>
+      <section class="report-panel" data-report="profit" hidden>
+        <div class="report-panel-header">
+          <h2>💰 Profit & Loss Summary</h2>
         </div>
 
-        <div id="profitWarning" class="report-warning" style="display:none"></div>
+        <div class="report-warning" id="profitWarning"></div>
 
-        <div class="report-profit-grid">
-          <div class="report-profit-card">
-            <div class="stat-title">Sales</div>
-            <div class="stat-value" id="profitSales">Rs. 0.00</div>
+        <div class="profit-grid">
+          <div class="profit-item">
+            <span>Sales Revenue</span>
+            <strong id="profitSales">रु 0.00</strong>
           </div>
 
-          <div class="report-profit-card">
-            <div class="stat-title">Cost of Goods Sold</div>
-            <div class="stat-value" id="profitCost">N/A</div>
+          <div class="profit-item">
+            <span>Cost of Goods Sold</span>
+            <strong id="profitCost">रु 0.00</strong>
           </div>
 
-          <div class="report-profit-card">
-            <div class="stat-title">Gross Profit</div>
-            <div class="stat-value" id="profitGross">N/A</div>
+          <div class="profit-item">
+            <span>Gross Profit</span>
+            <strong id="profitGross">रु 0.00</strong>
           </div>
 
-          <div class="report-profit-card">
-            <div class="stat-title">Expenses</div>
-            <div class="stat-value" id="profitExpense">Rs. 0.00</div>
+          <div class="profit-item">
+            <span>Expenses</span>
+            <strong id="profitExpense">रु 0.00</strong>
           </div>
 
-          <div class="report-profit-card">
-            <div class="stat-title">Net Profit / Loss</div>
-            <div class="report-profit" id="profitNet">N/A</div>
+          <div class="profit-item net">
+            <span>Net Profit</span>
+            <strong id="profitNet">रु 0.00</strong>
           </div>
         </div>
-      </div>
 
-    </section>
-  </main>
-</div>
+        <p class="report-help">
+          नाफा/घाटा रिपोर्टको हिसाब उपलब्ध बिक्री, लागत र खर्चको डाटामा निर्भर हुन्छ।
+          खरिद रकमलाई सिधै नाफाको लागत मान्नु सधैँ सही हुँदैन।
+        </p>
+      </section>
 
-<script src="script.js"></script>
-<script src="reports.js"></script>
+      <p class="report-help">
+        नोट: रिपोर्टको वास्तविक तथ्याङ्क <code>reports.js</code> ले उपलब्ध
+        localStorage डाटाबाट निकाल्छ।
+      </p>
+    </main>
+  </div>
+
+  <!-- Existing application scripts -->
+  <script src="script.js"></script>
+  <script src="reports.js"></script>
+
+  <script>
+    // Report category tabs: show the selected report without changing reports.js.
+    document.querySelectorAll("[data-report-tab]").forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        var selected = tab.getAttribute("data-report-tab");
+
+        document.querySelectorAll("[data-report-tab]").forEach(function (item) {
+          item.classList.toggle("active", item === tab);
+          item.setAttribute("aria-selected", item === tab ? "true" : "false");
+        });
+
+        document.querySelectorAll(".report-panel[data-report]").forEach(function (panel) {
+          panel.hidden = panel.getAttribute("data-report") !== selected;
+        });
+      });
+    });
+
+    // Print all report panels, including currently hidden tabs.
+    document.getElementById("printReportsBtn").addEventListener("click", function () {
+      window.print();
+    });
+
+    // Clear date range and refresh all-date reports using the existing report logic.
+    document.getElementById("clearReportFilterBtn").addEventListener("click", function () {
+      document.getElementById("reportFromDate").value = "";
+      document.getElementById("reportToDate").value = "";
+
+      var applyButton = document.getElementById("applyReportFilterBtn");
+      if (applyButton) applyButton.click();
+      else document.getElementById("refreshReportsBtn").click();
+    });
+  </script>
 </body>
 </html>
