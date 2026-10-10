@@ -4,690 +4,360 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#166534">
   <title>AI Business Assistant</title>
-
   <script src="appearance.js"></script>
   <link rel="stylesheet" href="style.css">
-
   <style>
     :root {
-      --ai-bg: var(--body-bg, #f3f6fa);
-      --ai-card: var(--card-bg, #fff);
-      --ai-text: var(--text-color, #111827);
-      --ai-muted: var(--muted-color, #6b7280);
-      --ai-border: var(--border-color, #e5e7eb);
-      --ai-accent: var(--accent-color, #166534);
-      color-scheme: light;
+      --c-bg: var(--body-bg, #f3f6fa);
+      --c-card: var(--card-bg, #fff);
+      --c-text: var(--text-color, #172033);
+      --c-muted: var(--muted-color, #737b8c);
+      --c-border: var(--border-color, #dfe4ec);
+      --c-accent: var(--accent-color, #166534);
     }
-
-    html[data-theme="dark"] { color-scheme: dark; }
-
     * { box-sizing: border-box; }
-
     html, body {
-      margin: 0;
-      min-height: 100%;
-      width: 100%;
-      overflow-x: hidden;
-      background: var(--ai-bg) !important;
-      color: var(--ai-text);
-      font-family: var(--font-family, Arial, sans-serif);
-      font-size: var(--font-size, 15px);
+      margin: 0; min-height: 100%; width: 100%;
+      background: var(--c-bg) !important; color: var(--c-text);
+      font-family: Arial, sans-serif; overflow-x: hidden;
     }
-
-    body { min-height: 100vh; }
-
     button, textarea { font: inherit; }
-
     button { cursor: pointer; }
-
-    .ai-app {
-      width: 100%;
-      max-width: 1200px;
-      min-height: 100vh;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      background: var(--ai-bg);
-      color: var(--ai-text);
+    .app {
+      min-height: 100vh; max-width: 900px; margin: auto;
+      display: flex; flex-direction: column; background: var(--c-bg);
     }
-
-    .ai-topbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 13px 18px;
-      border-bottom: 1px solid var(--ai-border);
-      background: var(--ai-card);
+    .topbar {
+      position: sticky; top: 0; z-index: 5;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; padding: 12px 15px;
+      background: var(--c-card); border-bottom: 1px solid var(--c-border);
     }
-
-    .ai-brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      min-width: 0;
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-icon {
+      display: grid; place-items: center; width: 42px; height: 42px;
+      flex-shrink: 0; border-radius: 14px; background: var(--c-accent);
+      color: white; font-size: 23px;
     }
-
-    .ai-brand-icon {
-      display: grid;
-      place-items: center;
-      flex: 0 0 43px;
-      width: 43px;
-      height: 43px;
-      border-radius: 14px;
-      background: var(--ai-accent);
-      color: #fff;
-      font-size: 24px;
+    .brand h1 { margin: 0; font-size: 17px; }
+    .brand p { margin: 4px 0 0; color: var(--c-muted); font-size: 11px; }
+    .top-actions { display: flex; gap: 7px; }
+    .top-btn {
+      padding: 9px 11px; border: 1px solid var(--c-border);
+      border-radius: 10px; background: var(--c-card); color: var(--c-text);
+      font-size: 12px; font-weight: bold; text-decoration: none;
     }
+    .top-btn.primary { background: var(--c-accent); color: white; border-color: var(--c-accent); }
 
-    .ai-brand h1 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.4;
-      color: var(--ai-text);
-    }
+    .chat-intro { padding: 17px 16px 9px; }
+    .chat-intro h2 { margin: 0 0 5px; font-size: 19px; }
+    .chat-intro p { margin: 0; color: var(--c-muted); font-size: 12px; line-height: 1.6; }
 
-    .ai-brand p {
-      margin: 3px 0 0;
-      font-size: 12px;
-      color: var(--ai-muted);
-    }
-
-    .ai-top-actions {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .ai-top-btn {
-      min-height: 39px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 9px 12px;
-      border: 1px solid var(--ai-border);
-      border-radius: 10px;
-      background: var(--ai-card);
-      color: var(--ai-text);
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .ai-top-btn.primary {
-      background: var(--ai-accent);
-      border-color: var(--ai-accent);
-      color: #fff;
-    }
-
-    .ai-main {
-      width: 100%;
-      flex: 1;
-      padding: 20px;
-    }
-
-    .ai-welcome {
-      padding: 24px 10px 22px;
-      text-align: center;
-    }
-
-    .ai-welcome-icon {
-      display: grid;
-      place-items: center;
-      width: 66px;
-      height: 66px;
-      margin: 0 auto 15px;
-      border-radius: 21px;
-      background: var(--ai-accent);
-      color: #fff;
-      font-size: 33px;
-    }
-
-    .ai-welcome h2 {
-      margin: 0 0 9px;
-      font-size: clamp(23px, 4vw, 31px);
-      color: var(--ai-text);
-    }
-
-    .ai-welcome p {
-      max-width: 560px;
-      margin: 0 auto;
-      color: var(--ai-muted);
-      font-size: 14px;
-      line-height: 1.8;
-    }
-
-    .ai-section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin: 19px 0 12px;
-    }
-
-    .ai-section-title h2 {
-      margin: 0;
-      font-size: 17px;
-      color: var(--ai-text);
-    }
-
-    .ai-section-title span {
-      font-size: 11px;
-      color: var(--ai-muted);
-    }
-
-    .ai-options {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .ai-option {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      width: 100%;
-      min-width: 0;
-      min-height: 100px;
-      padding: 16px;
-      border: 1px solid var(--ai-border);
-      border-radius: 15px;
-      background: var(--ai-card);
-      color: var(--ai-text);
-      text-align: left;
-      transition: transform .15s, border-color .15s;
-    }
-
-    .ai-option:hover {
-      border-color: var(--ai-accent);
-      transform: translateY(-2px);
-    }
-
-    .ai-option:active { transform: scale(.99); }
-
-    .ai-option-icon {
-      display: grid;
-      place-items: center;
-      flex: 0 0 42px;
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: var(--ai-bg);
-      font-size: 22px;
-    }
-
-    .ai-option-content { min-width: 0; }
-
-    .ai-option strong {
-      display: block;
-      margin: 1px 0 6px;
-      font-size: 14px;
-      line-height: 1.5;
-      color: var(--ai-text);
-    }
-
-    .ai-option small {
-      display: block;
-      color: var(--ai-muted);
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .ai-option .option-arrow {
-      display: block;
-      margin-top: 7px;
-      color: var(--ai-accent);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .ai-conversation {
-      margin-top: 22px;
-      padding: 18px;
-      border: 1px solid var(--ai-border);
-      border-radius: 16px;
-      background: var(--ai-card);
-    }
-
-    .ai-conversation-heading {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .ai-conversation-heading .mini-icon {
-      display: grid;
-      place-items: center;
-      width: 39px;
-      height: 39px;
-      border-radius: 12px;
-      background: var(--ai-accent);
-      color: #fff;
-      font-size: 20px;
-    }
-
-    .ai-conversation-heading h2 {
-      margin: 0;
-      font-size: 16px;
-      color: var(--ai-text);
-    }
-
-    .ai-conversation-heading p {
-      margin: 4px 0 0;
-      color: var(--ai-muted);
-      font-size: 11px;
-    }
-
-    .chat-area {
-      min-width: 0;
-      overflow: visible;
-      background: transparent;
-    }
-
-    .messages {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      min-width: 0;
-    }
-
+    .chat-area { padding: 12px 15px 22px; flex: 1; }
+    #messages { display: flex; flex-direction: column; gap: 19px; }
     .welcome { display: none !important; }
 
-    .message {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      animation: aiAppear .18s ease;
-      min-width: 0;
-    }
-
-    @keyframes aiAppear {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
+    .message { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
     .message.user { flex-direction: row-reverse; }
-
     .avatar {
-      display: grid;
-      place-items: center;
-      flex: 0 0 34px;
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      background: var(--ai-bg);
-      color: var(--ai-text);
+      display: grid; place-items: center; flex: 0 0 36px;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--c-accent); color: white; font-size: 17px;
+      overflow: hidden;
     }
-
-    .assistant .avatar {
-      background: var(--ai-accent);
-      color: #fff;
-    }
-
-    .message-body {
-      min-width: 0;
-      max-width: min(88%, 760px);
-    }
-
-    .message-name {
-      margin: 2px 0 6px;
-      color: var(--ai-muted);
-      font-size: 11px;
-      font-weight: 750;
-    }
-
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user .avatar { background: #dbeafe; color: #1d4ed8; }
+    .message-body { max-width: min(88%, 690px); min-width: 0; }
+    .message-name { margin: 3px 0 6px; color: var(--c-muted); font-size: 11px; font-weight: bold; }
     .user .message-name { text-align: right; }
-
     .bubble {
-      color: var(--ai-text);
-      font-size: 14px;
-      line-height: 1.85;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
+      color: var(--c-text); font-size: 14px; line-height: 1.8;
+      white-space: pre-wrap; overflow-wrap: anywhere;
     }
-
     .user .bubble {
-      padding: 11px 14px;
-      border: 1px solid var(--ai-border);
-      border-radius: 15px 5px 15px 15px;
-      background: var(--ai-bg);
+      padding: 10px 13px; border: 1px solid var(--c-border);
+      border-radius: 15px 5px 15px 15px; background: var(--c-card);
     }
+    .assistant .bubble { padding: 2px 0; }
+    .message-tools { margin-top: 6px; }
+    .small-btn { border: 0; background: transparent; color: var(--c-muted); font-size: 11px; padding: 5px 0; }
 
-    .assistant .bubble { padding: 1px 2px; }
-
-    .message-tools {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 9px;
-      margin-top: 8px;
+    .followup {
+      margin-top: 13px; padding: 12px;
+      border: 1px solid var(--c-border); border-radius: 13px;
+      background: var(--c-card);
     }
-
-    .small-btn {
-      padding: 5px 0;
-      border: 0;
-      background: transparent;
-      color: var(--ai-muted);
-      font-size: 11px;
+    .followup-title {
+      margin: 0 0 9px; color: var(--c-muted);
+      font-size: 11px; font-weight: bold;
     }
-
-    .small-btn:hover { color: var(--ai-accent); }
-
-    .typing {
-      display: inline-flex;
-      gap: 5px;
-      padding: 9px 2px;
+    .followup-options { display: flex; flex-wrap: wrap; gap: 8px; }
+    .choice {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 12px; border: 1px solid var(--c-border);
+      border-radius: 22px; background: var(--c-bg);
+      color: var(--c-text); font-size: 12px; font-weight: bold;
     }
+    .choice:active { transform: scale(.97); }
+    .choice.end { color: #b91c1c; }
 
+    .typing { display: flex; gap: 5px; padding: 8px 0; }
     .typing span {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--ai-muted);
-      animation: aiBounce .8s infinite alternate;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--c-muted); animation: bounce .7s infinite alternate;
     }
-
     .typing span:nth-child(2) { animation-delay: .2s; }
     .typing span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce { to { opacity: .35; transform: translateY(-4px); } }
 
-    @keyframes aiBounce {
-      to { opacity: .4; transform: translateY(-4px); }
+    .composer-wrap {
+      position: sticky; bottom: 0; z-index: 4;
+      padding: 11px 13px; border-top: 1px solid var(--c-border);
+      background: var(--c-card);
     }
-
-    .status {
-      display: none;
-      margin: 0 0 10px;
-      color: var(--ai-muted);
-      font-size: 12px;
-    }
-
-    .status.show { display: block; }
-
-    .ai-composer-wrap {
-      padding: 14px 20px;
-      border-top: 1px solid var(--ai-border);
-      background: var(--ai-card);
-    }
-
     .composer {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-      max-width: 850px;
-      margin: 0 auto;
-      padding: 9px 10px 9px 14px;
-      border: 1px solid var(--ai-border);
-      border-radius: 16px;
-      background: var(--ai-bg);
+      display: flex; align-items: flex-end; gap: 9px;
+      max-width: 800px; margin: auto; padding: 8px 9px 8px 13px;
+      border: 1px solid var(--c-border); border-radius: 16px;
+      background: var(--c-bg);
     }
-
     #questionInput {
-      flex: 1;
-      min-width: 0;
-      min-height: 34px;
-      max-height: 130px;
-      resize: vertical;
-      padding: 7px 0;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--ai-text);
-      font: inherit;
-      font-size: 13px;
+      flex: 1; min-width: 0; min-height: 35px; max-height: 110px;
+      resize: none; border: 0; outline: 0; background: transparent;
+      color: var(--c-text); padding: 8px 0; font-size: 13px;
     }
-
-    #questionInput::placeholder { color: var(--ai-muted); }
-
     .send-btn {
-      display: grid;
-      place-items: center;
-      flex: 0 0 40px;
-      width: 40px;
-      height: 40px;
-      border: 0;
-      border-radius: 12px;
-      background: var(--ai-accent);
-      color: #fff;
-      font-size: 21px;
+      width: 39px; height: 39px; flex: 0 0 39px; border: 0;
+      border-radius: 12px; background: var(--c-accent);
+      color: white; font-size: 22px;
     }
-
-    .send-btn:disabled { opacity: .5; }
-
-    .ai-hint {
-      margin: 8px 0 0;
-      text-align: center;
-      color: var(--ai-muted);
-      font-size: 10px;
+    .composer-hint { text-align: center; margin: 7px 0 0; color: var(--c-muted); font-size: 10px; }
+    #statusText { display: none; color: var(--c-muted); font-size: 11px; padding: 0 4px 8px; }
+    #statusText.show { display: block; }
+    .ended-note {
+      padding: 17px; margin: 10px 0; text-align: center;
+      border: 1px solid var(--c-border); border-radius: 13px;
+      background: var(--c-card); color: var(--c-muted); font-size: 13px;
     }
-
-    @media (max-width: 850px) {
-      .ai-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .ai-main { padding: 15px; }
-    }
-
-    @media (max-width: 520px) {
-      .ai-topbar { padding: 10px 11px; }
-      .ai-brand-icon { flex-basis: 37px; width: 37px; height: 37px; }
-      .ai-brand h1 { font-size: 15px; }
-      .ai-brand p { font-size: 10px; }
-      .ai-top-btn { min-height: 36px; padding: 8px; font-size: 11px; }
-      .ai-main { padding: 11px; }
-      .ai-welcome { padding: 18px 3px; }
-      .ai-welcome-icon { width: 55px; height: 55px; font-size: 28px; }
-      .ai-welcome p { font-size: 12px; }
-      .ai-options { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-      .ai-option { min-height: 115px; display: block; padding: 11px; border-radius: 12px; }
-      .ai-option-icon { width: 36px; height: 36px; margin-bottom: 8px; font-size: 19px; }
-      .ai-option strong { font-size: 12px; }
-      .ai-option small { font-size: 10px; }
-      .ai-option .option-arrow { font-size: 10px; }
-      .ai-conversation { margin-top: 15px; padding: 13px; }
-      .message { gap: 8px; }
-      .avatar { flex-basis: 30px; width: 30px; height: 30px; }
-      .message-body { max-width: calc(100% - 38px); }
+    @media (max-width: 500px) {
+      .topbar { padding: 10px; }
+      .brand-icon { width: 37px; height: 37px; }
+      .brand h1 { font-size: 14px; }
+      .brand p { font-size: 10px; }
+      .top-btn { padding: 8px; font-size: 10px; }
+      .chat-area { padding: 10px 11px 18px; }
+      .chat-intro { padding: 14px 12px 8px; }
+      .avatar { width: 31px; height: 31px; flex-basis: 31px; }
+      .message-body { max-width: calc(100% - 40px); }
       .bubble { font-size: 13px; }
-      .ai-composer-wrap { padding: 10px; }
-    }
-
-    @media print {
-      .ai-topbar, .ai-options, .ai-composer-wrap { display: none !important; }
-      .ai-main { padding: 0; }
-      .ai-app { max-width: none; }
+      .choice { padding: 8px 10px; font-size: 11px; }
     }
   </style>
 </head>
-
 <body>
-  <div class="ai-app">
-    <header class="ai-topbar">
-      <div class="ai-brand">
-        <div class="ai-brand-icon">✦</div>
-        <div>
-          <h1>AI Business Assistant</h1>
-          <p>Smart Store Helper</p>
-        </div>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">✦</div>
+      <div>
+        <h1>AI Business Assistant</h1>
+        <p>Store help · Tap to explore</p>
       </div>
+    </div>
+    <div class="top-actions">
+      <button class="top-btn primary" id="newChatBtn" type="button">↻ Restart</button>
+      <a class="top-btn" href="index.html">⌂ Home</a>
+    </div>
+  </header>
 
-      <div class="ai-top-actions">
-        <button class="ai-top-btn primary" id="newChatBtn" type="button">
-          ＋ <span class="top-label">New Chat</span>
-        </button>
-        <a class="ai-top-btn" href="index.html">⌂ <span class="top-label">Dashboard</span></a>
-      </div>
-    </header>
+  <section class="chat-intro">
+    <h2>Assistant Chat</h2>
+    <p>Choose a topic in the conversation below. No need to type.</p>
+  </section>
 
-    <main class="ai-main">
-      <section class="ai-welcome">
-        <div class="ai-welcome-icon">✦</div>
-        <h2>Welcome to Your Store Assistant</h2>
-        <p>
-          Choose a topic below. Tap any option to see an answer about your
-          store using the business data saved on this device.
-        </p>
-      </section>
+  <main class="chat-area" id="chatArea">
+    <div id="messages">
+      <section class="welcome" id="welcome"></section>
+    </div>
+  </main>
 
-      <div class="ai-section-title">
-        <h2>Choose a Topic</h2>
-        <span>Tap an option to start</span>
-      </div>
+  <footer class="composer-wrap" id="composerWrap">
+    <div id="statusText">Preparing answer…</div>
+    <form class="composer" id="questionForm">
+      <textarea id="questionInput" rows="1" maxlength="2000"
+        placeholder="Or type your own question…" aria-label="Type a question"></textarea>
+      <button class="send-btn" id="sendBtn" type="submit" aria-label="Send">↑</button>
+    </form>
+    <p class="composer-hint">Tap an option above, or type a question.</p>
+  </footer>
+</div>
 
-      <section class="ai-options" aria-label="Business help topics">
-        <button class="ai-option" type="button"
-          data-question="अहिले कुन सामानको स्टक कम छ?">
-          <span class="ai-option-icon">📦</span>
-          <span class="ai-option-content">
-            <strong>Low Stock Items</strong>
-            <small>See products that may need restocking.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
+<script src="ai.js"></script>
+<script>
+(function () {
+  "use strict";
 
-        <button class="ai-option" type="button"
-          data-question="आजको बिक्री कति भयो?">
-          <span class="ai-option-icon">💰</span>
-          <span class="ai-option-content">
-            <strong>Today's Sales</strong>
-            <small>Check today's recorded sales and totals.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
+  const messages = document.getElementById("messages");
+  const form = document.getElementById("questionForm");
+  const input = document.getElementById("questionInput");
+  const newChatBtn = document.getElementById("newChatBtn");
+  const composerWrap = document.getElementById("composerWrap");
+  const chatArea = document.getElementById("chatArea");
+  const historyKey = "gs_ai_chat_history";
 
-        <button class="ai-option" type="button"
-          data-question="कसकसको उधारो बाँकी छ?">
-          <span class="ai-option-icon">🧾</span>
-          <span class="ai-option-content">
-            <strong>Customer Dues</strong>
-            <small>Find customers with outstanding balances.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
+  let ended = false;
+  let lastAnsweredCount = 0;
+  let chosenTopic = "";
+  let observerLock = false;
 
-        <button class="ai-option" type="button"
-          data-question="मेरो पसलको छोटो रिपोर्ट दिनुहोस्।">
-          <span class="ai-option-icon">📊</span>
-          <span class="ai-option-content">
-            <strong>Business Summary</strong>
-            <small>Review sales, products and store activity.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
+  const topics = [
+    { id: "stock", label: "📦 Low Stock", question: "अहिले कुन सामानको स्टक कम छ?" },
+    { id: "due", label: "🧾 Customer Due", question: "कसकसको उधारो बाँकी छ?" },
+    { id: "best", label: "🏆 Best Selling", question: "कुन सामान धेरै बिक्री भयो?" },
+    { id: "customer", label: "👥 Customers", question: "ग्राहकको विवरण देखाउनुहोस्।" },
+    { id: "supplier", label: "🚚 Suppliers", question: "सप्लायरको विवरण देखाउनुहोस्।" },
+    { id: "sales", label: "💰 Sales", question: "आजको बिक्री कति भयो?" },
+    { id: "purchase", label: "🛒 Purchases", question: "आजको खरिद कति भयो?" },
+    { id: "expense", label: "💸 Expenses", question: "खर्चको विवरण देखाउनुहोस्।" },
+    { id: "profit", label: "📈 Profit", question: "नाफा कसरी थाहा पाउने?" },
+    { id: "summary", label: "📊 Store Summary", question: "मेरो पसलको छोटो रिपोर्ट दिनुहोस्।" }
+  ];
 
-        <button class="ai-option" type="button"
-          data-question="कुन सामान धेरै बिक्री भयो?">
-          <span class="ai-option-icon">🏆</span>
-          <span class="ai-option-content">
-            <strong>Best-Selling Products</strong>
-            <small>Explore product sales where data is available.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
+  function scrollBottom() {
+    setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }), 60);
+  }
 
-        <button class="ai-option" type="button"
-          data-question="आजको खरिद कति भयो?">
-          <span class="ai-option-icon">🛒</span>
-          <span class="ai-option-content">
-            <strong>Today's Purchases</strong>
-            <small>Review today's purchase records.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
+  function makeFollowups(excludeId) {
+    const old = document.getElementById("liveFollowups");
+    if (old) old.remove();
+    if (ended) return;
 
-        <button class="ai-option" type="button"
-          data-question="ग्राहकको विवरण देखाउनुहोस्।">
-          <span class="ai-option-icon">👥</span>
-          <span class="ai-option-content">
-            <strong>Customers</strong>
-            <small>See the number of registered customers.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
+    const box = document.createElement("section");
+    box.className = "followup";
+    box.id = "liveFollowups";
 
-        <button class="ai-option" type="button"
-          data-question="सप्लायरको विवरण देखाउनुहोस्।">
-          <span class="ai-option-icon">🚚</span>
-          <span class="ai-option-content">
-            <strong>Suppliers</strong>
-            <small>View your saved supplier list.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
+    const title = document.createElement("p");
+    title.className = "followup-title";
+    title.textContent = "WHAT WOULD YOU LIKE TO CHECK NEXT?";
+    box.appendChild(title);
 
-        <button class="ai-option" type="button"
-          data-question="खर्चको विवरण देखाउनुहोस्।">
-          <span class="ai-option-icon">💸</span>
-          <span class="ai-option-content">
-            <strong>Expenses</strong>
-            <small>Review expense information if recorded.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
+    const options = document.createElement("div");
+    options.className = "followup-options";
 
-        <button class="ai-option" type="button"
-          data-question="नाफा कसरी थाहा पाउने?">
-          <span class="ai-option-icon">📈</span>
-          <span class="ai-option-content">
-            <strong>Profit Information</strong>
-            <small>Understand what data is needed for profit.</small>
-            <span class="option-arrow">View details →</span>
-          </span>
-        </button>
-      </section>
-
-      <section class="ai-conversation" aria-label="Assistant conversation">
-        <div class="ai-conversation-heading">
-          <div class="mini-icon">✦</div>
-          <div>
-            <h2>Assistant Chat</h2>
-            <p>Tap a topic above to get a response here.</p>
-          </div>
-        </div>
-
-        <main class="chat-area" id="chatArea">
-          <div class="messages" id="messages">
-            <section class="welcome" id="welcome"></section>
-          </div>
-        </main>
-      </section>
-    </main>
-
-    <footer class="ai-composer-wrap">
-      <div class="status" id="statusText">Preparing your answer...</div>
-
-      <form class="composer" id="questionForm">
-        <textarea
-          id="questionInput"
-          rows="1"
-          maxlength="2000"
-          placeholder="Optional: type your own question..."
-          aria-label="Type a question"
-        ></textarea>
-        <button class="send-btn" id="sendBtn" type="submit" aria-label="Send question">
-          ↑
-        </button>
-      </form>
-      <p class="ai-hint">
-        You can use the topic buttons above instead of typing.
-      </p>
-    </footer>
-  </div>
-
-  <script src="ai.js"></script>
-
-  <script>
-    // Update theme colors immediately if the saved appearance changes.
-    window.addEventListener("storage", function (event) {
-      if (event.key === "gs_settings" || event.key === null) {
-        if (window.GSAppearance && typeof window.GSAppearance.apply === "function") {
-          window.GSAppearance.apply();
-        }
-      }
+    topics.filter(t => t.id !== excludeId).forEach(topic => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "choice";
+      button.textContent = topic.label;
+      button.addEventListener("click", () => chooseTopic(topic));
+      options.appendChild(button);
     });
-  </script>
+
+    const endButton = document.createElement("button");
+    endButton.type = "button";
+    endButton.className = "choice end";
+    endButton.textContent = "⏹ End Chat";
+    endButton.addEventListener("click", endChat);
+    options.appendChild(endButton);
+
+    box.appendChild(options);
+    messages.appendChild(box);
+    scrollBottom();
+  }
+
+  function addUserPhoto() {
+    messages.querySelectorAll(".message.user .avatar").forEach(avatar => {
+      if (avatar.dataset.photoReady) return;
+      avatar.dataset.photoReady = "1";
+      avatar.textContent = "👤";
+      avatar.title = "You";
+      try {
+        const settings = JSON.parse(localStorage.getItem("gs_settings") || "{}");
+        const photo = settings.profilePhoto || settings.userPhoto || settings.avatar || settings.photo;
+        if (typeof photo === "string" && photo.trim()) {
+          const img = document.createElement("img");
+          img.src = photo;
+          img.alt = "Your profile";
+          img.onerror = () => { img.remove(); avatar.textContent = "👤"; };
+          avatar.textContent = "";
+          avatar.appendChild(img);
+        }
+      } catch (_) {}
+    });
+  }
+
+  function endChat() {
+    ended = true;
+    const old = document.getElementById("liveFollowups");
+    if (old) old.remove();
+    const note = document.createElement("div");
+    note.className = "ended-note";
+    note.textContent = "Chat ended. Tap “Restart” to begin a new conversation.";
+    messages.appendChild(note);
+    composerWrap.style.display = "none";
+    scrollBottom();
+  }
+
+  function chooseTopic(topic) {
+    if (ended) return;
+    chosenTopic = topic.id;
+    const old = document.getElementById("liveFollowups");
+    if (old) old.remove();
+
+    input.value = topic.question;
+    form.requestSubmit();
+  }
+
+  // Listen for answers added by the existing ai.js.
+  const observer = new MutationObserver(() => {
+    if (observerLock || ended) return;
+    addUserPhoto();
+
+    const assistantMessages = messages.querySelectorAll(".message.assistant:not(#typingMessage)");
+    const count = assistantMessages.length;
+    if (count > lastAnsweredCount) {
+      lastAnsweredCount = count;
+      const selected = chosenTopic;
+      chosenTopic = "";
+      makeFollowups(selected);
+    }
+  });
+  observer.observe(messages, { childList: true, subtree: true });
+
+  // Keep the initial screen inside the chat: first greeting, then choices.
+  window.addEventListener("load", () => {
+    addUserPhoto();
+    const existing = messages.querySelectorAll(".message.assistant:not(#typingMessage)").length;
+    if (!existing) {
+      chosenTopic = "";
+      input.value = "नमस्कार";
+      form.requestSubmit();
+    } else {
+      lastAnsweredCount = existing;
+      makeFollowups("");
+    }
+  });
+
+  // Remove any legacy static topic cards if an older copy of the page remains.
+  document.querySelectorAll(".ai-options, .ai-section-title, .ai-welcome").forEach(el => el.remove());
+
+  newChatBtn.addEventListener("click", () => {
+    ended = false;
+    chosenTopic = "";
+    lastAnsweredCount = 0;
+    composerWrap.style.display = "";
+    const old = document.getElementById("liveFollowups");
+    if (old) old.remove();
+    messages.querySelectorAll(".message, .ended-note").forEach(el => el.remove());
+    try { localStorage.removeItem(historyKey); } catch (_) {}
+    input.value = "नमस्कार";
+    form.requestSubmit();
+  });
+
+  // Stop old click handling from accidentally sending a duplicate topic.
+  document.querySelectorAll("[data-question]").forEach(button => button.remove());
+})();
+</script>
 </body>
 </html>
