@@ -1,222 +1,195 @@
+
 <!DOCTYPE html>
 <html lang="ne">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp - General Store</title>
+  <title>WhatsApp | General Store</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="appearance.js"></script>
 
   <style>
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      color: #1f2937;
+      background: var(--body-bg, #f3f6fa);
+      color: var(--text-color, #111827);
+      font-family: var(--font-family, Arial, sans-serif);
+      font-size: var(--font-size, 15px);
     }
 
-    .app { display: flex; min-height: 100vh; }
-
-    .sidebar {
-      width: 240px;
-      flex-shrink: 0;
-      background: #111827;
-      color: white;
-      padding: 18px 12px;
+    .wa-wrap {
+      max-width: 1400px;
+      margin: auto;
+      padding: 22px;
     }
 
-    .brand {
-      font-size: 20px;
-      font-weight: bold;
-      padding: 10px 12px 20px;
-    }
-
-    .menu-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: #d1d5db;
-      text-decoration: none;
-      padding: 11px 12px;
-      margin: 4px 0;
-      border-radius: 8px;
-    }
-
-    .menu-item:hover,
-    .menu-item.active {
-      background: #1f2937;
-      color: white;
-    }
-
-    .menu-icon { width: 24px; text-align: center; }
-
-    .main {
-      flex: 1;
-      min-width: 0;
-      padding: 24px;
-    }
-
-    .topbar {
+    .wa-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 15px;
+      gap: 14px;
+      flex-wrap: wrap;
       margin-bottom: 20px;
     }
 
-    .page-title { margin: 0; font-size: 26px; }
+    .wa-top h1 { margin: 0 0 7px; font-size: 26px; }
+    .wa-top p { margin: 0; color: var(--muted-color, #6b7280); }
 
-    .subtitle {
-      margin: 6px 0 0;
-      color: #6b7280;
-      font-size: 14px;
-    }
-
-    .card {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
+    .wa-card {
+      background: var(--card-bg, #fff);
+      border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 14px;
       padding: 20px;
       margin-bottom: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      color: var(--text-color, inherit);
     }
 
-    .card h3 { margin: 0 0 16px; font-size: 18px; }
+    .wa-card h2, .wa-card h3 { margin-top: 0; }
 
-    .form-grid {
+    .wa-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
     }
 
-    .form-group { display: flex; flex-direction: column; gap: 7px; }
-    .form-group.full { grid-column: 1 / -1; }
+    .wa-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      min-width: 0;
+    }
 
-    label { font-size: 14px; font-weight: 600; }
+    .wa-field.full { grid-column: 1 / -1; }
 
-    input, select, textarea {
+    .wa-field label { font-size: 14px; font-weight: 600; }
+
+    .wa-field input,
+    .wa-field select,
+    .wa-field textarea {
       width: 100%;
       padding: 11px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: inherit;
-      background: white;
-      color: #111827;
+      border: 1px solid var(--border-color, #d1d5db);
+      border-radius: 9px;
+      background: var(--input-bg, #fff);
+      color: var(--text-color, #111827);
+      font: inherit;
     }
 
-    input:focus, select:focus, textarea:focus {
-      outline: 2px solid #bbf7d0;
-      border-color: #166534;
+    .wa-field textarea {
+      min-height: 210px;
+      line-height: 1.7;
+      resize: vertical;
+      white-space: pre-wrap;
     }
 
-    textarea { min-height: 190px; resize: vertical; line-height: 1.6; }
+    .wa-hint {
+      color: var(--muted-color, #6b7280);
+      font-size: 12px;
+      line-height: 1.5;
+    }
 
-    .phone-info {
-      margin-top: 15px;
-      padding: 11px 12px;
-      background: #f3f4f6;
-      border-radius: 8px;
-      font-size: 14px;
+    .wa-phone {
+      margin-top: 16px;
+      padding: 12px;
+      border: 1px solid var(--border-color, #e5e7eb);
+      border-radius: 9px;
+      background: var(--hover-bg, #f8fafc);
       overflow-wrap: anywhere;
     }
 
-    .actions {
+    .wa-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 15px;
+      margin-top: 16px;
     }
 
-    button {
-      border: 0;
-      border-radius: 8px;
+    .wa-btn {
       padding: 11px 16px;
-      font-size: 14px;
+      border: 1px solid var(--border-color, #d1d5db);
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text-color, inherit);
+      font: inherit;
       font-weight: 600;
       cursor: pointer;
     }
 
-    button:focus-visible {
-      outline: 3px solid #86efac;
-      outline-offset: 2px;
+    .wa-btn.primary {
+      background: var(--accent-color, #166534);
+      border-color: var(--accent-color, #166534);
+      color: #fff;
     }
 
-    .btn-primary { background: #166534; color: white; }
-    .btn-primary:hover { background: #14532d; }
-    .btn-blue { background: #2563eb; color: white; }
-    .btn-blue:hover { background: #1d4ed8; }
-    .btn-secondary { background: #e5e7eb; color: #111827; }
-    .btn-secondary:hover { background: #d1d5db; }
+    .wa-btn.copy { background: #2563eb; color: #fff; border-color: #2563eb; }
 
-    .status {
+    .wa-status {
       display: none;
       margin-top: 14px;
-      padding: 11px 12px;
-      border-radius: 8px;
-      font-size: 14px;
+      padding: 12px;
+      border-radius: 9px;
+      line-height: 1.6;
       overflow-wrap: anywhere;
     }
 
-    .status.success { display: block; background: #dcfce7; color: #166534; }
-    .status.error { display: block; background: #fee2e2; color: #991b1b; }
+    .wa-status.success { display: block; background: #dcfce7; color: #166534; }
+    .wa-status.error { display: block; background: #fee2e2; color: #991b1b; }
 
-    .info-list {
-      margin: 0;
-      padding-left: 22px;
+    .wa-info {
+      padding-left: 20px;
       line-height: 1.9;
-      color: #4b5563;
-      font-size: 14px;
+      color: var(--muted-color, #6b7280);
     }
 
-    .hint { color: #6b7280; font-size: 12px; line-height: 1.5; }
+    [hidden] { display: none !important; }
 
     @media (max-width: 800px) {
-      .app { display: block; }
-      .sidebar { 
-        display: none; /* मोबाइलमा माथिको sidebar पूर्ण रूपमा हटाइएको छ */
-      }
-      .main { padding: 14px; }
-      .form-grid { grid-template-columns: 1fr; }
-      .form-group.full { grid-column: auto; }
-      .topbar { align-items: flex-start; }
-      .page-title { font-size: 23px; }
-      .card { padding: 15px; }
+      .wa-wrap { padding: 13px; }
+      .wa-grid { grid-template-columns: 1fr; }
+      .wa-field.full { grid-column: auto; }
+      .wa-card { padding: 15px; }
+      .wa-top h1 { font-size: 23px; }
+      .wa-actions { flex-direction: column; }
+      .wa-btn { width: 100%; }
     }
   </style>
 </head>
 
 <body>
-<div class="app">
   <aside class="sidebar">
-    <div class="brand">🏪 General Store</div>
-
-    <a href="index.html" class="menu-item"><span class="menu-icon">🏠</span>Dashboard</a>
-    <a href="sale.html" class="menu-item"><span class="menu-icon">🧾</span>New Sale</a>
-    <a href="purchase.html" class="menu-item"><span class="menu-icon">📦</span>Purchase</a>
-    <a href="inventory.html" class="menu-item"><span class="menu-icon">📋</span>Inventory</a>
-    <a href="customers.html" class="menu-item"><span class="menu-icon">👥</span>Customers</a>
-    <a href="suppliers.html" class="menu-item"><span class="menu-icon">🚚</span>Suppliers</a>
-    <a href="finance.html" class="menu-item"><span class="menu-icon">💰</span>Finance</a>
-    <a href="reports.html" class="menu-item"><span class="menu-icon">📊</span>Reports</a>
-    <a href="whatsapp.html" class="menu-item active"><span class="menu-icon">💬</span>WhatsApp</a>
-    <a href="ai.html" class="menu-item"><span class="menu-icon">🤖</span>AI Assistant</a>
-    <a href="settings.html" class="menu-item"><span class="menu-icon">⚙️</span>Settings</a>
+    <h2 id="waStoreName" style="padding: 0 16px;">General Store</h2>
+    <nav>
+      <a class="menu-item" href="index.html">Dashboard</a>
+      <a class="menu-item" href="sale.html">New Sale</a>
+      <a class="menu-item" href="purchase.html">Purchase</a>
+      <a class="menu-item" href="inventory.html">Inventory</a>
+      <a class="menu-item" href="sales-return.html">Sales Return</a>
+      <a class="menu-item" href="stock-lots.html">FIFO Lots</a>
+      <a class="menu-item" href="customers.html">Customers</a>
+      <a class="menu-item" href="suppliers.html">Suppliers</a>
+      <a class="menu-item" href="finance.html">Finance</a>
+      <a class="menu-item" href="reports.html">Reports</a>
+      <a class="menu-item active" href="whatsapp.html">WhatsApp</a>
+      <a class="menu-item" href="ai.html">AI Assistant</a>
+      <a class="menu-item" href="settings.html">Settings</a>
+    </nav>
   </aside>
 
-  <main class="main">
-    <div class="topbar">
+  <main class="wa-wrap">
+    <header class="wa-top">
       <div>
-        <h1 class="page-title">💬 WhatsApp</h1>
-        <p class="subtitle">Customer तथा Supplier का लागि message तयार गर्नुहोस्।</p>
+        <h1>💬 WhatsApp</h1>
+        <p>Customer तथा Supplier का लागि सन्देश तयार गर्नुहोस्।</p>
       </div>
-    </div>
+    </header>
 
-    <section class="card">
-      <h3>Message तयार गर्नुहोस्</h3>
+    <section class="wa-card">
+      <h2>Message तयार गर्नुहोस्</h2>
 
-      <div class="form-grid">
-        <div class="form-group">
+      <div class="wa-grid">
+        <div class="wa-field">
           <label for="messageFor">कसलाई?</label>
           <select id="messageFor">
             <option value="customer">Customer</option>
@@ -225,20 +198,20 @@
           </select>
         </div>
 
-        <div class="form-group" id="personGroup">
+        <div class="wa-field" id="personGroup">
           <label for="personSelect">नाम छान्नुहोस्</label>
           <select id="personSelect">
             <option value="">-- नाम छान्नुहोस् --</option>
           </select>
         </div>
 
-        <div class="form-group" id="customPhoneGroup" hidden>
+        <div class="wa-field" id="customPhoneGroup" hidden>
           <label for="customPhone">WhatsApp Number</label>
-          <input type="tel" id="customPhone" placeholder="जस्तै: 97798XXXXXXXX" autocomplete="tel">
-          <span class="hint">Country code सहित नम्बर राख्नुहोस्।</span>
+          <input id="customPhone" type="tel" placeholder="Country code सहित नम्बर">
+          <span class="wa-hint">उदाहरण: 97798XXXXXXXX</span>
         </div>
 
-        <div class="form-group">
+        <div class="wa-field">
           <label for="messageType">Message Type</label>
           <select id="messageType">
             <option value="due_reminder">Customer Due Reminder</option>
@@ -250,45 +223,108 @@
           </select>
         </div>
 
-        <div class="form-group" id="referenceGroup" hidden>
+        <div class="wa-field" id="referenceGroup" hidden>
           <label for="referenceSelect">Bill Reference</label>
           <select id="referenceSelect">
             <option value="">-- Bill छान्नुहोस् --</option>
           </select>
         </div>
 
-        <div class="form-group full">
+        <div class="wa-field full">
           <label for="messageText">Message Preview / Edit</label>
-          <textarea id="messageText" placeholder="यहाँ message लेख्नुहोस् वा तयार भएको message सम्पादन गर्नुहोस्।"></textarea>
-          <span class="hint">तयार message सम्पादन गर्न सक्नुहुन्छ। व्यक्तिको नाम वा reference परिवर्तन गर्दा तयार message फेरि बन्न सक्छ।</span>
+          <textarea id="messageText" placeholder="तयार भएको सन्देश यहाँ देखिन्छ। तपाईंले सम्पादन पनि गर्न सक्नुहुन्छ।"></textarea>
+          <span class="wa-hint">सन्देश पठाउनुअघि ग्राहकको नाम, रकम र नम्बर जाँच गर्नुहोस्।</span>
         </div>
       </div>
 
-      <div class="phone-info" id="phoneInfo" aria-live="polite">WhatsApp Number: -</div>
-
-      <div class="actions">
-        <button type="button" class="btn-primary" id="openWhatsAppBtn">💬 Open WhatsApp</button>
-        <button type="button" class="btn-blue" id="copyMessageBtn">📋 Copy Message</button>
-        <button type="button" class="btn-secondary" id="clearBtn">Clear</button>
+      <div class="wa-phone" id="phoneInfo" aria-live="polite">
+        WhatsApp Number: -
       </div>
 
-      <div id="statusBox" class="status" role="status" aria-live="polite"></div>
+      <div class="wa-actions">
+        <button type="button" class="wa-btn primary" id="openWhatsAppBtn">💬 Open WhatsApp</button>
+        <button type="button" class="wa-btn copy" id="copyMessageBtn">📋 Copy Message</button>
+        <button type="button" class="wa-btn" id="clearBtn">Clear</button>
+      </div>
+
+      <div id="statusBox" class="wa-status" role="status" aria-live="polite"></div>
     </section>
 
-    <section class="card">
-      <h3>ℹ️ WhatsApp Module</h3>
-      <ul class="info-list">
-        <li>Customer र Supplier को नम्बर सम्बन्धित सूचीबाट लिइन्छ।</li>
-        <li>Due reminder, statement र bill message स्वतः तयार हुन्छ।</li>
-        <li>Message पठाउनुअघि Preview/Edit गर्न सकिन्छ।</li>
-        <li>Open WhatsApp ले WhatsApp Web वा App खोल्छ; पठाउने अन्तिम पुष्टि तपाईंले गर्नुपर्छ।</li>
+    <section class="wa-card">
+      <h3>ℹ️ प्रयोग गर्ने तरिका</h3>
+      <ul class="wa-info">
+        <li>Customer वा Supplier छान्दा उपलब्ध विवरणबाट नम्बर लिइन्छ।</li>
+        <li>Due Reminder, Statement र Bill Message स्वतः तयार हुन्छ।</li>
+        <li>सन्देश सम्पादन गरेर Copy वा Open WhatsApp गर्न सकिन्छ।</li>
+        <li>WhatsApp खुलिसकेपछि अन्तिम पटक जाँच गरेर Send गर्नुहोस्।</li>
         <li>यो संस्करणले WhatsApp API प्रयोग गर्दैन।</li>
-        <li>नम्बर र रकम पठाउनुअघि एकपटक जाँच गर्नुहोस्।</li>
       </ul>
     </section>
   </main>
-</div>
 
-<script src="whatsapp.js"></script>
+  <script src="whatsapp.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      function getStoreName() {
+        try {
+          const settings = JSON.parse(localStorage.getItem("gs_settings") || "{}");
+          return String(settings.storeName || "General Store").trim() || "General Store";
+        } catch (error) {
+          return "General Store";
+        }
+      }
+
+      function updateStoreName() {
+        const storeName = getStoreName();
+        const brand = document.getElementById("waStoreName");
+        if (brand) brand.textContent = storeName;
+      }
+
+      /*
+       * whatsapp.js को विद्यमान message function जोगाएर
+       * Customer Due Reminder मा Settings को Store Name राखिन्छ।
+       */
+      if (typeof window.customerDueMessage === "function") {
+        window.customerDueMessage = function (customer) {
+          const name = String(
+            customer?.name ||
+            customer?.customerName ||
+            "Customer"
+          ).trim();
+
+          let balance = 0;
+
+          if (customer?.currentBalance !== undefined &&
+              customer.currentBalance !== null &&
+              customer.currentBalance !== "") {
+            balance = Number(customer.currentBalance) || 0;
+          } else {
+            balance =
+              (Number(customer?.openingBalance) || 0) +
+              (Number(customer?.creditSaleTotal) || 0) -
+              (Number(customer?.paymentTotal) || 0) -
+              (Number(customer?.returnTotal) || 0);
+          }
+
+          const storeName = getStoreName();
+          const money = Math.abs(balance).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+
+          if (balance <= 0) {
+            return `नमस्ते ${name},\n\nतपाईंको खातामा हाल कुनै बाँकी रकम छैन।\n\nधन्यवाद।\n${storeName}`;
+          }
+
+          return `नमस्ते ${name},\n\nतपाईंको खातामा हाल रु. ${money} बाँकी रहेको छ।\n\nकृपया सुविधा अनुसार बाँकी रकम भुक्तानी गरिदिनुहोला।\n\nधन्यवाद।\n${storeName}`;
+        };
+      }
+
+      updateStoreName();
+      window.addEventListener("storage", updateStoreName);
+    })();
+  </script>
 </body>
 </html>
