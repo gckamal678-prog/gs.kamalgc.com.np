@@ -1,9 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ne">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
   <title>General Store Management - Dashboard</title>
   <meta name="description" content="General Store Management and Billing System">
   <meta name="theme-color" content="#071b35">
@@ -12,8 +12,8 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./gs192.png">
   <link rel="apple-touch-icon" href="./gs192.png">
 
-  <link rel="stylesheet" href="./style.css?v=20261011-1">
-  <script src="./appearance.js?v=20261011-1"></script>
+  <link rel="stylesheet" href="./style.css?v=20261011-2">
+  <script src="./appearance.js?v=20261011-2"></script>
 
   <style>
     #appSplash {
@@ -30,6 +30,7 @@
       font-family: system-ui, sans-serif;
       transition: opacity .3s ease;
     }
+
     #appSplash .splash-logo {
       width: 76px;
       height: 76px;
@@ -41,14 +42,17 @@
       font-size: 27px;
       font-weight: 800;
     }
+
     #appSplash .splash-title {
       font-size: 20px;
       font-weight: 700;
     }
+
     #appSplash .splash-loading {
       font-size: 13px;
       opacity: .75;
     }
+
     #dashboardError {
       display: none;
       margin: 12px;
@@ -58,16 +62,27 @@
       color: #fff;
       overflow-wrap: anywhere;
     }
+
     .bottom-navigation {
       display: none;
     }
+
+    /* Operator profile देखाउने तर clickable नबनाउने */
     .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       text-decoration: none;
       color: inherit;
+      cursor: default;
+      -webkit-user-select: none;
+      user-select: none;
     }
+
     .profile-avatar {
       width: 42px;
       height: 42px;
+      min-width: 42px;
       border-radius: 50%;
       display: grid;
       place-items: center;
@@ -76,15 +91,24 @@
       color: #a000b7;
       font-weight: 800;
     }
+
     .profile-avatar img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
     }
+
+    .profile-info strong,
+    .profile-info small {
+      display: block;
+    }
+
     @media (max-width: 768px) {
       body.dashboard-page {
         padding-bottom: calc(76px + env(safe-area-inset-bottom));
       }
+
       .bottom-navigation {
         position: fixed;
         z-index: 5000;
@@ -97,6 +121,7 @@
         background: #111b2d;
         border-top: 1px solid #354056;
       }
+
       .bottom-navigation a {
         display: flex;
         align-items: center;
@@ -108,15 +133,24 @@
         text-decoration: none;
         font-size: 11px;
       }
+
       .bottom-navigation .nav-icon {
         font-size: 20px;
       }
+
       .bottom-navigation a.active {
         color: #ff00ee;
         font-weight: 700;
       }
+
       .topbar-right .profile-info {
         display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #appSplash {
+        transition: none;
       }
     }
   </style>
@@ -124,15 +158,19 @@
 
 <body class="dashboard-page">
 
+  <!-- Splash screen -->
   <div id="appSplash" role="status" aria-live="polite">
     <div class="splash-logo">GS</div>
     <div class="splash-title">General Store</div>
     <div class="splash-loading">Dashboard खुल्दैछ...</div>
   </div>
 
+  <!-- Error message -->
   <div id="dashboardError" role="alert"></div>
+
   <div class="overlay" id="overlay"></div>
 
+  <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="logo-area">
       <div class="logo-icon">GS</div>
@@ -142,45 +180,70 @@
       </div>
     </div>
 
-    <nav class="sidebar-menu">
-      <a href="index.html" class="menu-item active">
-        <span class="menu-icon">⌂</span><span>Overview</span>
+    <nav class="sidebar-menu" aria-label="Dashboard menu">
+      <a href="index.html" class="menu-item active" aria-current="page">
+        <span class="menu-icon">⌂</span>
+        <span>Dashboard</span>
       </a>
+
       <a href="sale.html" class="menu-item">
-        <span class="menu-icon">🛒</span><span>New Sale</span>
+        <span class="menu-icon">🛒</span>
+        <span>New Sale</span>
       </a>
+
       <a href="sales-return.html" class="menu-item">
-        <span class="menu-icon">↩️</span><span>Sales Return</span>
+        <span class="menu-icon">↩️</span>
+        <span>Sales Return</span>
       </a>
+
       <a href="purchase.html" class="menu-item">
-        <span class="menu-icon">📦</span><span>Purchase</span>
+        <span class="menu-icon">📦</span>
+        <span>Purchase</span>
       </a>
+
       <a href="inventory.html" class="menu-item">
-        <span class="menu-icon">▣</span><span>Inventory</span>
+        <span class="menu-icon">▣</span>
+        <span>Inventory</span>
       </a>
+
       <a href="stock-lots.html" class="menu-item">
-        <span class="menu-icon">🧮</span><span>FIFO Lots</span>
+        <span class="menu-icon">🧮</span>
+        <span>FIFO Lots</span>
       </a>
+
       <a href="customers.html" class="menu-item">
-        <span class="menu-icon">👥</span><span>Customers</span>
+        <span class="menu-icon">👥</span>
+        <span>Customers</span>
       </a>
+
       <a href="suppliers.html" class="menu-item">
-        <span class="menu-icon">🏢</span><span>Suppliers</span>
+        <span class="menu-icon">🏢</span>
+        <span>Suppliers</span>
       </a>
+
       <a href="finance.html" class="menu-item">
-        <span class="menu-icon">💰</span><span>Finance</span>
+        <span class="menu-icon">💰</span>
+        <span>Finance</span>
       </a>
+
       <a href="reports.html" class="menu-item">
-        <span class="menu-icon">📊</span><span>Reports</span>
+        <span class="menu-icon">📊</span>
+        <span>Reports</span>
       </a>
+
       <a href="whatsapp.html" class="menu-item">
-        <span class="menu-icon">💬</span><span>WhatsApp</span>
+        <span class="menu-icon">💬</span>
+        <span>WhatsApp</span>
       </a>
+
       <a href="ai.html" class="menu-item">
-        <span class="menu-icon">🤖</span><span>AI Assistant</span>
+        <span class="menu-icon">🤖</span>
+        <span>AI Assistant</span>
       </a>
+
       <a href="settings.html" class="menu-item">
-        <span class="menu-icon">⚙️</span><span>Settings</span>
+        <span class="menu-icon">⚙️</span>
+        <span>Settings</span>
       </a>
     </nav>
 
@@ -196,11 +259,19 @@
     </div>
   </aside>
 
+  <!-- Main dashboard -->
   <main class="main-content">
+
     <header class="topbar">
       <div class="topbar-left">
-        <button class="mobile-menu-btn" id="menuBtn"
-          type="button" aria-label="Open navigation">☰</button>
+        <button
+          class="mobile-menu-btn"
+          id="menuBtn"
+          type="button"
+          aria-label="Open navigation"
+          aria-controls="sidebar"
+        >☰</button>
+
         <div>
           <h1>Dashboard</h1>
           <p id="todayDate">आजको व्यापारको अवस्था</p>
@@ -210,27 +281,43 @@
       <div class="topbar-right">
         <div class="search-box">
           <span>⌕</span>
-          <input type="search" id="searchInput"
+          <input
+            type="search"
+            id="searchInput"
             placeholder="Product, customer, bill..."
-            aria-label="Search">
+            aria-label="Search"
+          >
         </div>
-        <button class="dash-tool-btn" id="themeBtn"
-          type="button" title="Dark / Light Mode">🌙</button>
-        <button class="dash-tool-btn" id="lockBtn"
-          type="button" title="Lock Dashboard">🔒</button>
 
-        <a class="profile" href="settings.html#store-profile"
-          aria-label="Open store profile">
+        <button
+          class="dash-tool-btn"
+          id="themeBtn"
+          type="button"
+          title="Dark / Light Mode"
+          aria-label="Change theme"
+        >🌙</button>
+
+        <button
+          class="dash-tool-btn"
+          id="lockBtn"
+          type="button"
+          title="Lock Dashboard"
+          aria-label="Lock dashboard"
+        >🔒</button>
+
+        <!-- Avatar क्लिक गर्दा Settings नखुल्ने -->
+        <div class="profile" aria-label="Operator profile">
           <div class="profile-avatar" id="profileAvatar">👤</div>
           <div class="profile-info">
             <strong id="profileName">General Store</strong>
             <small id="profileRole">Owner</small>
           </div>
-        </a>
+        </div>
       </div>
     </header>
 
     <section class="dashboard-content">
+
       <div class="welcome-section">
         <div>
           <h2 id="welcomeTitle">नमस्ते 👋</h2>
@@ -239,13 +326,17 @@
         <a href="sale.html" class="primary-btn">+ New Sale</a>
       </div>
 
+      <!-- Today's statistics -->
       <div class="stats-grid">
+
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon sales-icon">🛒</div>
             <span class="stat-label">आजको बिक्री</span>
           </div>
-          <div class="stat-value">Rs. <span id="todaySales">0</span></div>
+          <div class="stat-value">
+            Rs. <span id="todaySales">0</span>
+          </div>
           <div class="stat-bottom">
             <span class="positive" id="salesChange">आज</span>
             <span>आजको कारोबार</span>
@@ -257,8 +348,13 @@
             <div class="stat-icon profit-icon">📈</div>
             <span class="stat-label">Gross Profit</span>
           </div>
-          <div class="stat-value">Rs. <span id="grossProfit">0</span></div>
-          <div class="stat-bottom"><span>FIFO</span><span>आज</span></div>
+          <div class="stat-value">
+            Rs. <span id="grossProfit">0</span>
+          </div>
+          <div class="stat-bottom">
+            <span>FIFO</span>
+            <span>आज</span>
+          </div>
         </div>
 
         <div class="stat-card">
@@ -266,8 +362,12 @@
             <div class="stat-icon expense-icon">💸</div>
             <span class="stat-label">Expenses</span>
           </div>
-          <div class="stat-value">Rs. <span id="expenses">0</span></div>
-          <div class="stat-bottom"><span>आजको खर्च</span></div>
+          <div class="stat-value">
+            Rs. <span id="expenses">0</span>
+          </div>
+          <div class="stat-bottom">
+            <span>आजको खर्च</span>
+          </div>
         </div>
 
         <div class="stat-card">
@@ -275,13 +375,18 @@
             <div class="stat-icon net-profit-icon">💰</div>
             <span class="stat-label">Net Profit</span>
           </div>
-          <div class="stat-value">Rs. <span id="netProfit">0</span></div>
+          <div class="stat-value">
+            Rs. <span id="netProfit">0</span>
+          </div>
           <div class="stat-bottom">
-            <span>Gross − Expense</span><span>आज</span>
+            <span>Gross − Expense</span>
+            <span>आज</span>
           </div>
         </div>
+
       </div>
 
+      <!-- Financial overview -->
       <div class="section-title">
         <div>
           <h3>Financial Overview</h3>
@@ -290,6 +395,7 @@
       </div>
 
       <div class="finance-grid">
+
         <div class="finance-card">
           <div class="finance-icon">👤</div>
           <div>
@@ -298,6 +404,7 @@
             <small>ग्राहकबाट लिन बाँकी</small>
           </div>
         </div>
+
         <div class="finance-card">
           <div class="finance-icon">🏢</div>
           <div>
@@ -306,6 +413,7 @@
             <small>Supplier लाई दिन बाँकी</small>
           </div>
         </div>
+
         <div class="finance-card">
           <div class="finance-icon">📦</div>
           <div>
@@ -314,6 +422,7 @@
             <small>FIFO cost based</small>
           </div>
         </div>
+
         <div class="finance-card">
           <div class="finance-icon">💳</div>
           <div>
@@ -322,20 +431,25 @@
             <small>उपलब्ध balance</small>
           </div>
         </div>
+
       </div>
 
+      <!-- Sales chart and attention items -->
       <div class="dashboard-grid">
+
         <div class="dashboard-card sales-overview">
           <div class="card-header">
             <div>
               <h3>Sales Overview</h3>
               <p>पछिल्लो अवधिको बिक्री</p>
             </div>
+
             <select id="salesPeriod" aria-label="Sales period">
               <option value="7">Last 7 Days</option>
               <option value="30">Last 30 Days</option>
             </select>
           </div>
+
           <div class="chart-area" id="salesChart"></div>
         </div>
 
@@ -346,7 +460,9 @@
               <p>तुरुन्त हेर्नुपर्ने कुरा</p>
             </div>
           </div>
+
           <div class="attention-list">
+
             <div class="attention-item">
               <div class="attention-icon warning">⚠️</div>
               <div class="attention-text">
@@ -355,6 +471,7 @@
               </div>
               <a href="inventory.html">View</a>
             </div>
+
             <div class="attention-item">
               <div class="attention-icon danger">⏰</div>
               <div class="attention-text">
@@ -363,6 +480,7 @@
               </div>
               <a href="inventory.html">View</a>
             </div>
+
             <div class="attention-item">
               <div class="attention-icon money">💰</div>
               <div class="attention-text">
@@ -371,6 +489,7 @@
               </div>
               <a href="customers.html">View</a>
             </div>
+
             <div class="attention-item">
               <div class="attention-icon supplier">🏢</div>
               <div class="attention-text">
@@ -379,10 +498,12 @@
               </div>
               <a href="suppliers.html">View</a>
             </div>
+
           </div>
         </div>
       </div>
 
+      <!-- Fast moving products -->
       <div class="dashboard-card" style="margin-top:22px">
         <div class="card-header">
           <div>
@@ -391,9 +512,11 @@
           </div>
           <a href="inventory.html" class="text-btn">View All →</a>
         </div>
+
         <div class="data-table-wrap" id="fastMovingArea"></div>
       </div>
 
+      <!-- Recent activity -->
       <div class="dashboard-card" style="margin-top:22px">
         <div class="card-header">
           <div>
@@ -402,9 +525,11 @@
           </div>
           <a href="reports.html" class="text-btn">View All →</a>
         </div>
+
         <div class="data-table-wrap" id="recentActivityArea"></div>
       </div>
 
+      <!-- Quick actions -->
       <div class="section-title quick-title">
         <div>
           <h3>Quick Actions</h3>
@@ -413,32 +538,58 @@
       </div>
 
       <div class="quick-actions">
+
         <a href="sale.html" class="quick-action">
-          <span>🛒</span><strong>New Sale</strong><small>नयाँ बिक्री</small>
+          <span>🛒</span>
+          <strong>New Sale</strong>
+          <small>नयाँ बिक्री</small>
         </a>
+
         <a href="sales-return.html" class="quick-action">
-          <span>↩️</span><strong>Sales Return</strong><small>बिक्री फिर्ता</small>
+          <span>↩️</span>
+          <strong>Sales Return</strong>
+          <small>बिक्री फिर्ता</small>
         </a>
+
         <a href="purchase.html" class="quick-action">
-          <span>📦</span><strong>Purchase</strong><small>नयाँ खरिद</small>
+          <span>📦</span>
+          <strong>Purchase</strong>
+          <small>नयाँ खरिद</small>
         </a>
+
         <a href="stock-lots.html" class="quick-action">
-          <span>🧮</span><strong>FIFO Lots</strong><small>Stock cost</small>
+          <span>🧮</span>
+          <strong>FIFO Lots</strong>
+          <small>Stock cost</small>
         </a>
+
         <a href="customers.html" class="quick-action">
-          <span>👤</span><strong>Customer</strong><small>ग्राहक रकम</small>
+          <span>👤</span>
+          <strong>Customer</strong>
+          <small>ग्राहक रकम</small>
         </a>
+
         <a href="suppliers.html" class="quick-action">
-          <span>🏢</span><strong>Supplier</strong><small>Supplier payment</small>
+          <span>🏢</span>
+          <strong>Supplier</strong>
+          <small>Supplier payment</small>
         </a>
+
         <a href="finance.html" class="quick-action">
-          <span>💸</span><strong>Expense</strong><small>खर्च राख्नुहोस्</small>
+          <span>💸</span>
+          <strong>Expense</strong>
+          <small>खर्च राख्नुहोस्</small>
         </a>
+
         <a href="inventory.html" class="quick-action">
-          <span>🔧</span><strong>Stock</strong><small>Stock मिलाउनुहोस्</small>
+          <span>🔧</span>
+          <strong>Stock</strong>
+          <small>Stock मिलाउनुहोस्</small>
         </a>
+
       </div>
 
+      <!-- AI assistant -->
       <div class="ai-card">
         <div class="ai-content">
           <div class="ai-icon">🤖</div>
@@ -449,66 +600,110 @@
         </div>
         <a href="ai.html" class="ai-btn">Ask AI →</a>
       </div>
+
     </section>
 
     <footer class="footer">
       <span>© 2026 General Store Management System</span>
       <span>v1.0</span>
     </footer>
+
   </main>
 
+  <!-- Mobile bottom navigation -->
   <nav class="bottom-navigation" aria-label="Main navigation">
+
     <a href="index.html" class="active" aria-current="page">
-      <span class="nav-icon">⌂</span><span>Overview</span>
+      <span class="nav-icon">⌂</span>
+      <span>Dashboard</span>
     </a>
+
     <a href="customers.html">
-      <span class="nav-icon">👥</span><span>Customer</span>
+      <span class="nav-icon">👥</span>
+      <span>Customer</span>
     </a>
+
     <a href="suppliers.html">
-      <span class="nav-icon">🏢</span><span>Supplier</span>
+      <span class="nav-icon">🏢</span>
+      <span>Supplier</span>
     </a>
+
     <a href="settings.html">
-      <span class="nav-icon">⚙️</span><span>Setting</span>
+      <span class="nav-icon">⚙️</span>
+      <span>Setting</span>
     </a>
+
   </nav>
 
+  <!-- Error handling and splash screen -->
   <script>
-    window.addEventListener("error", function (event) {
-      const box = document.getElementById("dashboardError");
-      if (!box) return;
-      box.style.display = "block";
-      box.textContent = "JavaScript त्रुटि: " +
-        (event.message || "अज्ञात त्रुटि") +
-        "। फाइलको नाम र line जाँच गर्नुहोस्।";
-    });
+    (function () {
+      "use strict";
 
-    window.addEventListener("unhandledrejection", function () {
-      const box = document.getElementById("dashboardError");
-      if (!box) return;
-      box.style.display = "block";
-      box.textContent =
-        "Dashboard प्रक्रिया पूरा भएन। JavaScript त्रुटि जाँच गर्नुहोस्।";
-    });
+      function hideSplash() {
+        const splash = document.getElementById("appSplash");
+        if (!splash) return;
 
-    window.addEventListener("load", function () {
-      const splash = document.getElementById("appSplash");
-      if (splash) {
         splash.style.opacity = "0";
-        setTimeout(() => splash.remove(), 350);
-      }
-    });
 
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js")
-          .catch(error => console.error(
-            "Service worker registration failed:", error
-          ));
+        window.setTimeout(function () {
+          if (splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        }, 350);
+      }
+
+      function showDashboardError(message) {
+        const box = document.getElementById("dashboardError");
+        if (!box) return;
+
+        box.style.display = "block";
+        box.textContent = message;
+      }
+
+      window.addEventListener("error", function (event) {
+        showDashboardError(
+          "JavaScript त्रुटि: " +
+          (event.message || "अज्ञात त्रुटि") +
+          "। सम्बन्धित JavaScript फाइल जाँच गर्नुहोस्।"
+        );
       });
-    }
+
+      window.addEventListener("unhandledrejection", function () {
+        showDashboardError(
+          "Dashboard प्रक्रिया पूरा भएन। JavaScript त्रुटि जाँच गर्नुहोस्।"
+        );
+      });
+
+      /*
+       * Page load भएपछि splash हटाउने।
+       * कुनै script ले load event रोक्दा पनि splash अनन्त समय नरहोस्।
+       */
+      if (document.readyState === "complete") {
+        hideSplash();
+      } else {
+        window.addEventListener("load", hideSplash, { once: true });
+      }
+
+      window.setTimeout(hideSplash, 8000);
+
+      /*
+       * Service worker registration.
+       * यसले पुरानो cache हटाउने काम गर्दैन; sw.js को cache version
+       * छुट्टै अद्यावधिक गर्नुपर्ने हुन सक्छ।
+       */
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("./sw.js").catch(function (error) {
+            console.error("Service worker registration failed:", error);
+          });
+        });
+      }
+    })();
   </script>
 
-  <script src="./dashboard.js?v=20261011-1"></script>
+  <!-- Dashboard logic -->
+  <script src="./dashboard.js?v=20261011-2"></script>
+
 </body>
 </html>
-
