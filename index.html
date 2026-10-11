@@ -3,157 +3,199 @@
 <html lang="ne">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#071b35">
-  <meta name="description" content="General Store Management and Billing System">
+  <meta name="description" content="General Store Management System">
   <title>General Store Management - Dashboard</title>
 
   <link rel="manifest" href="./manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="./gs192.png">
+  <link rel="icon" type="image/png" href="./gs192.png">
   <link rel="apple-touch-icon" href="./gs192.png">
-  <link rel="stylesheet" href="./style.css?v=20261011-3">
-  <script src="./appearance.js?v=20261011-3"></script>
+  <link rel="stylesheet" href="./style.css?v=20261011-4">
+  <script src="./appearance.js?v=20261011-4"></script>
 
   <style>
     :root {
-      --gs-accent: #ec00ed;
       --gs-bg: #111827;
-      --gs-card: #1f2937;
-      --gs-border: #374151;
+      --gs-panel: #202a3b;
+      --gs-input: #111827;
+      --gs-border: #3b4659;
       --gs-text: #f3f4f6;
-      --gs-muted: #aeb8c7;
+      --gs-muted: #b5bfce;
+      --gs-pink: #ec00ed;
+      --gs-sidebar-width: 370px;
     }
 
     * { box-sizing: border-box; }
 
-    body.dashboard-page {
+    html { scroll-behavior: smooth; }
+
+    body {
       margin: 0;
       background: var(--gs-bg);
       color: var(--gs-text);
+      font-family: Arial, "Noto Sans Devanagari", sans-serif;
       min-height: 100vh;
-      padding-bottom: calc(78px + env(safe-area-inset-bottom));
     }
+
+    body.gs-app-locked { overflow: hidden; }
 
     button, input, select, textarea { font: inherit; }
     button, a { -webkit-tap-highlight-color: transparent; }
 
-    .gs-header {
-      position: relative;
-      z-index: 10;
+    .gs-topbar {
+      height: 88px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      padding: 15px 20px;
-      background: var(--gs-card);
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--gs-panel);
       border-bottom: 1px solid var(--gs-border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
-    .gs-brand {
+    .gs-topbar-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       min-width: 0;
     }
 
-    .gs-brand-logo {
-      width: 58px;
-      height: 58px;
-      border-radius: 17px;
-      display: grid;
-      place-items: center;
+    .gs-menu-toggle {
+      border: 0;
+      background: transparent;
+      color: var(--gs-text);
+      font-size: 32px;
+      cursor: pointer;
+      padding: 3px 8px;
       flex-shrink: 0;
-      background: var(--gs-accent);
-      color: white;
-      font-size: 22px;
-      font-weight: 900;
     }
 
-    .gs-brand-copy { min-width: 0; }
-    .gs-brand-copy h1 {
+    .gs-topbar-title { min-width: 0; }
+
+    .gs-topbar-title h1 {
       margin: 0;
-      font-size: 20px;
-      line-height: 1.35;
+      font-size: 23px;
       overflow-wrap: anywhere;
     }
 
-    .gs-brand-copy p {
-      margin: 4px 0 0;
+    .gs-topbar-title p {
+      margin: 5px 0 0;
       color: var(--gs-muted);
-      font-size: 14px;
+      font-size: 13px;
     }
 
-    .gs-header-avatar {
+    .gs-topbar-logo {
       width: 58px;
       height: 58px;
       flex: 0 0 58px;
+      object-fit: contain;
       border-radius: 50%;
-      overflow: hidden;
-      display: grid;
-      place-items: center;
-      background: #263449;
-      border: 2px solid var(--gs-border);
-      font-size: 22px;
-      font-weight: 800;
-      cursor: default;
       pointer-events: none;
     }
 
-    .gs-header-avatar img,
-    .gs-profile-avatar img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
+    .gs-layout {
+      min-height: calc(100vh - 88px);
     }
 
-    .gs-profile-layout {
-      max-width: 1150px;
-      margin: 22px auto;
-      padding: 0 18px;
+    /* Sidebar: Store Profile फारम यहीँ स्थायी रूपमा रहन्छ */
+    .gs-sidebar {
+      position: fixed;
+      top: 88px;
+      left: 0;
+      bottom: 0;
+      z-index: 1500;
+      width: var(--gs-sidebar-width);
+      padding: 16px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background: #111b2d;
+      border-right: 1px solid var(--gs-border);
+      transform: translateX(0);
+      transition: transform .25s ease;
+    }
+
+    .gs-sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 2px 18px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--gs-border);
+    }
+
+    .gs-sidebar-brand img {
+      width: 58px;
+      height: 58px;
+      flex: 0 0 58px;
+      object-fit: contain;
+      border-radius: 14px;
+    }
+
+    .gs-sidebar-brand strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .gs-sidebar-brand small {
+      display: block;
+      color: var(--gs-muted);
+      margin-top: 4px;
     }
 
     .gs-profile-card {
-      background: var(--gs-card);
+      padding: 15px;
       border: 1px solid var(--gs-border);
-      border-radius: 18px;
-      padding: 22px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      border-radius: 17px;
+      background: var(--gs-panel);
     }
 
-    .gs-profile-title {
+    .gs-profile-card h2 {
       margin: 0 0 7px;
-      font-size: 23px;
+      font-size: 21px;
     }
 
-    .gs-profile-description {
-      margin: 0 0 20px;
+    .gs-profile-intro {
+      margin: 0 0 16px;
       color: var(--gs-muted);
       line-height: 1.6;
+      font-size: 13px;
     }
 
     .gs-profile-preview {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 16px;
-      margin-bottom: 22px;
-      border-radius: 14px;
-      background: rgba(127,127,127,.10);
+      gap: 12px;
+      min-width: 0;
+      padding: 12px;
+      margin-bottom: 18px;
+      border-radius: 13px;
+      background: rgba(255,255,255,.045);
     }
 
-    .gs-profile-avatar {
-      width: 70px;
-      height: 70px;
-      flex: 0 0 70px;
-      overflow: hidden;
-      border-radius: 50%;
+    .gs-profile-photo {
+      width: 62px;
+      height: 62px;
+      flex: 0 0 62px;
       display: grid;
       place-items: center;
+      overflow: hidden;
+      border-radius: 50%;
       background: #111827;
       color: white;
-      font-size: 25px;
+      font-size: 22px;
       font-weight: 800;
+    }
+
+    .gs-profile-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     .gs-profile-preview strong,
@@ -162,402 +204,333 @@
       overflow-wrap: anywhere;
     }
 
-    .gs-profile-preview strong { font-size: 17px; }
+    .gs-profile-preview strong { font-size: 15px; }
+
     .gs-profile-preview small {
-      margin-top: 5px;
       color: var(--gs-muted);
+      margin-top: 5px;
     }
 
     .gs-profile-form {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 17px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 13px;
     }
 
-    .gs-profile-field {
+    .gs-field {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
       min-width: 0;
     }
 
-    .gs-profile-field.full { grid-column: 1 / -1; }
-
-    .gs-profile-field label {
-      font-size: 14px;
+    .gs-field label {
+      font-size: 13px;
       font-weight: 700;
     }
 
-    .gs-profile-field input,
-    .gs-profile-field select,
-    .gs-profile-field textarea {
+    .gs-field input,
+    .gs-field select,
+    .gs-field textarea {
       width: 100%;
       min-width: 0;
       padding: 12px;
       border: 1px solid #64748b;
       border-radius: 11px;
-      background: var(--gs-bg);
+      background: var(--gs-input);
       color: var(--gs-text);
       outline-offset: 2px;
     }
 
-    .gs-profile-field textarea {
-      min-height: 88px;
+    .gs-field input:focus,
+    .gs-field select:focus,
+    .gs-field textarea:focus {
+      outline: 2px solid var(--gs-pink);
+    }
+
+    .gs-field textarea {
+      min-height: 78px;
       resize: vertical;
     }
 
-    .gs-profile-field small {
+    .gs-field small {
       color: var(--gs-muted);
+      font-size: 12px;
       line-height: 1.5;
     }
 
     .gs-profile-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 20px;
+      gap: 9px;
+      margin-top: 15px;
     }
 
     .gs-button {
       border: 0;
       border-radius: 10px;
-      padding: 12px 17px;
+      padding: 11px 13px;
       cursor: pointer;
       font-weight: 700;
     }
 
     .gs-save {
-      background: var(--gs-accent);
+      background: var(--gs-pink);
       color: white;
     }
 
-    .gs-secondary {
-      background: #374151;
-      color: white;
-    }
-
-    .gs-danger {
+    .gs-remove {
       background: #7f1d1d;
       color: white;
     }
 
-    #gsProfileStatus {
+    .gs-profile-status {
       display: none;
-      padding: 12px;
-      margin-top: 16px;
+      margin-top: 13px;
+      padding: 11px;
       border-radius: 10px;
       background: #14532d;
       color: #dcfce7;
+      line-height: 1.5;
       overflow-wrap: anywhere;
+      font-size: 13px;
     }
 
-    #gsProfileStatus.error {
+    .gs-profile-status.error {
       background: #7f1d1d;
       color: #fee2e2;
     }
 
-    #dashboardError {
+    .gs-sidebar-overlay {
       display: none;
-      margin: 12px 18px;
-      padding: 12px;
-      border-radius: 10px;
-      background: #7f1d1d;
-      color: white;
-      overflow-wrap: anywhere;
+      position: fixed;
+      inset: 88px 0 0;
+      z-index: 1400;
+      background: rgba(0,0,0,.65);
     }
 
-    .dashboard-content {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 12px 18px 25px;
-    }
-
-    .welcome-section {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin: 10px 0 24px;
-    }
-
-    .welcome-section h2 { margin: 0 0 8px; }
-    .welcome-section p { margin: 0; color: var(--gs-muted); }
-
-    .primary-btn,
-    .text-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-    }
-
-    .primary-btn {
-      padding: 13px 18px;
-      border-radius: 12px;
-      background: var(--gs-accent);
-      color: white;
-      font-weight: 800;
-    }
-
-    .stats-grid,
-    .finance-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-
-    .stat-card,
-    .finance-card,
-    .dashboard-card {
+    .gs-main {
+      margin-left: var(--gs-sidebar-width);
       min-width: 0;
-      padding: 20px;
-      border: 1px solid var(--gs-border);
-      border-radius: 17px;
-      background: var(--gs-card);
+      padding: 22px;
     }
 
-    .stat-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .stat-icon,
-    .finance-icon {
-      width: 48px;
-      height: 48px;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-      border-radius: 12px;
-      background: rgba(255,255,255,.09);
-      font-size: 23px;
-    }
-
-    .stat-label,
-    .finance-card span { color: var(--gs-muted); }
-
-    .stat-value {
-      margin-top: 18px;
-      font-size: clamp(21px, 3vw, 29px);
-      font-weight: 800;
-      overflow-wrap: anywhere;
-    }
-
-    .stat-bottom {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 9px;
-      margin-top: 12px;
-      color: var(--gs-muted);
-      font-size: 14px;
-    }
-
-    .positive { color: #22c55e; }
-
-    .section-title { margin: 28px 0 16px; }
-    .section-title h3 { margin: 0 0 6px; font-size: 22px; }
-    .section-title p { margin: 0; color: var(--gs-muted); }
-
-    .finance-card {
-      display: flex;
-      align-items: flex-start;
-      gap: 13px;
-    }
-
-    .finance-card > div:last-child { min-width: 0; }
-    .finance-card span,
-    .finance-card strong,
-    .finance-card small { display: block; }
-
-    .finance-card strong {
-      margin: 5px 0;
-      overflow-wrap: anywhere;
-    }
-
-    .finance-card small { color: var(--gs-muted); }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-      gap: 18px;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .card-header h3 { margin: 0 0 5px; }
-    .card-header p { margin: 0; color: var(--gs-muted); }
-
-    #salesPeriod {
-      padding: 10px;
-      border: 1px solid var(--gs-border);
-      border-radius: 10px;
-      background: var(--gs-bg);
-      color: var(--gs-text);
-    }
-
-    .chart-area { min-height: 180px; overflow-x: auto; }
-    .attention-list { display: grid; gap: 15px; }
-
-    .attention-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .attention-text { flex: 1; min-width: 0; }
-    .attention-text strong,
-    .attention-text span { display: block; }
-    .attention-text span { color: var(--gs-muted); margin-top: 4px; }
-
-    .attention-item a,
-    .text-btn { color: #d946ef; }
-
-    .data-table-wrap { width: 100%; overflow-x: auto; }
-
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .quick-action {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 7px;
-      min-width: 0;
-      padding: 16px;
-      border: 1px solid var(--gs-border);
-      border-radius: 14px;
-      background: var(--gs-card);
-      color: var(--gs-text);
-      text-decoration: none;
-    }
-
-    .quick-action > span { font-size: 23px; }
-    .quick-action small { color: var(--gs-muted); }
-
-    .ai-card {
+    .gs-welcome {
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 15px;
-      margin-top: 22px;
-      padding: 20px;
-      border: 1px solid var(--gs-border);
-      border-radius: 16px;
-      background: var(--gs-card);
+      margin-bottom: 24px;
     }
 
-    .ai-content { display: flex; align-items: center; gap: 13px; }
-    .ai-icon { font-size: 28px; }
-    .ai-card h3 { margin: 0 0 5px; }
-    .ai-card p { margin: 0; color: var(--gs-muted); }
-    .ai-btn { color: #e879f9; }
+    .gs-welcome h2 { margin: 0 0 8px; }
 
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding: 18px;
+    .gs-welcome p {
       color: var(--gs-muted);
-      font-size: 13px;
+      margin: 0;
+      line-height: 1.6;
     }
 
-    /* Grid menu: लामो sidebar सूचीको विकल्प */
-    .overview-menu-panel {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 9000;
+    .gs-primary-link {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 16px;
-      background: rgba(2,8,23,.78);
+      padding: 12px 16px;
+      border-radius: 11px;
+      background: var(--gs-pink);
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
-    .overview-menu-panel.open { display: flex; }
+    .gs-stats-grid,
+    .gs-finance-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+      margin-bottom: 26px;
+    }
 
-    .overview-menu-box {
-      width: min(650px, 100%);
-      max-height: 88dvh;
-      overflow-y: auto;
-      padding: 20px;
+    .gs-stat-card,
+    .gs-finance-card,
+    .gs-dashboard-card {
+      min-width: 0;
+      padding: 18px;
       border: 1px solid var(--gs-border);
-      border-radius: 18px;
-      background: var(--gs-card);
+      border-radius: 16px;
+      background: var(--gs-panel);
+    }
+
+    .gs-stat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .gs-stat-icon,
+    .gs-finance-icon {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 44px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.09);
+      font-size: 22px;
+    }
+
+    .gs-stat-label { color: var(--gs-muted); font-size: 13px; }
+
+    .gs-stat-value {
+      margin-top: 15px;
+      font-size: clamp(20px, 2.5vw, 28px);
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .gs-stat-bottom {
+      margin-top: 11px;
+      color: var(--gs-muted);
+      font-size: 13px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .gs-positive { color: #22c55e; }
+
+    .gs-section-heading { margin: 25px 0 14px; }
+
+    .gs-section-heading h3 {
+      margin: 0 0 6px;
+      font-size: 21px;
+    }
+
+    .gs-section-heading p {
+      margin: 0;
+      color: var(--gs-muted);
+    }
+
+    .gs-finance-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .gs-finance-card > div:last-child { min-width: 0; }
+
+    .gs-finance-card span,
+    .gs-finance-card strong,
+    .gs-finance-card small { display: block; }
+
+    .gs-finance-card span,
+    .gs-finance-card small { color: var(--gs-muted); }
+
+    .gs-finance-card strong {
+      margin: 5px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .gs-dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .gs-card-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .gs-card-heading h3 { margin: 0 0 5px; }
+    .gs-card-heading p { margin: 0; color: var(--gs-muted); font-size: 13px; }
+
+    #salesPeriod {
+      padding: 10px;
+      border: 1px solid var(--gs-border);
+      border-radius: 9px;
+      background: var(--gs-input);
       color: var(--gs-text);
     }
 
-    .overview-menu-head {
+    .gs-chart-area { min-height: 180px; overflow-x: auto; }
+    .gs-attention-list { display: grid; gap: 15px; }
+
+    .gs-attention-item {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 17px;
-    }
-
-    .overview-menu-head h2 { margin: 0; font-size: 22px; }
-
-    .overview-menu-close {
-      border: 0;
-      border-radius: 10px;
-      padding: 9px 13px;
-      background: #4b5563;
-      color: white;
-      font-size: 22px;
-      cursor: pointer;
-    }
-
-    .overview-menu-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 11px;
-    }
-
-    .overview-menu-grid a {
-      display: flex;
-      align-items: center;
-      gap: 11px;
+      gap: 10px;
       min-width: 0;
-      min-height: 62px;
-      padding: 13px;
+    }
+
+    .gs-attention-text { flex: 1; min-width: 0; }
+    .gs-attention-text strong,
+    .gs-attention-text span { display: block; }
+    .gs-attention-text span { margin-top: 4px; color: var(--gs-muted); }
+
+    .gs-attention-item a,
+    .gs-text-link { color: #e879f9; }
+
+    .gs-table-wrap { width: 100%; overflow-x: auto; }
+
+    .gs-quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .gs-quick-action {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+      padding: 15px;
       border: 1px solid var(--gs-border);
       border-radius: 13px;
-      background: rgba(127,127,127,.06);
+      background: var(--gs-panel);
       color: var(--gs-text);
       text-decoration: none;
       overflow-wrap: anywhere;
     }
 
-    .overview-menu-grid a:active {
-      background: rgba(236,0,237,.15);
+    .gs-quick-action span { font-size: 23px; }
+    .gs-quick-action small { color: var(--gs-muted); }
+
+    .gs-ai-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid var(--gs-border);
+      border-radius: 15px;
+      background: var(--gs-panel);
     }
 
-    .menu-icon { font-size: 22px; }
+    .gs-footer {
+      margin-top: 24px;
+      padding: 16px 0;
+      color: var(--gs-muted);
+      font-size: 12px;
+    }
 
-    /* मोबाइल Footer Navigation */
-    .bottom-navigation {
+    /* Mobile footer */
+    .gs-bottom-nav {
       position: fixed;
-      z-index: 5000;
+      z-index: 1200;
       left: 0;
       right: 0;
       bottom: 0;
-      display: grid;
+      display: none;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 3px;
       padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
@@ -565,454 +538,689 @@
       border-top: 1px solid #354056;
     }
 
-    .bottom-navigation a,
-    .bottom-navigation button {
+    .gs-bottom-nav a {
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
       gap: 5px;
       min-width: 0;
-      min-height: 49px;
-      padding: 3px;
-      border: 0;
-      background: transparent;
+      min-height: 48px;
       color: #cbd5e1;
       text-decoration: none;
       font-size: 12px;
-      cursor: pointer;
     }
 
-    .bottom-navigation .nav-icon { font-size: 23px; }
+    .gs-bottom-nav .gs-nav-icon { font-size: 23px; }
 
-    .bottom-navigation .active {
-      color: var(--gs-accent);
+    .gs-bottom-nav a.active {
+      color: var(--gs-pink);
       font-weight: 800;
     }
 
-    @media (min-width: 769px) {
-      body.dashboard-page { padding-bottom: 0; }
-      .bottom-navigation { display: none; }
+    /* All-menu grid */
+    .gs-menu-dialog {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(0,0,0,.78);
     }
 
-    @media (max-width: 900px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
-      .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gs-menu-dialog.open { display: flex; }
+
+    .gs-menu-box {
+      width: min(620px, 100%);
+      max-height: 85dvh;
+      overflow-y: auto;
+      padding: 18px;
+      border: 1px solid var(--gs-border);
+      border-radius: 18px;
+      background: var(--gs-panel);
     }
 
-    @media (max-width: 600px) {
-      .gs-header { padding: 12px; }
-      .gs-brand-logo { width: 48px; height: 48px; }
-      .gs-brand-copy h1 { font-size: 17px; }
-      .gs-brand-copy p { font-size: 12px; }
-      .gs-header-avatar { width: 48px; height: 48px; flex-basis: 48px; }
-      .gs-profile-layout { padding: 0 12px; margin: 14px auto; }
-      .gs-profile-card { padding: 16px; }
-      .gs-profile-form { grid-template-columns: 1fr; }
-      .gs-profile-field.full { grid-column: auto; }
-      .dashboard-content { padding: 8px 12px 22px; }
-      .stats-grid, .finance-grid { gap: 10px; }
-      .stat-card, .finance-card, .dashboard-card { padding: 13px; }
-      .stat-icon, .finance-icon { width: 38px; height: 38px; font-size: 19px; }
-      .stat-label { font-size: 12px; }
-      .stat-value { font-size: 20px; }
-      .stat-bottom { font-size: 12px; }
-      .finance-card { gap: 8px; }
-      .finance-card span, .finance-card small { font-size: 12px; }
-      .finance-card strong { font-size: 15px; }
-      .overview-menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .overview-menu-box { padding: 14px; }
-      .overview-menu-grid a { min-height: 57px; padding: 10px; font-size: 13px; }
-      .quick-action { padding: 12px; }
+    .gs-menu-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
     }
 
-    @media (max-width: 360px) {
-      .gs-brand-copy h1 { font-size: 15px; }
-      .gs-brand-copy p { font-size: 11px; }
-      .stats-grid, .finance-grid { grid-template-columns: 1fr; }
-      .overview-menu-grid { grid-template-columns: 1fr; }
+    .gs-menu-heading h2 { margin: 0; }
+
+    .gs-menu-close {
+      border: 0;
+      padding: 8px 13px;
+      border-radius: 9px;
+      background: #4b5563;
+      color: white;
+      font-size: 22px;
+    }
+
+    .gs-menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .gs-menu-grid a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 57px;
+      padding: 12px;
+      border: 1px solid var(--gs-border);
+      border-radius: 12px;
+      color: var(--gs-text);
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+
+    /* Splash + MPIN screen */
+    .gs-startup {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: #071b35;
+      color: white;
+    }
+
+    .gs-startup-card {
+      width: min(390px, 100%);
+      text-align: center;
+    }
+
+    .gs-startup-logo {
+      display: block;
+      width: 142px;
+      height: 142px;
+      object-fit: contain;
+      margin: 0 auto 22px;
+      border-radius: 25px;
+    }
+
+    .gs-startup-card h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    .gs-startup-card p {
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .gs-startup-progress {
+      width: 100%;
+      height: 5px;
+      margin: 24px 0;
+      border-radius: 20px;
+      background: #334155;
+      overflow: hidden;
+    }
+
+    .gs-startup-progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--gs-pink);
+      animation: gs-progress 1.5s ease forwards;
+    }
+
+    @keyframes gs-progress {
+      to { width: 100%; }
+    }
+
+    .gs-pin-form {
+      display: none;
+      text-align: left;
+      padding: 20px;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      background: #132640;
+    }
+
+    .gs-pin-form label {
+      display: block;
+      margin: 15px 0 7px;
+      font-weight: 700;
+    }
+
+    .gs-pin-form input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #64748b;
+      border-radius: 10px;
+      background: #071b35;
+      color: white;
+      font-size: 18px;
+      letter-spacing: 4px;
+      text-align: center;
+    }
+
+    .gs-pin-form button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 13px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--gs-pink);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .gs-pin-error {
+      min-height: 20px;
+      color: #fecaca;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    #dashboardError {
+      display: none;
+      margin: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #7f1d1d;
+      color: white;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 1000px) {
+      :root { --gs-sidebar-width: 340px; }
+      .gs-dashboard-grid { grid-template-columns: 1fr; }
+      .gs-quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .gs-topbar { height: 78px; padding: 10px 12px; }
+      .gs-topbar-title h1 { font-size: 20px; }
+      .gs-topbar-logo { width: 50px; height: 50px; flex-basis: 50px; }
+
+      .gs-sidebar {
+        top: 78px;
+        bottom: 0;
+        width: min(92vw, 390px);
+        transform: translateX(-105%);
+      }
+
+      body.gs-sidebar-open .gs-sidebar { transform: translateX(0); }
+
+      body.gs-sidebar-open .gs-sidebar-overlay { display: block; }
+
+      .gs-sidebar-overlay { inset: 78px 0 0; }
+
+      .gs-main {
+        margin-left: 0;
+        padding: 17px 12px 90px;
+      }
+
+      .gs-bottom-nav { display: grid; }
+
+      .gs-stats-grid,
+      .gs-finance-grid { gap: 10px; }
+
+      .gs-stat-card,
+      .gs-finance-card,
+      .gs-dashboard-card { padding: 13px; }
+
+      .gs-stat-icon,
+      .gs-finance-icon {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+        font-size: 19px;
+      }
+
+      .gs-stat-label { font-size: 11px; }
+      .gs-stat-value { font-size: 20px; }
+      .gs-stat-bottom { font-size: 11px; }
+      .gs-finance-card { gap: 8px; }
+      .gs-finance-card span,
+      .gs-finance-card small { font-size: 11px; }
+      .gs-finance-card strong { font-size: 14px; }
+      .gs-menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 370px) {
+      .gs-stats-grid,
+      .gs-finance-grid { grid-template-columns: 1fr; }
+      .gs-menu-grid { grid-template-columns: 1fr; }
+      .gs-topbar-title h1 { font-size: 17px; }
+      .gs-topbar-logo { width: 43px; height: 43px; flex-basis: 43px; }
     }
   </style>
 </head>
 
-<body class="dashboard-page">
+<body>
+  <!-- Splash र पहिलो MPIN प्रवेश -->
+  <section class="gs-startup" id="gsStartup" aria-live="polite">
+    <div class="gs-startup-card">
+      <img class="gs-startup-logo" src="./gs192.png" alt="General Store Logo">
+      <h1 id="gsStartupTitle">Krishna G.C.</h1>
+      <p id="gsStartupMessage">General Store Management System</p>
 
-  <div id="dashboardError" role="alert" aria-live="assertive"></div>
-
-  <!-- Header: avatar क्लिक हुँदैन, Theme/Lock बटन हटाइएका छन् -->
-  <header class="gs-header">
-    <div class="gs-brand">
-      <div class="gs-brand-logo">GS</div>
-      <div class="gs-brand-copy">
-        <h1 id="sidebarStoreName">Krishna G.C.</h1>
-        <p>Management System</p>
-      </div>
-    </div>
-
-    <div class="gs-header-avatar" id="profileAvatar" aria-label="Store profile photo">
-      GS
-    </div>
-  </header>
-
-  <!-- Store Profile फारम सधैँ खुला -->
-  <main class="gs-profile-layout">
-    <section class="gs-profile-card" id="store-profile">
-      <h2 class="gs-profile-title">🏪 Store Profile</h2>
-      <p class="gs-profile-description">
-        पसल र सञ्चालकको विवरण यहाँबाट परिवर्तन गर्नुहोस्।
-      </p>
-
-      <div class="gs-profile-preview">
-        <div class="gs-profile-avatar" id="gsProfileAvatarPreview">GS</div>
-        <div>
-          <strong id="gsProfilePreviewName">Krishna G.C.</strong>
-          <small id="gsProfilePreviewOwner">Management System</small>
-        </div>
+      <div class="gs-startup-progress" id="gsStartupProgress">
+        <span></span>
       </div>
 
-      <form id="gsStoreProfileForm">
-        <div class="gs-profile-form">
+      <form class="gs-pin-form" id="gsPinForm">
+        <h2 id="gsPinTitle">🔐 MPIN</h2>
+        <p id="gsPinDescription">एप खोल्न आफ्नो MPIN राख्नुहोस्।</p>
 
-          <div class="gs-profile-field">
-            <label for="gsStoreName">Store Name *</label>
-            <input id="gsStoreName" name="storeName" maxlength="120"
-              required autocomplete="organization">
-          </div>
+        <label for="gsPinInput">MPIN (४–८ अंक)</label>
+        <input id="gsPinInput" type="password"
+          inputmode="numeric" pattern="[0-9]{4,8}"
+          minlength="4" maxlength="8"
+          autocomplete="current-password" required>
 
-          <div class="gs-profile-field">
-            <label for="gsOwnerName">Owner Name</label>
-            <input id="gsOwnerName" name="ownerName" maxlength="120"
-              autocomplete="name">
-          </div>
-
-          <div class="gs-profile-field">
-            <label for="gsStorePhone">Phone</label>
-            <input id="gsStorePhone" name="storePhone" type="tel"
-              maxlength="30" autocomplete="tel">
-          </div>
-
-          <div class="gs-profile-field">
-            <label for="gsStoreEmail">Email</label>
-            <input id="gsStoreEmail" name="storeEmail" type="email"
-              maxlength="150" autocomplete="email">
-          </div>
-
-          <div class="gs-profile-field">
-            <label for="gsTaxType">Tax Type</label>
-            <select id="gsTaxType" name="taxType">
-              <option value="">छान्नुहोस्</option>
-              <option value="PAN">PAN</option>
-              <option value="VAT">VAT</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div class="gs-profile-field">
-            <label for="gsTaxNumber">PAN / VAT Number</label>
-            <input id="gsTaxNumber" name="taxNumber" maxlength="60">
-          </div>
-
-          <div class="gs-profile-field full">
-            <label for="gsStoreAddress">Store Address</label>
-            <textarea id="gsStoreAddress" name="storeAddress"
-              maxlength="500" autocomplete="street-address"></textarea>
-          </div>
-
-          <div class="gs-profile-field full">
-            <label for="gsInvoiceFooter">Invoice Footer Message</label>
-            <textarea id="gsInvoiceFooter" name="invoiceFooter"
-              maxlength="500"></textarea>
-          </div>
-
-          <div class="gs-profile-field full">
-            <label for="gsOperatorPhoto">Store / Owner Photo</label>
-            <input id="gsOperatorPhoto" name="operatorPhoto"
-              type="file" accept="image/png,image/jpeg,image/webp">
-            <small>PNG, JPG वा WebP फोटो छान्नुहोस्। अधिकतम 2 MB।</small>
-          </div>
-
+        <div id="gsPinConfirmWrap" style="display:none">
+          <label for="gsPinConfirm">MPIN फेरि राख्नुहोस्</label>
+          <input id="gsPinConfirm" type="password"
+            inputmode="numeric" pattern="[0-9]{4,8}"
+            minlength="4" maxlength="8"
+            autocomplete="new-password">
         </div>
 
-        <div id="gsProfileStatus" role="status" aria-live="polite"></div>
-
-        <div class="gs-profile-actions">
-          <button type="button" class="gs-button gs-danger"
-            id="gsRemoveAvatar">फोटो हटाउनुहोस्</button>
-          <button type="submit" class="gs-button gs-save">Save Profile</button>
-        </div>
+        <p class="gs-pin-error" id="gsPinError" role="alert"></p>
+        <button type="submit" id="gsPinSubmit">Dashboard खोल्नुहोस्</button>
       </form>
-    </section>
-  </main>
-
-  <!-- Dashboard: विद्यमान dashboard.js ले प्रयोग गर्ने ID कायम -->
-  <section class="dashboard-content">
-    <div class="welcome-section">
-      <div>
-        <h2 id="welcomeTitle">नमस्ते 👋</h2>
-        <p>आजको पसलको अवस्था यहाँबाट हेर्नुहोस्।</p>
-        <p id="todayDate"></p>
-      </div>
-      <a href="sale.html" class="primary-btn">+ New Sale</a>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon sales-icon">🛒</div>
-          <span class="stat-label">आजको बिक्री</span>
-        </div>
-        <div class="stat-value">Rs. <span id="todaySales">0</span></div>
-        <div class="stat-bottom">
-          <span class="positive" id="salesChange">आज</span>
-          <span>आजको कारोबार</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon profit-icon">📈</div>
-          <span class="stat-label">Gross Profit</span>
-        </div>
-        <div class="stat-value">Rs. <span id="grossProfit">0</span></div>
-        <div class="stat-bottom"><span>FIFO</span><span>आज</span></div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon expense-icon">💸</div>
-          <span class="stat-label">Expenses</span>
-        </div>
-        <div class="stat-value">Rs. <span id="expenses">0</span></div>
-        <div class="stat-bottom"><span>आजको खर्च</span></div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon net-profit-icon">💰</div>
-          <span class="stat-label">Net Profit</span>
-        </div>
-        <div class="stat-value">Rs. <span id="netProfit">0</span></div>
-        <div class="stat-bottom"><span>Gross − Expense</span><span>आज</span></div>
-      </div>
-    </div>
-
-    <div class="section-title">
-      <h3>Financial Overview</h3>
-      <p>पसलको पैसा, stock र बाँकी रकम</p>
-    </div>
-
-    <div class="finance-grid">
-      <div class="finance-card">
-        <div class="finance-icon">👤</div>
-        <div>
-          <span>Customer Receivable</span>
-          <strong>Rs. <span id="customerReceivable">0</span></strong>
-          <small>ग्राहकबाट लिन बाँकी</small>
-        </div>
-      </div>
-
-      <div class="finance-card">
-        <div class="finance-icon">🏢</div>
-        <div>
-          <span>Supplier Payable</span>
-          <strong>Rs. <span id="supplierPayable">0</span></strong>
-          <small>Supplier लाई दिन बाँकी</small>
-        </div>
-      </div>
-
-      <div class="finance-card">
-        <div class="finance-icon">📦</div>
-        <div>
-          <span>Stock Value</span>
-          <strong>Rs. <span id="stockValue">0</span></strong>
-          <small>FIFO cost based</small>
-        </div>
-      </div>
-
-      <div class="finance-card">
-        <div class="finance-icon">💳</div>
-        <div>
-          <span>Cash / Bank / QR</span>
-          <strong>Rs. <span id="availableBalance">0</span></strong>
-          <small>उपलब्ध balance</small>
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard-grid">
-      <div class="dashboard-card sales-overview">
-        <div class="card-header">
-          <div>
-            <h3>Sales Overview</h3>
-            <p>पछिल्लो अवधिको बिक्री</p>
-          </div>
-          <select id="salesPeriod" aria-label="Sales period">
-            <option value="7">Last 7 Days</option>
-            <option value="30">Last 30 Days</option>
-          </select>
-        </div>
-        <div class="chart-area" id="salesChart"></div>
-      </div>
-
-      <div class="dashboard-card attention-card">
-        <div class="card-header">
-          <div>
-            <h3>Attention Required</h3>
-            <p>तुरुन्त हेर्नुपर्ने कुरा</p>
-          </div>
-        </div>
-
-        <div class="attention-list">
-          <div class="attention-item">
-            <div class="attention-icon warning">⚠️</div>
-            <div class="attention-text">
-              <strong>Low Stock</strong>
-              <span id="lowStockCount">0 products</span>
-            </div>
-            <a href="inventory.html">View</a>
-          </div>
-
-          <div class="attention-item">
-            <div class="attention-icon danger">⏰</div>
-            <div class="attention-text">
-              <strong>Expiry Near</strong>
-              <span id="expiryCount">0 products</span>
-            </div>
-            <a href="inventory.html">View</a>
-          </div>
-
-          <div class="attention-item">
-            <div class="attention-icon money">💰</div>
-            <div class="attention-text">
-              <strong>Credit Due</strong>
-              <span id="creditDueCount">0 customers</span>
-            </div>
-            <a href="customers.html">View</a>
-          </div>
-
-          <div class="attention-item">
-            <div class="attention-icon supplier">🏢</div>
-            <div class="attention-text">
-              <strong>Supplier Payment</strong>
-              <span id="supplierDueCount">0 suppliers</span>
-            </div>
-            <a href="suppliers.html">View</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard-card" style="margin-top:22px">
-      <div class="card-header">
-        <div>
-          <h3>Fast Moving Products</h3>
-          <p>बिक्रीको आधारमा छिटो चलिरहेका सामान</p>
-        </div>
-        <a href="inventory.html" class="text-btn">View All →</a>
-      </div>
-      <div class="data-table-wrap" id="fastMovingArea"></div>
-    </div>
-
-    <div class="dashboard-card" style="margin-top:22px">
-      <div class="card-header">
-        <div>
-          <h3>Recent Activity</h3>
-          <p>पछिल्ला बिक्री, खरिद र finance कारोबार</p>
-        </div>
-        <a href="reports.html" class="text-btn">View All →</a>
-      </div>
-      <div class="data-table-wrap" id="recentActivityArea"></div>
-    </div>
-
-    <div class="section-title quick-title">
-      <h3>Quick Actions</h3>
-      <p>बारम्बार प्रयोग हुने काम</p>
-    </div>
-
-    <div class="quick-actions">
-      <a href="sale.html" class="quick-action">
-        <span>🛒</span><strong>New Sale</strong><small>नयाँ बिक्री</small>
-      </a>
-      <a href="sales-return.html" class="quick-action">
-        <span>↩️</span><strong>Sales Return</strong><small>बिक्री फिर्ता</small>
-      </a>
-      <a href="purchase.html" class="quick-action">
-        <span>📦</span><strong>Purchase</strong><small>नयाँ खरिद</small>
-      </a>
-      <a href="stock-lots.html" class="quick-action">
-        <span>🧮</span><strong>FIFO Lots</strong><small>Stock cost</small>
-      </a>
-      <a href="customers.html" class="quick-action">
-        <span>👤</span><strong>Customer</strong><small>ग्राहक रकम</small>
-      </a>
-      <a href="suppliers.html" class="quick-action">
-        <span>🏢</span><strong>Supplier</strong><small>Supplier payment</small>
-      </a>
-      <a href="finance.html" class="quick-action">
-        <span>💸</span><strong>Finance</strong><small>खर्च र रकम</small>
-      </a>
-      <a href="inventory.html" class="quick-action">
-        <span>🔧</span><strong>Stock</strong><small>Stock मिलाउनुहोस्</small>
-      </a>
-    </div>
-
-    <div class="ai-card">
-      <div class="ai-content">
-        <div class="ai-icon">🤖</div>
-        <div>
-          <h3>AI Shop Assistant</h3>
-          <p>आजको व्यापार र सामानको बारेमा प्रश्न सोध्नुहोस्।</p>
-        </div>
-      </div>
-      <a href="ai.html" class="ai-btn">Ask AI →</a>
     </div>
   </section>
 
-  <footer class="footer">
-    <span>© 2026 General Store Management System</span>
-    <span>v1.0</span>
-  </footer>
+  <header class="gs-topbar">
+    <div class="gs-topbar-left">
+      <button type="button" class="gs-menu-toggle" id="gsSidebarToggle"
+        aria-label="Store Profile sidebar खोल्नुहोस्"
+        aria-expanded="false">☰</button>
 
-  <!-- Footer navigation कायम; सबै मेनु grid मा -->
-  <nav class="bottom-navigation" aria-label="Main navigation">
-    <button type="button" id="overviewMenuBtn" class="active"
-      aria-label="सबै मेनु खोल्नुहोस्">
-      <span class="nav-icon">⌂</span><span>Overview</span>
-    </button>
-    <a href="customers.html">
-      <span class="nav-icon">👥</span><span>Customer</span>
+      <div class="gs-topbar-title">
+        <h1>Dashboard</h1>
+        <p id="todayDate"></p>
+      </div>
+    </div>
+
+    <!-- स्थायी GS लोगो: क्लिक गर्न मिल्दैन -->
+    <img class="gs-topbar-logo" src="./gs512.png"
+      alt="General Store" draggable="false">
+  </header>
+
+  <div class="gs-sidebar-overlay" id="gsSidebarOverlay"></div>
+
+  <div class="gs-layout">
+    <aside class="gs-sidebar" id="gsSidebar" aria-label="Store Profile">
+      <div class="gs-sidebar-brand">
+        <img src="./gs512.png" alt="GS Logo" draggable="false">
+        <div>
+          <strong id="gsSidebarStoreTitle">Krishna G.C.</strong>
+          <small>Management System</small>
+        </div>
+      </div>
+
+      <!-- Store Profile फारम Sidebar भित्र सधैँ खुला -->
+      <section class="gs-profile-card">
+        <h2>🏪 Store Profile</h2>
+        <p class="gs-profile-intro">
+          पसल र सञ्चालकको विवरण यहाँबाट परिवर्तन गर्नुहोस्।
+        </p>
+
+        <div class="gs-profile-preview">
+          <div class="gs-profile-photo" id="gsProfilePhotoPreview">GS</div>
+          <div>
+            <strong id="gsProfilePreviewName">Krishna G.C.</strong>
+            <small id="gsProfilePreviewOwner">Management System</small>
+          </div>
+        </div>
+
+        <form id="gsStoreProfileForm">
+          <div class="gs-profile-form">
+            <div class="gs-field">
+              <label for="gsStoreName">Store Name *</label>
+              <input id="gsStoreName" name="storeName"
+                maxlength="120" required>
+            </div>
+
+            <div class="gs-field">
+              <label for="gsOwnerName">Owner Name</label>
+              <input id="gsOwnerName" name="ownerName" maxlength="120">
+            </div>
+
+            <div class="gs-field">
+              <label for="gsStorePhone">Phone</label>
+              <input id="gsStorePhone" name="storePhone"
+                type="tel" maxlength="30">
+            </div>
+
+            <div class="gs-field">
+              <label for="gsStoreEmail">Email</label>
+              <input id="gsStoreEmail" name="storeEmail"
+                type="email" maxlength="150">
+            </div>
+
+            <div class="gs-field">
+              <label for="gsTaxType">Tax Type</label>
+              <select id="gsTaxType" name="taxType">
+                <option value="PAN">PAN</option>
+                <option value="VAT">VAT</option>
+                <option value="NON_TAX">Non Tax</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="gs-field">
+              <label for="gsTaxNumber">PAN / VAT Number</label>
+              <input id="gsTaxNumber" name="taxNumber" maxlength="60">
+            </div>
+
+            <div class="gs-field">
+              <label for="gsStoreAddress">Store Address</label>
+              <textarea id="gsStoreAddress" name="storeAddress"
+                maxlength="500"></textarea>
+            </div>
+
+            <div class="gs-field">
+              <label for="gsInvoiceFooter">Invoice Footer Message</label>
+              <textarea id="gsInvoiceFooter" name="invoiceFooter"
+                maxlength="500"></textarea>
+            </div>
+
+            <div class="gs-field">
+              <label for="gsOperatorPhoto">Store / Owner Photo</label>
+              <input id="gsOperatorPhoto" name="operatorPhoto"
+                type="file" accept="image/png,image/jpeg,image/webp">
+              <small>PNG, JPG वा WebP। अधिकतम 2 MB।</small>
+            </div>
+          </div>
+
+          <div class="gs-profile-status" id="gsProfileStatus"
+            role="status" aria-live="polite"></div>
+
+          <div class="gs-profile-actions">
+            <button type="button" class="gs-button gs-remove"
+              id="gsRemoveAvatar">फोटो हटाउनुहोस्</button>
+            <button type="submit" class="gs-button gs-save">Save Profile</button>
+          </div>
+        </form>
+      </section>
+    </aside>
+
+    <main class="gs-main">
+      <div id="dashboardError" role="alert"></div>
+
+      <section class="gs-welcome">
+        <div>
+          <h2 id="welcomeTitle">नमस्ते 👋</h2>
+          <p>आजको पसलको अवस्था यहाँबाट हेर्नुहोस्।</p>
+        </div>
+        <a href="./sale.html" class="gs-primary-link">+ New Sale</a>
+      </section>
+
+      <section class="gs-stats-grid">
+        <article class="gs-stat-card">
+          <div class="gs-stat-top">
+            <span class="gs-stat-icon">🛒</span>
+            <span class="gs-stat-label">आजको बिक्री</span>
+          </div>
+          <div class="gs-stat-value">Rs. <span id="todaySales">0</span></div>
+          <div class="gs-stat-bottom">
+            <span class="gs-positive" id="salesChange">आज</span>
+            <span>आजको कारोबार</span>
+          </div>
+        </article>
+
+        <article class="gs-stat-card">
+          <div class="gs-stat-top">
+            <span class="gs-stat-icon">📈</span>
+            <span class="gs-stat-label">Gross Profit</span>
+          </div>
+          <div class="gs-stat-value">Rs. <span id="grossProfit">0</span></div>
+          <div class="gs-stat-bottom"><span>FIFO</span><span>आज</span></div>
+        </article>
+
+        <article class="gs-stat-card">
+          <div class="gs-stat-top">
+            <span class="gs-stat-icon">💸</span>
+            <span class="gs-stat-label">Expenses</span>
+          </div>
+          <div class="gs-stat-value">Rs. <span id="expenses">0</span></div>
+          <div class="gs-stat-bottom"><span>आजको खर्च</span></div>
+        </article>
+
+        <article class="gs-stat-card">
+          <div class="gs-stat-top">
+            <span class="gs-stat-icon">💰</span>
+            <span class="gs-stat-label">Net Profit</span>
+          </div>
+          <div class="gs-stat-value">Rs. <span id="netProfit">0</span></div>
+          <div class="gs-stat-bottom"><span>Gross − Expense</span><span>आज</span></div>
+        </article>
+      </section>
+
+      <div class="gs-section-heading">
+        <h3>Financial Overview</h3>
+        <p>पसलको पैसा, stock र बाँकी रकम</p>
+      </div>
+
+      <section class="gs-finance-grid">
+        <article class="gs-finance-card">
+          <span class="gs-finance-icon">👤</span>
+          <div>
+            <span>Customer Receivable</span>
+            <strong>Rs. <span id="customerReceivable">0</span></strong>
+            <small>ग्राहकबाट लिन बाँकी</small>
+          </div>
+        </article>
+
+        <article class="gs-finance-card">
+          <span class="gs-finance-icon">🏢</span>
+          <div>
+            <span>Supplier Payable</span>
+            <strong>Rs. <span id="supplierPayable">0</span></strong>
+            <small>Supplier लाई दिन बाँकी</small>
+          </div>
+        </article>
+
+        <article class="gs-finance-card">
+          <span class="gs-finance-icon">📦</span>
+          <div>
+            <span>Stock Value</span>
+            <strong>Rs. <span id="stockValue">0</span></strong>
+            <small>FIFO cost based</small>
+          </div>
+        </article>
+
+        <article class="gs-finance-card">
+          <span class="gs-finance-icon">💳</span>
+          <div>
+            <span>Cash / Bank / QR</span>
+            <strong>Rs. <span id="availableBalance">0</span></strong>
+            <small>उपलब्ध balance</small>
+          </div>
+        </article>
+      </section>
+
+      <section class="gs-dashboard-grid">
+        <article class="gs-dashboard-card">
+          <div class="gs-card-heading">
+            <div>
+              <h3>Sales Overview</h3>
+              <p>पछिल्लो अवधिको बिक्री</p>
+            </div>
+            <select id="salesPeriod" aria-label="Sales period">
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+            </select>
+          </div>
+          <div class="gs-chart-area" id="salesChart"></div>
+        </article>
+
+        <article class="gs-dashboard-card">
+          <div class="gs-card-heading">
+            <div>
+              <h3>Attention Required</h3>
+              <p>तुरुन्त हेर्नुपर्ने कुरा</p>
+            </div>
+          </div>
+
+          <div class="gs-attention-list">
+            <div class="gs-attention-item">
+              <span>⚠️</span>
+              <div class="gs-attention-text">
+                <strong>Low Stock</strong>
+                <span id="lowStockCount">0 products</span>
+              </div>
+              <a href="./inventory.html">View</a>
+            </div>
+
+            <div class="gs-attention-item">
+              <span>⏰</span>
+              <div class="gs-attention-text">
+                <strong>Expiry Near</strong>
+                <span id="expiryCount">0 products</span>
+              </div>
+              <a href="./inventory.html">View</a>
+            </div>
+
+            <div class="gs-attention-item">
+              <span>💰</span>
+              <div class="gs-attention-text">
+                <strong>Credit Due</strong>
+                <span id="creditDueCount">0 customers</span>
+              </div>
+              <a href="./customers.html">View</a>
+            </div>
+
+            <div class="gs-attention-item">
+              <span>🏢</span>
+              <div class="gs-attention-text">
+                <strong>Supplier Payment</strong>
+                <span id="supplierDueCount">0 suppliers</span>
+              </div>
+              <a href="./suppliers.html">View</a>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="gs-dashboard-card" style="margin-top:18px">
+        <div class="gs-card-heading">
+          <div>
+            <h3>Fast Moving Products</h3>
+            <p>बिक्रीको आधारमा छिटो चलिरहेका सामान</p>
+          </div>
+          <a class="gs-text-link" href="./inventory.html">View All →</a>
+        </div>
+        <div class="gs-table-wrap" id="fastMovingArea"></div>
+      </section>
+
+      <section class="gs-dashboard-card" style="margin-top:18px">
+        <div class="gs-card-heading">
+          <div>
+            <h3>Recent Activity</h3>
+            <p>पछिल्ला कारोबार</p>
+          </div>
+          <a class="gs-text-link" href="./reports.html">View All →</a>
+        </div>
+        <div class="gs-table-wrap" id="recentActivityArea"></div>
+      </section>
+
+      <div class="gs-section-heading">
+        <h3>Quick Actions</h3>
+        <p>बारम्बार प्रयोग हुने काम</p>
+      </div>
+
+      <section class="gs-quick-actions">
+        <a class="gs-quick-action" href="./sale.html">
+          <span>🛒</span><strong>New Sale</strong><small>नयाँ बिक्री</small>
+        </a>
+        <a class="gs-quick-action" href="./sales-return.html">
+          <span>↩️</span><strong>Sales Return</strong><small>बिक्री फिर्ता</small>
+        </a>
+        <a class="gs-quick-action" href="./purchase.html">
+          <span>📦</span><strong>Purchase</strong><small>नयाँ खरिद</small>
+        </a>
+        <a class="gs-quick-action" href="./stock-lots.html">
+          <span>🧮</span><strong>FIFO Lots</strong><small>Stock cost</small>
+        </a>
+        <a class="gs-quick-action" href="./customers.html">
+          <span>👥</span><strong>Customers</strong><small>ग्राहक रकम</small>
+        </a>
+        <a class="gs-quick-action" href="./suppliers.html">
+          <span>🏢</span><strong>Suppliers</strong><small>Supplier payment</small>
+        </a>
+        <a class="gs-quick-action" href="./finance.html">
+          <span>💰</span><strong>Finance</strong><small>खर्च र रकम</small>
+        </a>
+        <a class="gs-quick-action" href="./inventory.html">
+          <span>🔧</span><strong>Inventory</strong><small>Stock व्यवस्थापन</small>
+        </a>
+        <a class="gs-quick-action" href="./reports.html">
+          <span>📊</span><strong>Reports</strong><small>व्यापार रिपोर्ट</small>
+        </a>
+      </section>
+
+      <section class="gs-ai-card">
+        <div>
+          <h3>🤖 AI Shop Assistant</h3>
+          <p style="color:var(--gs-muted);margin-top:6px">
+            पसलको व्यापारसम्बन्धी प्रश्न सोध्नुहोस्।
+          </p>
+        </div>
+        <a class="gs-text-link" href="./ai.html">Ask AI →</a>
+      </section>
+
+      <footer class="gs-footer">
+        © 2026 General Store Management System
+      </footer>
+    </main>
+  </div>
+
+  <!-- मोबाइल Footer Navigation -->
+  <nav class="gs-bottom-nav" aria-label="Main navigation">
+    <a href="./index.html" class="active">
+      <span class="gs-nav-icon">⌂</span><span>Overview</span>
     </a>
-    <a href="suppliers.html">
-      <span class="nav-icon">🏢</span><span>Supplier</span>
+    <a href="./customers.html">
+      <span class="gs-nav-icon">👥</span><span>Customer</span>
     </a>
-    <a href="settings.html">
-      <span class="nav-icon">⚙️</span><span>Setting</span>
+    <a href="./suppliers.html">
+      <span class="gs-nav-icon">🏢</span><span>Supplier</span>
+    </a>
+    <a href="./settings.html">
+      <span class="gs-nav-icon">⚙️</span><span>Setting</span>
     </a>
   </nav>
 
-  <div class="overview-menu-panel" id="overviewMenuPanel"
-    role="dialog" aria-modal="true" aria-labelledby="overviewMenuTitle">
-    <div class="overview-menu-box">
-      <div class="overview-menu-head">
-        <h2 id="overviewMenuTitle">☰ सबै मेनु</h2>
-        <button type="button" class="overview-menu-close"
-          id="closeOverviewMenu" aria-label="Close menu">×</button>
+  <!-- Overview थिच्दा सबै मेनु Grid -->
+  <div class="gs-menu-dialog" id="gsMenuDialog" role="dialog"
+    aria-modal="true" aria-labelledby="gsMenuTitle">
+    <div class="gs-menu-box">
+      <div class="gs-menu-heading">
+        <h2 id="gsMenuTitle">☰ सबै मेनु</h2>
+        <button type="button" class="gs-menu-close"
+          id="gsMenuClose" aria-label="Close">×</button>
       </div>
-
-      <nav class="overview-menu-grid" aria-label="All store menus">
-        <a href="index.html"><span class="menu-icon">⌂</span>Overview</a>
-        <a href="sale.html"><span class="menu-icon">🛒</span>New Sale</a>
-        <a href="sales-return.html"><span class="menu-icon">↩️</span>Sales Return</a>
-        <a href="purchase.html"><span class="menu-icon">📦</span>Purchase</a>
-        <a href="inventory.html"><span class="menu-icon">▣</span>Inventory</a>
-        <a href="stock-lots.html"><span class="menu-icon">🧮</span>FIFO Lots</a>
-        <a href="customers.html"><span class="menu-icon">👥</span>Customers</a>
-        <a href="suppliers.html"><span class="menu-icon">🏢</span>Suppliers</a>
-        <a href="finance.html"><span class="menu-icon">💰</span>Finance</a>
-        <a href="reports.html"><span class="menu-icon">📊</span>Reports</a>
-        <a href="whatsapp.html"><span class="menu-icon">💬</span>WhatsApp</a>
-        <a href="ai.html"><span class="menu-icon">🤖</span>AI Assistant</a>
-        <a href="settings.html"><span class="menu-icon">⚙️</span>Settings</a>
+      <nav class="gs-menu-grid">
+        <a href="./index.html">⌂ Overview</a>
+        <a href="./sale.html">🛒 New Sale</a>
+        <a href="./sales-return.html">↩️ Sales Return</a>
+        <a href="./purchase.html">📦 Purchase</a>
+        <a href="./inventory.html">▣ Inventory</a>
+        <a href="./stock-lots.html">🧮 FIFO Lots</a>
+        <a href="./customers.html">👥 Customers</a>
+        <a href="./suppliers.html">🏢 Suppliers</a>
+        <a href="./finance.html">💰 Finance</a>
+        <a href="./reports.html">📊 Reports</a>
+        <a href="./whatsapp.html">💬 WhatsApp</a>
+        <a href="./ai.html">🤖 AI Assistant</a>
+        <a href="./settings.html">⚙️ Settings</a>
       </nav>
     </div>
   </div>
@@ -1020,102 +1228,110 @@
   <script>
     "use strict";
 
-    /* त्रुटि देखाउने */
+    /* सामान्य error देखाउने */
     window.addEventListener("error", function (event) {
       const box = document.getElementById("dashboardError");
       if (!box) return;
       box.style.display = "block";
       box.textContent = "JavaScript त्रुटि: " +
-        (event.message || "अज्ञात त्रुटि") +
-        "। फाइल र line जाँच गर्नुहोस्।";
+        (event.message || "अज्ञात त्रुटि");
     });
 
-    window.addEventListener("unhandledrejection", function () {
-      const box = document.getElementById("dashboardError");
-      if (!box) return;
-      box.style.display = "block";
-      box.textContent =
-        "Dashboard प्रक्रिया पूरा भएन। JavaScript त्रुटि जाँच गर्नुहोस्।";
-    });
-
-    /* Store Profile: पुरानै gs_settings key प्रयोग हुन्छ */
+    /* Sidebar toggle */
     (function () {
-      const PROFILE_KEY = "gs_settings";
-      const form = document.getElementById("gsStoreProfileForm");
-      const status = document.getElementById("gsProfileStatus");
-      const photoInput = document.getElementById("gsOperatorPhoto");
+      const button = document.getElementById("gsSidebarToggle");
+      const overlay = document.getElementById("gsSidebarOverlay");
+
+      function closeSidebar() {
+        document.body.classList.remove("gs-sidebar-open");
+        button.setAttribute("aria-expanded", "false");
+      }
+
+      button.addEventListener("click", function () {
+        const open = document.body.classList.toggle("gs-sidebar-open");
+        button.setAttribute("aria-expanded", String(open));
+      });
+
+      overlay.addEventListener("click", closeSidebar);
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeSidebar();
+      });
+    })();
+
+    /* Store Profile: gs_settings मा अन्य settings नहटाई merge गर्ने */
+    (function () {
+      const KEY = "gs_settings";
+      const $ = id => document.getElementById(id);
+      const form = $("gsStoreProfileForm");
+      const status = $("gsProfileStatus");
+      const photoInput = $("gsOperatorPhoto");
 
       const fields = {
-        storeName: document.getElementById("gsStoreName"),
-        ownerName: document.getElementById("gsOwnerName"),
-        storePhone: document.getElementById("gsStorePhone"),
-        storeEmail: document.getElementById("gsStoreEmail"),
-        taxType: document.getElementById("gsTaxType"),
-        taxNumber: document.getElementById("gsTaxNumber"),
-        storeAddress: document.getElementById("gsStoreAddress"),
-        invoiceFooter: document.getElementById("gsInvoiceFooter")
+        storeName: $("gsStoreName"),
+        ownerName: $("gsOwnerName"),
+        storePhone: $("gsStorePhone"),
+        storeEmail: $("gsStoreEmail"),
+        taxType: $("gsTaxType"),
+        taxNumber: $("gsTaxNumber"),
+        storeAddress: $("gsStoreAddress"),
+        invoiceFooter: $("gsInvoiceFooter")
       };
 
       let currentPhoto = "";
 
       function readSettings() {
         try {
-          const raw = localStorage.getItem(PROFILE_KEY);
-          const value = raw ? JSON.parse(raw) : {};
-          return value && typeof value === "object" && !Array.isArray(value)
-            ? value : {};
+          const raw = localStorage.getItem(KEY);
+          const data = raw ? JSON.parse(raw) : {};
+          return data && typeof data === "object" && !Array.isArray(data)
+            ? data : {};
         } catch (error) {
           console.error("Settings पढ्न सकिएन:", error);
           return {};
         }
       }
 
-      function showStatus(message, isError) {
-        status.textContent = message;
-        status.classList.toggle("error", Boolean(isError));
-        status.style.display = "block";
-      }
-
       function initials(name) {
-        const value = String(name || "").trim();
+        const value = String(name || "GS").trim();
         return value ? value.slice(0, 1).toUpperCase() : "GS";
       }
 
-      function renderAvatar(element, photo, name) {
-        if (!element) return;
-
+      function renderPhoto(element, photo, name) {
         element.replaceChildren();
 
-        if (photo) {
-          const img = document.createElement("img");
-          img.src = photo;
-          img.alt = "Store profile photo";
-          img.onerror = function () {
-            element.textContent = initials(name);
-          };
-          element.appendChild(img);
-        } else {
+        if (!photo) {
           element.textContent = initials(name);
+          return;
         }
+
+        const img = document.createElement("img");
+        img.src = photo;
+        img.alt = "Store profile photo";
+        img.onerror = function () {
+          element.replaceChildren();
+          element.textContent = initials(name);
+        };
+        element.appendChild(img);
       }
 
-      function updateDisplay(settings) {
+      function updateProfileDisplay(settings) {
         const name = settings.storeName || "Krishna G.C.";
         const owner = settings.ownerName || "Management System";
         const photo = settings.operatorPhoto || "";
 
-        document.getElementById("sidebarStoreName").textContent = name;
-        document.getElementById("gsProfilePreviewName").textContent = name;
-        document.getElementById("gsProfilePreviewOwner").textContent = owner;
-
-        renderAvatar(document.getElementById("profileAvatar"), photo, name);
-        renderAvatar(
-          document.getElementById("gsProfileAvatarPreview"),
-          photo,
-          name
-        );
-
+        $("gsSidebarStoreTitle").textContent = name;
+        $("gsProfilePreviewName").textContent = name;
+        $("gsProfilePreviewOwner").textContent = owner;
         document.title = name + " - Dashboard";
+
+        renderPhoto($("gsProfilePhotoPreview"), photo, name);
+      }
+
+      function showStatus(message, error = false) {
+        status.textContent = message;
+        status.classList.toggle("error", error);
+        status.style.display = "block";
       }
 
       function loadProfile() {
@@ -1127,17 +1343,14 @@
 
         currentPhoto = settings.operatorPhoto || "";
         photoInput.value = "";
-
-        updateDisplay(settings);
-        status.style.display = "none";
-        status.classList.remove("error");
+        updateProfileDisplay(settings);
       }
 
       photoInput.addEventListener("change", function () {
         const file = photoInput.files && photoInput.files[0];
         if (!file) return;
 
-        if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
+        if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
           photoInput.value = "";
           showStatus("PNG, JPG वा WebP फोटो मात्र छान्नुहोस्।", true);
           return;
@@ -1155,7 +1368,8 @@
           currentPhoto = String(reader.result || "");
           const settings = readSettings();
           settings.operatorPhoto = currentPhoto;
-          updateDisplay(settings);
+          updateProfileDisplay(settings);
+          showStatus("फोटो preview तयार भयो। सुरक्षित गर्न Save Profile थिच्नुहोस्।");
         };
 
         reader.onerror = function () {
@@ -1168,11 +1382,9 @@
       form.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        const storeName = fields.storeName.value.trim();
-
-        if (!storeName) {
-          fields.storeName.focus();
+        if (!fields.storeName.value.trim()) {
           showStatus("Store Name अनिवार्य छ।", true);
+          fields.storeName.focus();
           return;
         }
 
@@ -1185,9 +1397,9 @@
         settings.operatorPhoto = currentPhoto;
 
         try {
-          localStorage.setItem(PROFILE_KEY, JSON.stringify(settings));
-          updateDisplay(settings);
-          showStatus("Store Profile सुरक्षित भयो।", false);
+          localStorage.setItem(KEY, JSON.stringify(settings));
+          updateProfileDisplay(settings);
+          showStatus("Store Profile सुरक्षित भयो।");
 
           window.dispatchEvent(new CustomEvent("gs:settings-updated", {
             detail: { settings: settings }
@@ -1201,54 +1413,287 @@
         }
       });
 
-      document.getElementById("gsRemoveAvatar").addEventListener(
-        "click",
-        function () {
-          currentPhoto = "";
-          photoInput.value = "";
-          const settings = readSettings();
-          settings.operatorPhoto = "";
-          updateDisplay(settings);
-          showStatus(
-            "फोटो preview बाट हटाइयो। स्थायी रूपमा हटाउन Save Profile थिच्नुहोस्।",
-            false
-          );
-        }
-      );
+      $("gsRemoveAvatar").addEventListener("click", function () {
+        currentPhoto = "";
+        photoInput.value = "";
+
+        const settings = readSettings();
+        settings.operatorPhoto = "";
+
+        updateProfileDisplay(settings);
+        showStatus("फोटो हटाइयो। परिवर्तन स्थायी बनाउन Save Profile थिच्नुहोस्।");
+      });
 
       window.addEventListener("storage", function (event) {
-        if (event.key === PROFILE_KEY) updateDisplay(readSettings());
+        if (event.key === KEY) loadProfile();
       });
 
       loadProfile();
     })();
 
-    /* Footer Overview बटनले grid menu खोल्छ */
+    /* Grid menu */
     (function () {
-      const panel = document.getElementById("overviewMenuPanel");
-      const openButton = document.getElementById("overviewMenuBtn");
-      const closeButton = document.getElementById("closeOverviewMenu");
+      const dialog = document.getElementById("gsMenuDialog");
+      const close = document.getElementById("gsMenuClose");
 
-      function closeMenu() {
-        panel.classList.remove("open");
+      function closeDialog() {
+        dialog.classList.remove("open");
       }
 
-      openButton.addEventListener("click", function () {
-        panel.classList.add("open");
+      document.querySelectorAll(".gs-bottom-nav a").forEach(function (link) {
+        if (link.getAttribute("href") === "./index.html") {
+          link.addEventListener("contextmenu", function (event) {
+            event.preventDefault();
+            dialog.classList.add("open");
+          });
+        }
       });
 
-      closeButton.addEventListener("click", closeMenu);
-
-      panel.addEventListener("click", function (event) {
-        if (event.target === panel) closeMenu();
-      });
-
+      /* Overview को लामो press को सट्टा menu keyboard/context fallback */
       document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape") closeMenu();
+        if (event.key === "Escape") closeDialog();
+      });
+
+      close.addEventListener("click", closeDialog);
+
+      dialog.addEventListener("click", function (event) {
+        if (event.target === dialog) closeDialog();
+      });
+
+      /* Overview मा double tap ले सबै मेनु खोल्ने */
+      const overview = document.querySelector('.gs-bottom-nav a[href="./index.html"]');
+      let lastTap = 0;
+
+      overview.addEventListener("click", function (event) {
+        const now = Date.now();
+        if (now - lastTap < 450) {
+          event.preventDefault();
+          dialog.classList.add("open");
+        }
+        lastTap = now;
       });
     })();
 
-    /* पुरानै dashboard script चलाइराख्ने */
+    /* Splash -> MPIN -> Dashboard
+       यसले विद्यमान auth.js/settings.js सँग मिल्ने
+       gs_mpin_security key र SHA-256 format प्रयोग गर्छ। */
+    (function () {
+      const MPIN_KEY = "gs_mpin_security";
+      const splash = document.getElementById("gsStartup");
+      const progress = document.getElementById("gsStartupProgress");
+      const form = document.getElementById("gsPinForm");
+      const input = document.getElementById("gsPinInput");
+      const confirmWrap = document.getElementById("gsPinConfirmWrap");
+      const confirmInput = document.getElementById("gsPinConfirm");
+      const errorText = document.getElementById("gsPinError");
+
+      let mode = "unlock";
+      let lockedUntil = 0;
+      let failures = 0;
+
+      function readConfig() {
+        try {
+          const raw = localStorage.getItem(MPIN_KEY);
+          const data = raw ? JSON.parse(raw) : null;
+          return data && typeof data === "object" ? data : null;
+        } catch (error) {
+          console.error("MPIN config पढ्न सकिएन:", error);
+          return null;
+        }
+      }
+
+      function validPin(pin) {
+        return /^[0-9]{4,8}$/.test(pin);
+      }
+
+      async function hashPin(pin, salt) {
+        if (!window.crypto || !window.crypto.subtle) {
+          throw new Error(
+            "Secure Crypto उपलब्ध छैन। HTTPS प्रयोग गर्नुहोस्।"
+          );
+        }
+
+        const data = new TextEncoder().encode(salt + ":" + pin);
+        const digest = await window.crypto.subtle.digest("SHA-256", data);
+
+        return Array.from(new Uint8Array(digest))
+          .map(byte => byte.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      function makeSalt() {
+        if (!window.crypto || !window.crypto.getRandomValues) {
+          throw new Error("Secure random generator उपलब्ध छैन।");
+        }
+
+        const bytes = new Uint8Array(16);
+        window.crypto.getRandomValues(bytes);
+
+        return Array.from(bytes)
+          .map(byte => byte.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      async function verifyPin(pin, config) {
+        if (!config || !config.enabled || !config.hash || !config.salt) {
+          return false;
+        }
+
+        const candidate = await hashPin(pin, config.salt);
+        if (candidate.length !== config.hash.length) return false;
+
+        let diff = 0;
+        for (let i = 0; i < candidate.length; i++) {
+          diff |= candidate.charCodeAt(i) ^ config.hash.charCodeAt(i);
+        }
+
+        return diff === 0;
+      }
+
+      function showPinScreen(firstTime) {
+        mode = firstTime ? "setup" : "unlock";
+
+        document.getElementById("gsStartupTitle").textContent =
+          firstTime ? "पहिलो पटकको सेटअप" : "Krishna G.C.";
+
+        document.getElementById("gsStartupMessage").textContent =
+          firstTime
+            ? "आफ्नो नयाँ MPIN बनाउनुहोस्।"
+            : "Dashboard खोल्न MPIN राख्नुहोस्।";
+
+        document.getElementById("gsPinTitle").textContent =
+          firstTime ? "🔐 नयाँ MPIN बनाउनुहोस्" : "🔐 MPIN खोल्नुहोस्";
+
+        document.getElementById("gsPinDescription").textContent =
+          firstTime
+            ? "४ देखि ८ अंकको नम्बर राखेर पुष्टि गर्नुहोस्।"
+            : "आफूले सेट गरेको ४–८ अंकको MPIN राख्नुहोस्।";
+
+        document.getElementById("gsPinSubmit").textContent =
+          firstTime ? "MPIN सुरक्षित गर्नुहोस्" : "Dashboard खोल्नुहोस्";
+
+        confirmWrap.style.display = firstTime ? "block" : "none";
+        confirmInput.required = firstTime;
+        input.autocomplete = firstTime ? "new-password" : "current-password";
+
+        progress.style.display = "none";
+        form.style.display = "block";
+        input.value = "";
+        confirmInput.value = "";
+        errorText.textContent = "";
+
+        setTimeout(function () { input.focus(); }, 50);
+      }
+
+      function enterDashboard() {
+        splash.style.display = "none";
+        document.body.classList.remove("gs-app-locked");
+      }
+
+      async function initializeGate() {
+        const settings = (function () {
+          try {
+            return JSON.parse(localStorage.getItem("gs_settings") || "{}");
+          } catch (_) {
+            return {};
+          }
+        })();
+
+        const storeName = settings.storeName || "Krishna G.C.";
+        document.getElementById("gsStartupTitle").textContent = storeName;
+
+        /* कम्तीमा 1.5 सेकेन्ड Splash देखाउने */
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const config = readConfig();
+
+        if (!config || !config.enabled || !config.hash || !config.salt) {
+          showPinScreen(true);
+        } else {
+          showPinScreen(false);
+        }
+      }
+
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        errorText.textContent = "";
+
+        if (Date.now() < lockedUntil) {
+          errorText.textContent = "धेरै पटक प्रयास भयो। केही समयपछि प्रयास गर्नुहोस्।";
+          return;
+        }
+
+        const pin = input.value.trim();
+
+        if (!validPin(pin)) {
+          errorText.textContent = "४–८ अंकको नम्बर मात्र राख्नुहोस्।";
+          input.focus();
+          return;
+        }
+
+        try {
+          if (mode === "setup") {
+            const confirmation = confirmInput.value.trim();
+
+            if (!validPin(confirmation)) {
+              errorText.textContent = "पुष्टिका लागि पनि ४–८ अंक राख्नुहोस्।";
+              confirmInput.focus();
+              return;
+            }
+
+            if (pin !== confirmation) {
+              errorText.textContent = "दुवै MPIN मिलेनन्। फेरि राख्नुहोस्।";
+              confirmInput.value = "";
+              confirmInput.focus();
+              return;
+            }
+
+            const salt = makeSalt();
+            const hash = await hashPin(pin, salt);
+
+            localStorage.setItem(MPIN_KEY, JSON.stringify({
+              enabled: true,
+              salt: salt,
+              hash: hash,
+              createdAt: new Date().toISOString(),
+              version: 1
+            }));
+
+            enterDashboard();
+            return;
+          }
+
+          const config = readConfig();
+
+          if (await verifyPin(pin, config)) {
+            failures = 0;
+            enterDashboard();
+          } else {
+            failures++;
+            input.value = "";
+
+            if (failures >= 5) {
+              failures = 0;
+              lockedUntil = Date.now() + 60000;
+              errorText.textContent =
+                "५ पटक गलत भयो। १ मिनेटपछि फेरि प्रयास गर्नुहोस्।";
+            } else {
+              errorText.textContent = "गलत MPIN। फेरि प्रयास गर्नुहोस्।";
+            }
+
+            input.focus();
+          }
+        } catch (error) {
+          console.error("MPIN प्रक्रिया असफल:", error);
+          errorText.textContent = error.message ||
+            "MPIN प्रक्रिया पूरा भएन। HTTPS जाँच गर्नुहोस्।";
+        }
+      });
+
+      initializeGate();
+    })();
+
+    /* Service worker */
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("./sw.js")
@@ -1259,6 +1704,6 @@
     }
   </script>
 
-  <script src="./dashboard.js?v=20261011-3"></script>
+  <script src="./dashboard.js?v=20261011-4"></script>
 </body>
 </html>
