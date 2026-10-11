@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ne">
 <head>
@@ -50,7 +51,10 @@
       border-radius: 9px;
       font-weight: 600;
     }
-    .settings-nav a:hover { background: #16653412; color: var(--green); }
+    .settings-nav a:hover {
+      background: #16653412;
+      color: var(--green);
+    }
     .content { min-width: 0; display: grid; gap: 18px; }
     .card {
       padding: 22px;
@@ -61,14 +65,22 @@
       scroll-margin-top: 20px;
     }
     .card h2 { margin: 0 0 7px; font-size: 21px; }
-    .section-description, .note { color: var(--muted); line-height: 1.6; }
+    .section-description, .note {
+      color: var(--muted);
+      line-height: 1.6;
+    }
     .section-description { margin: 0 0 20px; }
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
     }
-    .form-group { min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+    .form-group {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
     .form-group.full { grid-column: 1 / -1; }
     label { font-weight: 650; font-size: 14px; }
     input, select, textarea {
@@ -86,7 +98,12 @@
       outline: 2px solid #16653440;
       border-color: var(--green);
     }
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
     button, .button-link {
       min-height: 40px;
       padding: 10px 14px;
@@ -107,7 +124,11 @@
     .status.success { color: #15803d; }
     .status.error { color: #dc2626; }
     .status.info { color: #2563eb; }
-    .tile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .tile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
     .tile {
       padding: 16px;
       border: 1px solid var(--border);
@@ -123,27 +144,6 @@
       background: #fff7ed;
       color: #9a3412;
       line-height: 1.6;
-    }
-    .profile-preview {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 18px;
-    }
-    .avatar {
-      width: 68px;
-      height: 68px;
-      flex: 0 0 68px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      object-fit: cover;
-      display: grid;
-      place-items: center;
-      background: #dcfce7;
-      color: #166534;
-      font-size: 25px;
-      font-weight: 800;
-      overflow: hidden;
     }
     .policy-content { line-height: 1.8; }
     .small { font-size: 12px; color: var(--muted); }
@@ -174,16 +174,16 @@
     }
   </style>
 </head>
+
 <body>
   <main class="page">
     <div class="page-heading">
       <h1>⚙️ Settings Center</h1>
-      <p>पसलको विवरण, एपको रूप, सुरक्षा र डेटा व्यवस्थापन</p>
+      <p>एपको रूप, सुरक्षा र डेटा व्यवस्थापन</p>
     </div>
 
     <div class="settings-layout">
       <nav class="settings-nav" aria-label="Settings navigation">
-        <a href="#profile">🏪 Store Profile</a>
         <a href="#system">🧾 System</a>
         <a href="#appearance">🎨 Appearance</a>
         <a href="#security">🔐 MPIN Security</a>
@@ -194,68 +194,6 @@
       </nav>
 
       <div class="content">
-        <section class="card" id="profile">
-          <h2>🏪 Store Profile</h2>
-          <p class="section-description">बिल र पसलसम्बन्धी विवरण।</p>
-          <div class="profile-preview">
-            <img id="avatarPreview" class="avatar" alt="Operator avatar" hidden>
-            <div id="avatarFallback" class="avatar" hidden>🏪</div>
-            <div>
-              <strong id="profilePreviewName">General Store</strong>
-              <div class="small" id="profilePreviewOwner">सञ्चालकको नाम</div>
-            </div>
-          </div>
-          <form id="profileForm">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="storeName">Store Name *</label>
-                <input id="storeName" maxlength="100" required>
-              </div>
-              <div class="form-group">
-                <label for="ownerName">Owner / Operator Name</label>
-                <input id="ownerName" maxlength="100">
-              </div>
-              <div class="form-group">
-                <label for="operatorPhoto">Profile Photo (ऐच्छिक)</label>
-                <input id="operatorPhoto" type="file" accept="image/png,image/jpeg,image/webp">
-              </div>
-              <div class="form-group">
-                <label for="storePhone">Phone</label>
-                <input id="storePhone" type="tel" maxlength="25">
-              </div>
-              <div class="form-group">
-                <label for="storeEmail">Email</label>
-                <input id="storeEmail" type="email" maxlength="150">
-              </div>
-              <div class="form-group">
-                <label for="taxType">Tax Type</label>
-                <select id="taxType">
-                  <option value="NON_TAX">Non Tax</option>
-                  <option value="PAN">PAN</option>
-                  <option value="VAT">VAT</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="taxNumber">PAN / VAT Number</label>
-                <input id="taxNumber" maxlength="50">
-              </div>
-              <div class="form-group full">
-                <label for="storeAddress">Store Address</label>
-                <textarea id="storeAddress" maxlength="500"></textarea>
-              </div>
-              <div class="form-group full">
-                <label for="invoiceFooter">Invoice Footer / धन्यवाद सन्देश</label>
-                <input id="invoiceFooter" maxlength="250">
-              </div>
-            </div>
-            <div class="actions">
-              <button type="submit">💾 Save Profile</button>
-              <button type="button" class="secondary" id="removeAvatarBtn">Remove Photo</button>
-            </div>
-          </form>
-          <div id="profileStatus" class="status" role="status"></div>
-        </section>
-
         <section class="card" id="system">
           <h2>🧾 System Preferences</h2>
           <p class="section-description">मुद्रा, मिति, बिल Prefix र भुक्तानीको प्राथमिकता।</p>
@@ -295,7 +233,9 @@
                 </select>
               </div>
             </div>
-            <div class="actions"><button type="submit">💾 Save System Settings</button></div>
+            <div class="actions">
+              <button type="submit">💾 Save System Settings</button>
+            </div>
           </form>
           <div id="systemStatus" class="status" role="status"></div>
           <p class="note">यी प्राथमिकता अन्य पेजमा देखाउन सम्बन्धित पेजको JavaScript ले पनि gs_settings पढ्नुपर्छ।</p>
@@ -443,7 +383,9 @@
                 <label for="restoreFile">Backup JSON File</label>
                 <input type="file" id="restoreFile" accept=".json,application/json">
               </div>
-              <div class="actions"><button type="button" id="restoreBtn">Restore Data</button></div>
+              <div class="actions">
+                <button type="button" id="restoreBtn">Restore Data</button>
+              </div>
             </div>
             <div class="tile">
               <h3>⚠️ Clear Store Data</h3>
@@ -461,7 +403,9 @@
           <p>General Store Management System</p>
           <p class="note">Version: 1.2.0 · Local browser edition</p>
           <p class="note">Store data: Browser localStorage · Cloud sync: उपलब्ध छैन</p>
-          <div class="actions"><button type="button" class="secondary" id="showStorageBtn">Check Local Data</button></div>
+          <div class="actions">
+            <button type="button" class="secondary" id="showStorageBtn">Check Local Data</button>
+          </div>
           <div id="aboutStatus" class="status" role="status"></div>
         </section>
       </div>
