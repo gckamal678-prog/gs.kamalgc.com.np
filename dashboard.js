@@ -2,9 +2,7 @@
 /* =========================================================
    GENERAL STORE MANAGEMENT SYSTEM
    Dashboard - localStorage edition
-   Existing storage keys preserved for future API integration
    ========================================================= */
-
 (() => {
   "use strict";
 
@@ -20,7 +18,6 @@
   };
 
   const $ = id => document.getElementById(id);
-
   const number = value => {
     const n = Number(value);
     return Number.isFinite(n) ? n : 0;
@@ -31,7 +28,7 @@
       const value = JSON.parse(localStorage.getItem(key) || "[]");
       return Array.isArray(value) ? value : [];
     } catch (error) {
-      console.error("Dashboard storage error:", key, error);
+      console.error("Storage error:", key, error);
       return [];
     }
   }
@@ -49,13 +46,47 @@
   }
 
   function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[char]);
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;",
+      '"': "&quot;", "'": "&#39;"
+    })[c]);
+  }
+
+  function toast(message, type = "info") {
+    let el = $("gs-dashboard-toast");
+
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "gs-dashboard-toast";
+      el.setAttribute("role", "status");
+      Object.assign(el.style, {
+        position: "fixed",
+        left: "50%",
+        bottom: "24px",
+        transform: "translateX(-50%)",
+        zIndex: "100000",
+        width: "max-content",
+        maxWidth: "92vw",
+        padding: "12px 16px",
+        borderRadius: "12px",
+        background: "#172033",
+        color: "#fff",
+        boxShadow: "0 8px 28px #0003",
+        fontSize: "14px",
+        lineHeight: "1.5",
+        display: "none"
+      });
+      document.body.appendChild(el);
+    }
+
+    el.textContent = message;
+    el.style.borderLeft =
+      type === "error" ? "4px solid #ef4444" : "4px solid #22c55e";
+    el.style.display = "block";
+    clearTimeout(el._hideTimer);
+    el._hideTimer = setTimeout(() => {
+      el.style.display = "none";
+    }, 3500);
   }
 
   function localDate(date = new Date()) {
@@ -90,19 +121,17 @@
   }
 
   function getProfit(sale) {
-    if (sale.profit !== undefined && sale.profit !== null) {
-      return number(sale.profit);
-    }
-
-    if (sale.fifoCost !== undefined && sale.fifoCost !== null) {
+    if (sale.profit != null) return number(sale.profit);
+    if (sale.fifoCost != null) {
       return number(sale.total) - number(sale.fifoCost);
     }
-
     return 0;
   }
 
-  /* MOBILE SIDEBAR */
+  /* TOAST-BASED CONFIRMATION HELPER */
+  window.GSDashboardToast = toast;
 
+  /* MOBILE SIDEBAR */
   const sidebar = $("sidebar");
   const overlay = $("overlay");
   const menuBtn = $("menuBtn");
@@ -118,13 +147,11 @@
   });
 
   overlay?.addEventListener("click", closeSidebar);
-
   document.querySelectorAll(".menu-item").forEach(link => {
     link.addEventListener("click", closeSidebar);
   });
 
   /* DATE */
-
   function renderDate() {
     const el = $("todayDate");
     if (!el) return;
@@ -137,8 +164,61 @@
     });
   }
 
-  /* SALES CHART */
+  /* OPERATOR / STORE PROFILE */
+  function renderProfile() {
+    let settings = {};
+    try {
+      settings = JSON.parse(localStorage.getItem("gs_settings") || "{}") || {};
+    } catch (_) {}
 
+    const profile =
+      settings.storeProfile ||
+      settings.profile ||
+      settings.operator ||
+      settings;
+
+    const name =
+      profile.operatorName ||
+      profile.userName ||
+      profile.ownerName ||
+      profile.name ||
+      settings.storeName ||
+      "General Store";
+
+    const role = profile.role || profile.designation || "Owner";
+
+    text("profileName", name);
+    text("profileRole", role);
+    text("sidebarStoreName", settings.storeName || profile.storeName || "General Store");
+
+    const avatar = $("profileAvatar");
+    if (!avatar) return;
+
+    const photo =
+      profile.operatorPhoto ||
+      profile.userPhoto ||
+      profile.photo ||
+      profile.avatar ||
+      settings.operatorPhoto ||
+      settings.profilePhoto ||
+      settings.userPhoto ||
+      "";
+
+    if (photo && /^(data:image\/|https?:\/\/)/i.test(photo)) {
+      avatar.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = photo;
+      img.alt = "Operator photo";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.objectFit = "cover";
+      avatar.appendChild(img);
+    } else {
+      avatar.textContent = String(name).trim().charAt(0).toUpperCase() || "👤";
+    }
+  }
+
+  /* SALES CHART */
   function renderChart() {
     const area = $("salesChart");
     if (!area) return;
@@ -165,7 +245,7 @@
     const max = Math.max(...items.map(x => x.amount), 1);
 
     area.innerHTML = `
-      <div style="display:flex;align-items:flex-end;gap:8px;height:190px;padding:12px 4px 4px;">
+      <div style="display:flex;align-items:flex-end;gap:8px;height:190px;padding:12px 4px 4px">
         ${items.map(item => {
           const height = item.amount > 0
             ? Math.max(5, item.amount / max * 135)
@@ -173,23 +253,21 @@
 
           return `
             <div title="${escapeHTML(item.key)}: Rs. ${money(item.amount)}"
-                 style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:7px;">
-              <span style="font-size:10px;overflow-wrap:anywhere;text-align:center;color:var(--dash-muted,#64748b)">
+              style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:7px">
+              <span style="font-size:10px;text-align:center;color:var(--dash-muted,#64748b)">
                 ${item.amount ? escapeHTML(money(item.amount)) : ""}
               </span>
-              <div style="width:min(100%,30px);height:${height}px;background:var(--primary,#2563eb);border-radius:5px 5px 0 0;"></div>
+              <div style="width:min(100%,30px);height:${height}px;background:var(--primary,#2563eb);border-radius:5px 5px 0 0"></div>
               <span style="font-size:10px;color:var(--dash-muted,#64748b);white-space:nowrap">${escapeHTML(item.label)}</span>
             </div>`;
         }).join("")}
       </div>
       <div style="text-align:center;font-size:12px;color:var(--dash-muted,#64748b);margin-top:8px">
         कुल बिक्री: Rs. ${money(items.reduce((sum, x) => sum + x.amount, 0))}
-      </div>
-    `;
+      </div>`;
   }
 
   /* FAST MOVING PRODUCTS */
-
   function renderFastMoving() {
     const area = $("fastMovingArea");
     if (!area) return;
@@ -198,15 +276,14 @@
 
     validSales().forEach(sale => {
       const id = String(sale.productId || sale.productName || "unknown");
-      const previous = totals.get(id) || {
+      const row = totals.get(id) || {
         name: sale.productName || "Unknown product",
         qty: 0,
         amount: 0
       };
-
-      previous.qty += number(sale.qty);
-      previous.amount += number(sale.total);
-      totals.set(id, previous);
+      row.qty += number(sale.qty);
+      row.amount += number(sale.total);
+      totals.set(id, row);
     });
 
     const rows = [...totals.values()]
@@ -225,20 +302,17 @@
           <th style="text-align:right;padding:10px">Qty Sold</th>
           <th style="text-align:right;padding:10px">Sales</th>
         </tr></thead>
-        <tbody>
-          ${rows.map(row => `
-            <tr>
-              <td style="padding:10px">${escapeHTML(row.name)}</td>
-              <td style="padding:10px;text-align:right">${money(row.qty)}</td>
-              <td style="padding:10px;text-align:right">Rs. ${money(row.amount)}</td>
-            </tr>
-          `).join("")}
+        <tbody>${rows.map(row => `
+          <tr>
+            <td style="padding:10px">${escapeHTML(row.name)}</td>
+            <td style="padding:10px;text-align:right">${money(row.qty)}</td>
+            <td style="padding:10px;text-align:right">Rs. ${money(row.amount)}</td>
+          </tr>`).join("")}
         </tbody>
       </table>`;
   }
 
   /* RECENT ACTIVITY */
-
   function renderRecentActivity() {
     const area = $("recentActivityArea");
     if (!area) return;
@@ -284,24 +358,21 @@
           <th style="text-align:left;padding:10px">Type / Details</th>
           <th style="text-align:right;padding:10px">Amount</th>
         </tr></thead>
-        <tbody>
-          ${entries.map(item => `
-            <tr>
-              <td style="padding:10px;white-space:nowrap">${escapeHTML(item.date || "-")}</td>
-              <td style="padding:10px">
-                <strong>${escapeHTML(item.type)}</strong>
-                <div>${escapeHTML(item.name)}</div>
-                <small>${escapeHTML(item.status)}</small>
-              </td>
-              <td style="padding:10px;text-align:right;white-space:nowrap">Rs. ${money(item.amount)}</td>
-            </tr>
-          `).join("")}
+        <tbody>${entries.map(item => `
+          <tr>
+            <td style="padding:10px;white-space:nowrap">${escapeHTML(item.date || "-")}</td>
+            <td style="padding:10px">
+              <strong>${escapeHTML(item.type)}</strong>
+              <div>${escapeHTML(item.name)}</div>
+              <small>${escapeHTML(item.status)}</small>
+            </td>
+            <td style="padding:10px;text-align:right;white-space:nowrap">Rs. ${money(item.amount)}</td>
+          </tr>`).join("")}
         </tbody>
       </table>`;
   }
 
-  /* MAIN DASHBOARD TOTALS */
-
+  /* MAIN TOTALS */
   function renderDashboard() {
     const sales = validSales();
     const purchases = validPurchases();
@@ -310,23 +381,18 @@
     const finance = read(KEYS.finance);
     const customers = read(KEYS.customers);
     const suppliers = read(KEYS.suppliers);
-    const returns = read(KEYS.returns);
-
     const todaySales = todayRecords(sales);
     const todayFinance = todayRecords(finance);
 
     const todayGross = todaySales.reduce((sum, s) => sum + number(s.total), 0);
     const grossProfit = todaySales.reduce((sum, s) => sum + getProfit(s), 0);
 
-    const todayExpenses = todayFinance
-      .filter(f => {
-        const type = String(f.type || "").toUpperCase();
-        const category = String(f.category || "").toUpperCase();
-        return type === "EXPENSE" ||
-          category === "EXPENSE" ||
-          category === "SHOP_EXPENSE";
-      })
-      .reduce((sum, f) => sum + number(f.amount), 0);
+    const todayExpenses = todayFinance.filter(f => {
+      const type = String(f.type || "").toUpperCase();
+      const category = String(f.category || "").toUpperCase();
+      return type === "EXPENSE" || category === "EXPENSE" ||
+        category === "SHOP_EXPENSE";
+    }).reduce((sum, f) => sum + number(f.amount), 0);
 
     text("todaySales", money(todayGross));
     text("grossProfit", money(grossProfit));
@@ -334,34 +400,31 @@
     text("netProfit", money(grossProfit - todayExpenses));
     text("salesChange", `${todaySales.length} bills`);
 
-    const receivable = sales.reduce((sum, s) => sum + Math.max(0, number(s.balance)), 0);
+    const receivable = sales.reduce((sum, s) =>
+      sum + Math.max(0, number(s.balance)), 0);
     text("customerReceivable", money(receivable));
 
     const payable = suppliers.reduce((sum, s) => {
-      if (s.currentBalance !== undefined && s.currentBalance !== null) {
+      if (s.currentBalance != null) {
         return sum + Math.max(0, number(s.currentBalance));
       }
       const opening = s.balanceType === "ADVANCE"
         ? -Math.abs(number(s.openingBalance))
         : Math.abs(number(s.openingBalance));
       return sum + Math.max(0,
-        opening + number(s.purchaseTotal) - number(s.paymentTotal) - number(s.returnTotal)
+        opening + number(s.purchaseTotal) -
+        number(s.paymentTotal) - number(s.returnTotal)
       );
     }, 0);
-
     text("supplierPayable", money(payable));
 
-    let stockValue = 0;
-    if (lots.length) {
-      stockValue = lots.reduce((sum, lot) =>
-        sum + Math.max(0, number(lot.remainingQty)) * number(lot.effectiveCost), 0);
-    } else {
-      stockValue = products.reduce((sum, p) =>
-        sum + Math.max(0, number(p.stock)) * number(p.purchasePrice), 0);
-    }
+    const stockValue = lots.length
+      ? lots.reduce((sum, lot) =>
+          sum + Math.max(0, number(lot.remainingQty)) * number(lot.effectiveCost), 0)
+      : products.reduce((sum, p) =>
+          sum + Math.max(0, number(p.stock)) * number(p.purchasePrice), 0);
     text("stockValue", money(stockValue));
 
-    // Finance balance: calculate only when entries have recognizable types.
     let balance = 0;
     finance.forEach(f => {
       const type = String(f.type || "").toUpperCase();
@@ -374,9 +437,7 @@
     });
     text("availableBalance", money(balance));
 
-    const lowStock = products.filter(p =>
-      number(p.stock) <= number(p.minStock)
-    );
+    const lowStock = products.filter(p => number(p.stock) <= number(p.minStock));
     text("lowStockCount", `${lowStock.length} products`);
 
     const expiryLimit = new Date();
@@ -385,12 +446,9 @@
 
     const expiringLots = lots.filter(lot => {
       const expiry = String(lot.expiryDate || lot.expiry || "").slice(0, 10);
-      return expiry &&
-        expiry >= today &&
-        expiry <= localDate(expiryLimit) &&
+      return expiry && expiry >= today && expiry <= localDate(expiryLimit) &&
         number(lot.remainingQty) > 0;
     });
-
     const expiringProducts = products.filter(p => {
       const expiry = String(p.expiryDate || p.expiry || "").slice(0, 10);
       return expiry && expiry >= today && expiry <= localDate(expiryLimit);
@@ -407,67 +465,59 @@
     );
     text("creditDueCount", `${dueCustomers.size} customers`);
 
-    text("supplierDueCount",
-      `${suppliers.filter(s => number(s.currentBalance) > 0 ||
-        (s.currentBalance == null && number(s.openingBalance) > 0)).length} suppliers`
-    );
+    text("supplierDueCount", `${suppliers.filter(s =>
+      number(s.currentBalance) > 0 ||
+      (s.currentBalance == null && number(s.openingBalance) > 0)
+    ).length} suppliers`);
 
     renderChart();
     renderFastMoving();
     renderRecentActivity();
   }
 
-  /* SEARCH */
-
+  /* SEARCH - TOAST INSTEAD OF alert() */
   function setupSearch() {
     const input = $("searchInput");
     if (!input) return;
 
     input.addEventListener("keydown", event => {
       if (event.key !== "Enter") return;
-
       const query = input.value.trim().toLowerCase();
       if (!query) return;
 
-      const sales = validSales();
-      const products = read(KEYS.products);
-      const customers = read(KEYS.customers);
-      const suppliers = read(KEYS.suppliers);
-
-      const product = products.find(p =>
+      const product = read(KEYS.products).find(p =>
         String(p.name || "").toLowerCase().includes(query) ||
         String(p.id || "").toLowerCase().includes(query)
       );
 
-      const sale = sales.find(s =>
+      const sale = validSales().find(s =>
         [s.billNumber, s.customerName, s.productName, s.date]
-          .some(value => String(value || "").toLowerCase().includes(query))
+          .some(v => String(v || "").toLowerCase().includes(query))
       );
 
-      const customer = customers.find(c =>
-        [c.name, c.phone].some(value => String(value || "").toLowerCase().includes(query))
+      const customer = read(KEYS.customers).find(c =>
+        [c.name, c.phone].some(v => String(v || "").toLowerCase().includes(query))
       );
 
-      const supplier = suppliers.find(s =>
-        [s.name, s.phone].some(value => String(value || "").toLowerCase().includes(query))
+      const supplier = read(KEYS.suppliers).find(s =>
+        [s.name, s.phone].some(v => String(v || "").toLowerCase().includes(query))
       );
 
       if (product) {
-        alert(`Product: ${product.name}\nStock: ${number(product.stock)} ${product.unit || ""}`);
+        toast(`Product: ${product.name} · Stock: ${number(product.stock)} ${product.unit || ""}`);
       } else if (sale) {
-        alert(`Bill: ${sale.billNumber || "-"}\nDate: ${sale.date || "-"}\nProduct: ${sale.productName || "-"}\nTotal: Rs. ${money(sale.total)}\nPaid: Rs. ${money(sale.paidAmount)}\nBalance: Rs. ${money(sale.balance)}`);
+        toast(`Bill ${sale.billNumber || "-"} · ${sale.productName || "-"} · Total Rs. ${money(sale.total)} · Paid Rs. ${money(sale.paidAmount)} · Due Rs. ${money(sale.balance)}`);
       } else if (customer) {
-        alert(`Customer: ${customer.name}\nPhone: ${customer.phone || "-"}`);
+        toast(`Customer: ${customer.name} · Phone: ${customer.phone || "-"}`);
       } else if (supplier) {
-        alert(`Supplier: ${supplier.name}\nPhone: ${supplier.phone || "-"}`);
+        toast(`Supplier: ${supplier.name} · Phone: ${supplier.phone || "-"}`);
       } else {
-        alert("मिल्दो Product, Bill, Customer वा Supplier भेटिएन।");
+        toast("मिल्दो Product, Bill, Customer वा Supplier भेटिएन।", "error");
       }
     });
   }
 
-  /* THEME BUTTON: use existing appearance settings */
-
+  /* THEME */
   $("themeBtn")?.addEventListener("click", () => {
     const root = document.documentElement;
     const current = root.getAttribute("data-theme") ||
@@ -489,17 +539,26 @@
     if (btn) btn.textContent = next === "dark" ? "☀️" : "🌙";
   });
 
-  /* LOCK BUTTON - visual lock only, not security protection */
-
+  /* MPIN LOCK - USE EXISTING auth.js */
   $("lockBtn")?.addEventListener("click", () => {
-    alert("सुरक्षित MPIN lock सुविधा छुट्टै authentication बनाएपछि मात्र उपलब्ध हुनेछ।");
+    if (!window.GSAuth || typeof window.GSAuth.getConfig !== "function") {
+      toast("Authentication फाइल लोड भएन। पेज refresh गर्नुहोस्।", "error");
+      return;
+    }
+
+    if (!window.GSAuth.getConfig().enabled) {
+      toast("MPIN सुरु गर्न Settings मा गएर MPIN Security enable गर्नुहोस्।", "error");
+      return;
+    }
+
+    window.GSAuth.lock();
   });
 
-  /* REFRESH WHEN DATA CHANGES IN ANOTHER TAB */
-
+  /* REFRESH AFTER OTHER PAGES UPDATE STORAGE */
   window.addEventListener("storage", event => {
     if (!event.key || Object.values(KEYS).includes(event.key)) {
       renderDashboard();
+      renderProfile();
     }
   });
 
@@ -507,6 +566,7 @@
 
   function init() {
     renderDate();
+    renderProfile();
     setupSearch();
     renderDashboard();
 
@@ -521,8 +581,5 @@
     init();
   }
 
-  // Allow manual refresh after another module saves data.
   window.refreshDashboard = renderDashboard;
-
-  console.log("Dashboard connected to existing localStorage keys.");
 })();
