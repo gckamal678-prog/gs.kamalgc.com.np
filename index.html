@@ -31,19 +31,167 @@
     }
     #appSplash .splash-title { font-size: 20px; font-weight: 700; }
     #appSplash .splash-loading { font-size: 13px; opacity: .75; }
+
     #dashboardError {
       display: none; margin: 12px; padding: 12px;
       border-radius: 10px; background: #7f1d1d; color: #fff;
       overflow-wrap: anywhere;
     }
+
     .bottom-navigation { display: none; }
-    .profile { text-decoration: none; color: inherit; }
+    .profile { text-decoration: none; color: inherit; cursor: pointer; }
     .profile-avatar {
       width: 42px; height: 42px; border-radius: 50%;
       display: grid; place-items: center; overflow: hidden;
       background: #f0eaff; color: #a000b7; font-weight: 800;
+      flex-shrink: 0;
     }
-    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-avatar img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    /* Store Profile modal */
+    .gs-profile-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(2, 8, 23, .72);
+      overflow-y: auto;
+    }
+    .gs-profile-modal.open { display: flex; }
+
+    .gs-profile-dialog {
+      width: min(760px, 100%);
+      max-height: 92dvh;
+      overflow-y: auto;
+      background: var(--card-bg, #fff);
+      color: var(--text-color, #172033);
+      border-radius: 18px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.3);
+      padding: 22px;
+    }
+    .gs-profile-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .gs-profile-heading h2 { margin: 0 0 5px; }
+    .gs-profile-heading p { margin: 0; opacity: .7; font-size: 13px; }
+    .gs-profile-close {
+      border: 0; border-radius: 10px; padding: 8px 12px;
+      cursor: pointer; font-size: 20px;
+      background: #eef2f7; color: #172033;
+    }
+    .gs-profile-preview {
+      display: flex; align-items: center; gap: 14px;
+      padding: 15px; border-radius: 14px;
+      background: rgba(127,127,127,.08);
+      margin-bottom: 20px;
+    }
+    .gs-profile-avatar {
+      width: 64px; height: 64px; flex-shrink: 0;
+      display: grid; place-items: center;
+      overflow: hidden; border-radius: 50%;
+      background: #f0eaff; color: #8b00ad;
+      font-size: 24px; font-weight: 800;
+    }
+    .gs-profile-avatar img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .gs-profile-preview strong,
+    .gs-profile-preview small { display: block; overflow-wrap: anywhere; }
+    .gs-profile-preview small { margin-top: 4px; opacity: .7; }
+
+    .gs-profile-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+    }
+    .gs-profile-field {
+      display: flex; flex-direction: column; gap: 7px;
+      min-width: 0;
+    }
+    .gs-profile-field.full { grid-column: 1 / -1; }
+    .gs-profile-field label { font-size: 13px; font-weight: 700; }
+    .gs-profile-field input,
+    .gs-profile-field select,
+    .gs-profile-field textarea {
+      box-sizing: border-box; width: 100%; min-width: 0;
+      border: 1px solid #cbd5e1; border-radius: 10px;
+      padding: 11px 12px; font: inherit; font-size: 14px;
+      background: var(--input-bg, #fff);
+      color: inherit;
+    }
+    .gs-profile-field textarea { min-height: 76px; resize: vertical; }
+    .gs-profile-actions {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      justify-content: flex-end; margin-top: 20px;
+    }
+    .gs-profile-actions button {
+      border: 0; border-radius: 10px; padding: 11px 16px;
+      cursor: pointer; font: inherit; font-weight: 700;
+    }
+    .gs-profile-save { background: #7c3aed; color: #fff; }
+    .gs-profile-cancel { background: #e2e8f0; color: #172033; }
+    .gs-profile-remove { background: #fee2e2; color: #991b1b; }
+    #gsProfileStatus {
+      display: none; margin-top: 14px; padding: 10px 12px;
+      border-radius: 9px; background: #dcfce7; color: #166534;
+      font-size: 13px; overflow-wrap: anywhere;
+    }
+    #gsProfileStatus.error { background: #fee2e2; color: #991b1b; }
+
+    /* Overview menu panel */
+    .overview-menu-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 8000;
+      background: rgba(2, 8, 23, .68);
+      padding: 18px;
+      overflow-y: auto;
+      align-items: center;
+      justify-content: center;
+    }
+    .overview-menu-panel.open { display: flex; }
+    .overview-menu-box {
+      width: min(540px, 100%);
+      max-height: 90dvh;
+      overflow-y: auto;
+      padding: 20px;
+      border-radius: 18px;
+      background: var(--card-bg, #fff);
+      color: var(--text-color, #172033);
+    }
+    .overview-menu-head {
+      display: flex; justify-content: space-between;
+      align-items: center; gap: 12px; margin-bottom: 16px;
+    }
+    .overview-menu-head h2 { margin: 0; font-size: 20px; }
+    .overview-menu-close {
+      border: 0; border-radius: 9px; padding: 8px 12px;
+      font-size: 20px; cursor: pointer;
+    }
+    .overview-menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .overview-menu-grid a {
+      display: flex; align-items: center; gap: 10px;
+      min-height: 48px; padding: 11px;
+      border: 1px solid rgba(127,127,127,.22);
+      border-radius: 11px; text-decoration: none;
+      color: inherit; overflow-wrap: anywhere;
+    }
+    .overview-menu-grid a:active { background: rgba(124,58,237,.12); }
+    .overview-menu-grid .menu-icon { font-size: 20px; }
 
     @media (max-width: 768px) {
       body.dashboard-page {
@@ -51,19 +199,31 @@
       }
       .bottom-navigation {
         position: fixed; z-index: 5000; left: 0; right: 0; bottom: 0;
-        display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
         padding: 8px 3px calc(8px + env(safe-area-inset-bottom));
         background: #111b2d; border-top: 1px solid #354056;
       }
-      .bottom-navigation a {
+      .bottom-navigation a,
+      .bottom-navigation button {
         display: flex; align-items: center; justify-content: center;
         flex-direction: column; gap: 4px; min-height: 48px;
         color: #cbd5e1; text-decoration: none;
-        font-size: 10px; min-width: 0;
+        font: inherit; font-size: 10px; min-width: 0;
+        background: transparent; border: 0; cursor: pointer;
       }
       .bottom-navigation .nav-icon { font-size: 19px; }
-      .bottom-navigation a.active { color: #ff00ee; font-weight: 700; }
+      .bottom-navigation a.active,
+      .bottom-navigation button.active {
+        color: #ff00ee; font-weight: 700;
+      }
       .topbar-right .profile-info { display: none; }
+    }
+
+    @media (max-width: 520px) {
+      .gs-profile-dialog { padding: 16px; }
+      .gs-profile-form { grid-template-columns: 1fr; }
+      .gs-profile-field.full { grid-column: auto; }
+      .overview-menu-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -87,7 +247,7 @@
       </div>
     </div>
 
-    <nav class="sidebar-menu">
+    <nav class="sidebar-menu" aria-label="Sidebar navigation">
       <a href="index.html" class="menu-item active">
         <span class="menu-icon">⌂</span><span>Overview</span>
       </a>
@@ -124,9 +284,12 @@
       <a href="ai.html" class="menu-item">
         <span class="menu-icon">🤖</span><span>AI Assistant</span>
       </a>
-      <a href="store-profile.html" class="menu-item">
+
+      <!-- Store Profile अब यही index.html भित्र खुल्छ -->
+      <a href="#store-profile" class="menu-item" id="openStoreProfile">
         <span class="menu-icon">🏪</span><span>Store Profile</span>
       </a>
+
       <a href="settings.html" class="menu-item">
         <span class="menu-icon">⚙️</span><span>Settings</span>
       </a>
@@ -166,8 +329,8 @@
         <button class="dash-tool-btn" id="lockBtn"
           type="button" title="Lock Dashboard">🔒</button>
 
-        <a class="profile" href="store-profile.html"
-          aria-label="Open store profile">
+        <a class="profile" href="#store-profile"
+          id="headerStoreProfile" aria-label="Open store profile">
           <div class="profile-avatar" id="profileAvatar">👤</div>
           <div class="profile-info">
             <strong id="profileName">General Store</strong>
@@ -198,6 +361,7 @@
             <span>आजको कारोबार</span>
           </div>
         </div>
+
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon profit-icon">📈</div>
@@ -206,6 +370,7 @@
           <div class="stat-value">Rs. <span id="grossProfit">0</span></div>
           <div class="stat-bottom"><span>FIFO</span><span>आज</span></div>
         </div>
+
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon expense-icon">💸</div>
@@ -214,6 +379,7 @@
           <div class="stat-value">Rs. <span id="expenses">0</span></div>
           <div class="stat-bottom"><span>आजको खर्च</span></div>
         </div>
+
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon net-profit-icon">💰</div>
@@ -399,25 +565,151 @@
     </footer>
   </main>
 
+  <!-- Footer Navigation: Profile को छुट्टै बटन हटाइएको छ -->
   <nav class="bottom-navigation" aria-label="Main navigation">
-    <a href="index.html" class="active" aria-current="page">
+    <button type="button" id="overviewMenuBtn" class="active"
+      aria-label="Sidebar का सबै मेनु खोल्नुहोस्">
       <span class="nav-icon">⌂</span><span>Overview</span>
-    </a>
+    </button>
     <a href="customers.html">
       <span class="nav-icon">👥</span><span>Customer</span>
     </a>
     <a href="suppliers.html">
       <span class="nav-icon">🏢</span><span>Supplier</span>
     </a>
-    <a href="store-profile.html">
-      <span class="nav-icon">🏪</span><span>Profile</span>
-    </a>
     <a href="settings.html">
       <span class="nav-icon">⚙️</span><span>Setting</span>
     </a>
   </nav>
 
+  <!-- Overview थिच्दा Sidebar का सबै मेनु देखाउने प्यानल -->
+  <div class="overview-menu-panel" id="overviewMenuPanel"
+    role="dialog" aria-modal="true" aria-labelledby="overviewMenuTitle">
+    <div class="overview-menu-box">
+      <div class="overview-menu-head">
+        <h2 id="overviewMenuTitle">☰ सबै मेनु</h2>
+        <button type="button" class="overview-menu-close"
+          id="closeOverviewMenu" aria-label="Close menu">×</button>
+      </div>
+      <nav class="overview-menu-grid" aria-label="All store menus">
+        <a href="index.html"><span class="menu-icon">⌂</span>Overview</a>
+        <a href="sale.html"><span class="menu-icon">🛒</span>New Sale</a>
+        <a href="sales-return.html"><span class="menu-icon">↩️</span>Sales Return</a>
+        <a href="purchase.html"><span class="menu-icon">📦</span>Purchase</a>
+        <a href="inventory.html"><span class="menu-icon">▣</span>Inventory</a>
+        <a href="stock-lots.html"><span class="menu-icon">🧮</span>FIFO Lots</a>
+        <a href="customers.html"><span class="menu-icon">👥</span>Customers</a>
+        <a href="suppliers.html"><span class="menu-icon">🏢</span>Suppliers</a>
+        <a href="finance.html"><span class="menu-icon">💰</span>Finance</a>
+        <a href="reports.html"><span class="menu-icon">📊</span>Reports</a>
+        <a href="whatsapp.html"><span class="menu-icon">💬</span>WhatsApp</a>
+        <a href="ai.html"><span class="menu-icon">🤖</span>AI Assistant</a>
+        <a href="#store-profile" data-open-store-profile>
+          <span class="menu-icon">🏪</span>Store Profile
+        </a>
+        <a href="settings.html"><span class="menu-icon">⚙️</span>Settings</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Store Profile form index.html भित्रै -->
+  <div class="gs-profile-modal" id="storeProfileModal"
+    role="dialog" aria-modal="true" aria-labelledby="storeProfileTitle">
+    <section class="gs-profile-dialog">
+      <div class="gs-profile-heading">
+        <div>
+          <h2 id="storeProfileTitle">🏪 Store Profile</h2>
+          <p>पसल र सञ्चालकको विवरण यहाँबाट परिवर्तन गर्नुहोस्।</p>
+        </div>
+        <button type="button" class="gs-profile-close"
+          id="closeStoreProfile" aria-label="Close Store Profile">×</button>
+      </div>
+
+      <div class="gs-profile-preview">
+        <div class="gs-profile-avatar" id="gsProfileAvatarPreview">👤</div>
+        <div>
+          <strong id="gsProfilePreviewName">General Store</strong>
+          <small id="gsProfilePreviewOwner">Owner</small>
+        </div>
+      </div>
+
+      <form id="gsStoreProfileForm">
+        <div class="gs-profile-form">
+          <div class="gs-profile-field">
+            <label for="gsStoreName">Store Name *</label>
+            <input id="gsStoreName" name="storeName" maxlength="120"
+              required autocomplete="organization">
+          </div>
+
+          <div class="gs-profile-field">
+            <label for="gsOwnerName">Owner Name</label>
+            <input id="gsOwnerName" name="ownerName" maxlength="120"
+              autocomplete="name">
+          </div>
+
+          <div class="gs-profile-field">
+            <label for="gsStorePhone">Phone</label>
+            <input id="gsStorePhone" name="storePhone" type="tel"
+              maxlength="30" autocomplete="tel">
+          </div>
+
+          <div class="gs-profile-field">
+            <label for="gsStoreEmail">Email</label>
+            <input id="gsStoreEmail" name="storeEmail" type="email"
+              maxlength="150" autocomplete="email">
+          </div>
+
+          <div class="gs-profile-field">
+            <label for="gsTaxType">Tax Type</label>
+            <select id="gsTaxType" name="taxType">
+              <option value="">छान्नुहोस्</option>
+              <option value="PAN">PAN</option>
+              <option value="VAT">VAT</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="gs-profile-field">
+            <label for="gsTaxNumber">PAN / VAT Number</label>
+            <input id="gsTaxNumber" name="taxNumber" maxlength="60">
+          </div>
+
+          <div class="gs-profile-field full">
+            <label for="gsStoreAddress">Store Address</label>
+            <textarea id="gsStoreAddress" name="storeAddress"
+              maxlength="500" autocomplete="street-address"></textarea>
+          </div>
+
+          <div class="gs-profile-field full">
+            <label for="gsInvoiceFooter">Invoice Footer Message</label>
+            <textarea id="gsInvoiceFooter" name="invoiceFooter"
+              maxlength="500"></textarea>
+          </div>
+
+          <div class="gs-profile-field full">
+            <label for="gsOperatorPhoto">Store / Owner Photo</label>
+            <input id="gsOperatorPhoto" name="operatorPhoto"
+              type="file" accept="image/png,image/jpeg,image/webp">
+            <small>PNG, JPG वा WebP फोटो छान्नुहोस् (अधिकतम 2 MB)।</small>
+          </div>
+        </div>
+
+        <div id="gsProfileStatus" role="status" aria-live="polite"></div>
+
+        <div class="gs-profile-actions">
+          <button type="button" class="gs-profile-remove"
+            id="gsRemoveAvatar">फोटो हटाउनुहोस्</button>
+          <button type="button" class="gs-profile-cancel"
+            id="cancelStoreProfile">बन्द गर्नुहोस्</button>
+          <button type="submit" class="gs-profile-save">Save Profile</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
   <script>
+    "use strict";
+
     window.addEventListener("error", function (event) {
       const box = document.getElementById("dashboardError");
       if (!box) return;
@@ -451,6 +743,345 @@
           ));
       });
     }
+
+    /* Footer Overview menu */
+    (function () {
+      const panel = document.getElementById("overviewMenuPanel");
+      const openButton = document.getElementById("overviewMenuBtn");
+      const closeButton = document.getElementById("closeOverviewMenu");
+
+      function openMenu() {
+        if (!panel) return;
+        panel.classList.add("open");
+        if (closeButton) closeButton.focus();
+      }
+
+      function closeMenu() {
+        if (!panel) return;
+        panel.classList.remove("open");
+        if (openButton) openButton.focus();
+      }
+
+      if (openButton) openButton.addEventListener("click", openMenu);
+      if (closeButton) closeButton.addEventListener("click", closeMenu);
+
+      if (panel) {
+        panel.addEventListener("click", function (event) {
+          if (event.target === panel) closeMenu();
+          const link = event.target.closest("a");
+          if (link && link.hasAttribute("data-open-store-profile")) {
+            event.preventDefault();
+            closeMenu();
+            openStoreProfile();
+          }
+        });
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeMenu();
+          closeStoreProfile();
+        }
+      });
+
+      /* Sidebar mobile menu button */
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("overlay");
+      const menuButton = document.getElementById("menuBtn");
+
+      function toggleSidebar() {
+        if (!sidebar) return;
+        sidebar.classList.toggle("active");
+        if (overlay) overlay.classList.toggle("active");
+      }
+
+      function closeSidebar() {
+        if (sidebar) sidebar.classList.remove("active");
+        if (overlay) overlay.classList.remove("active");
+      }
+
+      if (menuButton) {
+        menuButton.addEventListener("click", function (event) {
+          event.preventDefault();
+          toggleSidebar();
+        });
+      }
+
+      if (overlay) overlay.addEventListener("click", closeSidebar);
+
+      if (sidebar) {
+        sidebar.querySelectorAll("a").forEach(function (link) {
+          link.addEventListener("click", function (event) {
+            if (link.id === "openStoreProfile") {
+              event.preventDefault();
+              closeSidebar();
+              openStoreProfile();
+              return;
+            }
+            closeSidebar();
+          });
+        });
+      }
+
+      /* Store Profile: gs_settings मा सुरक्षित गर्ने */
+      const PROFILE_KEY = "gs_settings";
+      const modal = document.getElementById("storeProfileModal");
+      const form = document.getElementById("gsStoreProfileForm");
+      const status = document.getElementById("gsProfileStatus");
+      const photoInput = document.getElementById("gsOperatorPhoto");
+
+      const fields = {
+        storeName: document.getElementById("gsStoreName"),
+        ownerName: document.getElementById("gsOwnerName"),
+        storePhone: document.getElementById("gsStorePhone"),
+        storeEmail: document.getElementById("gsStoreEmail"),
+        taxType: document.getElementById("gsTaxType"),
+        taxNumber: document.getElementById("gsTaxNumber"),
+        storeAddress: document.getElementById("gsStoreAddress"),
+        invoiceFooter: document.getElementById("gsInvoiceFooter")
+      };
+
+      let currentPhoto = "";
+
+      function readSettings() {
+        try {
+          const raw = localStorage.getItem(PROFILE_KEY);
+          const saved = raw ? JSON.parse(raw) : {};
+          return saved && typeof saved === "object" && !Array.isArray(saved)
+            ? saved : {};
+        } catch (error) {
+          console.error("Settings पढ्न सकिएन:", error);
+          return {};
+        }
+      }
+
+      function writeSettings(settings) {
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(settings));
+      }
+
+      function setStatus(message, isError) {
+        if (!status) return;
+        status.textContent = message;
+        status.classList.toggle("error", Boolean(isError));
+        status.style.display = "block";
+      }
+
+      function initials(name) {
+        const text = String(name || "").trim();
+        return text ? text.slice(0, 1).toUpperCase() : "👤";
+      }
+
+      function renderAvatar(container, photo, name) {
+        if (!container) return;
+        container.replaceChildren();
+
+        if (photo) {
+          const img = document.createElement("img");
+          img.src = photo;
+          img.alt = "Store profile photo";
+          img.onerror = function () {
+            container.textContent = initials(name);
+          };
+          container.appendChild(img);
+        } else {
+          container.textContent = initials(name);
+        }
+      }
+
+      function updateProfileDisplay(settings) {
+        const storeName = settings.storeName || "General Store";
+        const ownerName = settings.ownerName || "Owner";
+        const photo = settings.operatorPhoto || "";
+
+        const sidebarName = document.getElementById("sidebarStoreName");
+        const headerName = document.getElementById("profileName");
+        const headerRole = document.getElementById("profileRole");
+        const headerAvatar = document.getElementById("profileAvatar");
+        const previewName = document.getElementById("gsProfilePreviewName");
+        const previewOwner = document.getElementById("gsProfilePreviewOwner");
+        const previewAvatar = document.getElementById("gsProfileAvatarPreview");
+
+        if (sidebarName) sidebarName.textContent = storeName;
+        if (headerName) headerName.textContent = storeName;
+        if (headerRole) headerRole.textContent = ownerName;
+        if (previewName) previewName.textContent = storeName;
+        if (previewOwner) previewOwner.textContent = ownerName;
+
+        renderAvatar(headerAvatar, photo, storeName);
+        renderAvatar(previewAvatar, photo, storeName);
+      }
+
+      function loadProfile() {
+        const settings = readSettings();
+
+        Object.keys(fields).forEach(function (key) {
+          if (fields[key]) fields[key].value = settings[key] || "";
+        });
+
+        currentPhoto = settings.operatorPhoto || "";
+        if (photoInput) photoInput.value = "";
+
+        updateProfileDisplay(settings);
+        if (status) {
+          status.style.display = "none";
+          status.textContent = "";
+          status.classList.remove("error");
+        }
+      }
+
+      function openStoreProfile() {
+        if (!modal) return;
+        loadProfile();
+        modal.classList.add("open");
+        document.body.style.overflow = "hidden";
+        const firstField = document.getElementById("gsStoreName");
+        if (firstField) firstField.focus();
+      }
+
+      function closeStoreProfile() {
+        if (!modal) return;
+        modal.classList.remove("open");
+        document.body.style.overflow = "";
+      }
+
+      window.openStoreProfile = openStoreProfile;
+      window.closeStoreProfile = closeStoreProfile;
+
+      document.querySelectorAll(
+        "#openStoreProfile, #headerStoreProfile"
+      ).forEach(function (element) {
+        element.addEventListener("click", function (event) {
+          event.preventDefault();
+          openStoreProfile();
+        });
+      });
+
+      document.querySelectorAll("[data-open-store-profile]").forEach(
+        function (element) {
+          element.addEventListener("click", function (event) {
+            event.preventDefault();
+            openStoreProfile();
+          });
+        }
+      );
+
+      [
+        "closeStoreProfile",
+        "cancelStoreProfile"
+      ].forEach(function (id) {
+        const button = document.getElementById(id);
+        if (button) button.addEventListener("click", closeStoreProfile);
+      });
+
+      if (modal) {
+        modal.addEventListener("click", function (event) {
+          if (event.target === modal) closeStoreProfile();
+        });
+      }
+
+      Object.keys(fields).forEach(function (key) {
+        if (fields[key]) {
+          fields[key].addEventListener("input", function () {
+            const settings = readSettings();
+            settings[key] = fields[key].value;
+            updateProfileDisplay(settings);
+          });
+        }
+      });
+
+      if (photoInput) {
+        photoInput.addEventListener("change", function () {
+          const file = photoInput.files && photoInput.files[0];
+          if (!file) return;
+
+          if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
+            photoInput.value = "";
+            setStatus("PNG, JPG वा WebP फोटो मात्र छान्नुहोस्।", true);
+            return;
+          }
+
+          if (file.size > 2 * 1024 * 1024) {
+            photoInput.value = "";
+            setStatus("फोटो 2 MB भन्दा सानो हुनुपर्छ।", true);
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function () {
+            currentPhoto = String(reader.result || "");
+            const settings = readSettings();
+            settings.operatorPhoto = currentPhoto;
+            updateProfileDisplay(settings);
+          };
+          reader.onerror = function () {
+            setStatus("फोटो पढ्न सकिएन। फेरि प्रयास गर्नुहोस्।", true);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      if (form) {
+        form.addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const storeName = fields.storeName.value.trim();
+          if (!storeName) {
+            fields.storeName.focus();
+            setStatus("Store Name अनिवार्य छ।", true);
+            return;
+          }
+
+          const settings = readSettings();
+
+          Object.keys(fields).forEach(function (key) {
+            settings[key] = fields[key].value.trim();
+          });
+
+          settings.operatorPhoto = currentPhoto;
+
+          try {
+            writeSettings(settings);
+            updateProfileDisplay(settings);
+            setStatus("Store Profile सफलतापूर्वक सुरक्षित भयो।", false);
+
+            window.dispatchEvent(new CustomEvent("gs:settings-updated", {
+              detail: { settings: settings }
+            }));
+          } catch (error) {
+            console.error("Store Profile सुरक्षित गर्न सकिएन:", error);
+            setStatus(
+              "Profile सुरक्षित भएन। Storage भरिएको हुन सक्छ; फोटो सानो बनाएर फेरि प्रयास गर्नुहोस्।",
+              true
+            );
+          }
+        });
+      }
+
+      const removePhotoButton = document.getElementById("gsRemoveAvatar");
+      if (removePhotoButton) {
+        removePhotoButton.addEventListener("click", function () {
+          currentPhoto = "";
+          if (photoInput) photoInput.value = "";
+
+          const settings = readSettings();
+          settings.operatorPhoto = "";
+
+          updateProfileDisplay(settings);
+          setStatus(
+            "फोटो preview बाट हटाइयो। स्थायी रूपमा हटाउन Save Profile थिच्नुहोस्।",
+            false
+          );
+        });
+      }
+
+      window.addEventListener("storage", function (event) {
+        if (event.key === PROFILE_KEY) {
+          updateProfileDisplay(readSettings());
+        }
+      });
+
+      loadProfile();
+    })();
   </script>
 
   <script src="./dashboard.js?v=20261011-2"></script>
