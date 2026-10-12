@@ -1,610 +1,926 @@
 
 /* =========================================================
    GENERAL STORE MANAGEMENT SYSTEM
-   Dashboard - localStorage edition
-   Existing storage keys preserved
+   Dashboard - Complete Replacement
+   Existing localStorage keys and index.html IDs preserved
    ========================================================= */
 
-(() => {
-  "use strict";
+(function () {
+    "use strict";
 
-  const KEYS = {
-    sales: "gs_sales",
-    products: "gs_products",
-    lots: "gs_stock_lots",
-    purchases: "gs_purchases",
-    finance: "gs_finance",
-    customers: "gs_customers",
-    suppliers: "gs_suppliers",
-    returns: "gs_sales_returns"
-  };
+    // =========================================
+    // CONFIGURATION
+    // =========================================
 
-  const SETTINGS_KEY = "gs_settings";
-  const $ = id => document.getElementById(id);
+    const KEYS = {
+        sales: "gs_sales",
+        products: "gs_products",
+        lots: "gs_stock_lots",
+        purchases: "gs_purchases",
+        finance: "gs_finance",
+        customers: "gs_customers",
+        suppliers: "gs_suppliers",
+        returns: "gs_sales_returns",
+        settings: "gs_settings"
+    };
 
-  const number = value => {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : 0;
-  };
+    const $ = function (id) {
+        return document.getElementById(id);
+    };
 
-  function read(key) {
-    try {
-      const value = JSON.parse(localStorage.getItem(key) || "[]");
-      return Array.isArray(value) ? value : [];
-    } catch (error) {
-      console.error("Dashboard storage error:", key, error);
-      return [];
-    }
-  }
+    // =========================================
+    // BASIC HELPERS
+    // =========================================
 
-  function readSettings() {
-    try {
-      const value = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
-      return value && typeof value === "object" && !Array.isArray(value)
-        ? value
-        : {};
-    } catch (error) {
-      console.error("Dashboard settings error:", error);
-      return {};
-    }
-  }
-
-  function money(value) {
-    return number(value).toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  }
-
-  function text(id, value) {
-    const el = $(id);
-    if (el) el.textContent = value;
-  }
-
-  function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[char]);
-  }
-
-  function localDate(date = new Date()) {
-    return [
-      date.getFullYear(),
-      String(date.getMonth() + 1).padStart(2, "0"),
-      String(date.getDate()).padStart(2, "0")
-    ].join("-");
-  }
-
-  function dateOf(record) {
-    return String(record?.date || record?.createdAt || "").slice(0, 10);
-  }
-
-  function todayRecords(records) {
-    const today = localDate();
-    return records.filter(record => dateOf(record) === today);
-  }
-
-  function validSales() {
-    return read(KEYS.sales).filter(s => !s.voided && !s.isVoid);
-  }
-
-  function validPurchases() {
-    return read(KEYS.purchases).filter(p => !p.voided && !p.isVoid);
-  }
-
-  function activeProducts() {
-    return read(KEYS.products).filter(p =>
-      p.active !== false && p.status !== "INACTIVE"
-    );
-  }
-
-  function getProfit(sale) {
-    if (sale.profit !== undefined && sale.profit !== null) {
-      return number(sale.profit);
+    function number(value) {
+        const result = Number(value);
+        return Number.isFinite(result) ? result : 0;
     }
 
-    if (sale.fifoCost !== undefined && sale.fifoCost !== null) {
-      return number(sale.total) - number(sale.fifoCost);
+    function money(value) {
+        return number(value).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
 
-    return 0;
-  }
+    function text(id, value) {
+        const element = $(id);
+        if (element) element.textContent = value;
+    }
 
-  /* STORE PROFILE DISPLAY */
+    function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, function (char) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            }[char];
+        });
+    }
 
-  function renderStoreProfile() {
-    const settings = readSettings();
-    const storeName = String(settings.storeName || "General Store");
-    const ownerName = String(settings.ownerName || "Owner");
+    function localDate(date) {
+        date = date || new Date();
 
-    text("sidebarStoreName", storeName);
-    text("profileName", storeName);
-    text("profileRole", ownerName);
-    text("welcomeTitle", `नमस्ते ${ownerName} 👋`);
+        return [
+            date.getFullYear(),
+            String(date.getMonth() + 1).padStart(2, "0"),
+            String(date.getDate()).padStart(2, "0")
+        ].join("-");
+    }
 
-    const avatar = $("profileAvatar");
-    if (avatar) {
-      avatar.replaceChildren();
+    function dateOf(record) {
+        if (!record) return "";
 
-      if (settings.operatorPhoto) {
+        const value =
+            record.date ||
+            record.saleDate ||
+            record.purchaseDate ||
+            record.createdAt ||
+            record.timestamp ||
+            "";
+
+        if (!value) return "";
+
+        const str = String(value);
+
+        if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+            return str.slice(0, 10);
+        }
+
+        const parsed = new Date(value);
+
+        return Number.isNaN(parsed.getTime())
+            ? ""
+            : localDate(parsed);
+    }
+
+    function readArray(key) {
+        try {
+            const raw = localStorage.getItem(key);
+
+            if (!raw) return [];
+
+            const parsed = JSON.parse(raw);
+
+            if (Array.isArray(parsed)) return parsed;
+
+            console.warn("Expected an array in storage:", key);
+            return [];
+
+        } catch (error) {
+            console.error("Unable to read storage:", key, error);
+            return [];
+        }
+    }
+
+    function readSettings() {
+        try {
+            const parsed = JSON.parse(
+                localStorage.getItem(KEYS.settings) || "{}"
+            );
+
+            return parsed &&
+                typeof parsed === "object" &&
+                !Array.isArray(parsed)
+                ? parsed
+                : {};
+
+        } catch (error) {
+            console.error("Unable to read store settings:", error);
+            return {};
+        }
+    }
+
+    function isVoided(record) {
+        return Boolean(
+            record &&
+            (
+                record.voided === true ||
+                record.isVoid === true ||
+                record.status === "VOID" ||
+                record.status === "CANCELLED"
+            )
+        );
+    }
+
+    function validSales() {
+        return readArray(KEYS.sales).filter(function (sale) {
+            return sale && !isVoided(sale);
+        });
+    }
+
+    function validPurchases() {
+        return readArray(KEYS.purchases).filter(function (purchase) {
+            return purchase && !isVoided(purchase);
+        });
+    }
+
+    function activeProducts() {
+        return readArray(KEYS.products).filter(function (product) {
+            return product &&
+                product.active !== false &&
+                product.status !== "INACTIVE";
+        });
+    }
+
+    function quantityOfSale(sale) {
+        return number(
+            sale.qty ??
+            sale.quantity ??
+            sale.soldQty ??
+            sale.totalQty
+        );
+    }
+
+    function totalOfSale(sale) {
+        if (sale.total !== undefined) return number(sale.total);
+        if (sale.totalAmount !== undefined) return number(sale.totalAmount);
+        if (sale.grandTotal !== undefined) return number(sale.grandTotal);
+        if (sale.netTotal !== undefined) return number(sale.netTotal);
+        return number(sale.amount);
+    }
+
+    function totalOfPurchase(purchase) {
+        if (purchase.total !== undefined) return number(purchase.total);
+        if (purchase.totalAmount !== undefined) return number(purchase.totalAmount);
+        if (purchase.grandTotal !== undefined) return number(purchase.grandTotal);
+        return number(purchase.amount);
+    }
+
+    function todayRecords(records) {
+        const today = localDate();
+
+        return records.filter(function (record) {
+            return dateOf(record) === today;
+        });
+    }
+
+    function getProfit(sale) {
+        if (sale.profit !== undefined && sale.profit !== null) {
+            return number(sale.profit);
+        }
+
+        if (sale.fifoCost !== undefined && sale.fifoCost !== null) {
+            return totalOfSale(sale) - number(sale.fifoCost);
+        }
+
+        if (
+            sale.costTotal !== undefined &&
+            sale.costTotal !== null
+        ) {
+            return totalOfSale(sale) - number(sale.costTotal);
+        }
+
+        return 0;
+    }
+
+    // =========================================
+    // STORE PROFILE DISPLAY
+    // =========================================
+
+    function initials(name) {
+        const value = String(name || "GS").trim();
+        return value ? value.charAt(0).toUpperCase() : "GS";
+    }
+
+    function renderPhoto(element, photo, name) {
+        if (!element) return;
+
+        element.replaceChildren();
+
+        if (!photo) {
+            element.textContent = initials(name);
+            return;
+        }
+
         const image = document.createElement("img");
-        image.alt = "Store profile";
-        image.src = settings.operatorPhoto;
-        image.onerror = () => {
-          avatar.textContent = "👤";
+        image.src = photo;
+        image.alt = "Store profile photo";
+        image.draggable = false;
+
+        image.onerror = function () {
+            element.replaceChildren();
+            element.textContent = initials(name);
         };
-        avatar.appendChild(image);
-      } else {
-        avatar.textContent = "👤";
-      }
+
+        element.appendChild(image);
     }
-  }
 
-  /* MOBILE SIDEBAR */
+    function renderStoreProfile() {
+        const settings = readSettings();
 
-  const sidebar = $("sidebar");
-  const overlay = $("overlay");
-  const menuBtn = $("menuBtn");
+        const storeName = String(
+            settings.storeName || "Krishna G.C."
+        );
 
-  function closeSidebar() {
-    sidebar?.classList.remove("open");
-    overlay?.classList.remove("show");
-  }
+        const ownerName = String(
+            settings.ownerName || "Management System"
+        );
 
-  menuBtn?.addEventListener("click", () => {
-    sidebar?.classList.toggle("open");
-    overlay?.classList.toggle("show");
-  });
+        text("gsSidebarStoreTitle", storeName);
+        text("gsProfilePreviewName", storeName);
+        text("gsProfilePreviewOwner", ownerName);
+        text("welcomeTitle", "नमस्ते " + ownerName + " 👋");
 
-  overlay?.addEventListener("click", closeSidebar);
+        document.title = storeName + " - Dashboard";
 
-  document.querySelectorAll(".menu-item").forEach(link => {
-    link.addEventListener("click", closeSidebar);
-  });
+        renderPhoto(
+            $("gsProfilePhotoPreview"),
+            settings.operatorPhoto || "",
+            storeName
+        );
 
-  /* DATE */
+        renderPhoto(
+            $("gsDashboardAvatar"),
+            settings.operatorPhoto || "",
+            storeName
+        );
+    }
 
-  function renderDate() {
-    const el = $("todayDate");
-    if (!el) return;
+    // =========================================
+    // DATE DISPLAY
+    // =========================================
 
-    el.textContent = new Date().toLocaleDateString("ne-NP", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric"
+    function renderDate() {
+        const element = $("todayDate");
+        if (!element) return;
+
+        element.textContent = new Date().toLocaleDateString("ne-NP", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    }
+
+    // =========================================
+    // SALES CHART
+    // =========================================
+
+    function renderChart() {
+        const area = $("salesChart");
+        if (!area) return;
+
+        const periodInput = $("salesPeriod");
+        const days = Math.max(
+            1,
+            Math.min(30, number(periodInput && periodInput.value) || 7)
+        );
+
+        const sales = validSales();
+        const today = new Date();
+        const items = [];
+
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date(
+                today.getFullYear(),
+                today.getMonth(),
+                today.getDate() - i
+            );
+
+            const key = localDate(date);
+
+            const amount = sales.reduce(function (sum, sale) {
+                return dateOf(sale) === key
+                    ? sum + totalOfSale(sale)
+                    : sum;
+            }, 0);
+
+            items.push({
+                key: key,
+                label: date.toLocaleDateString("en", {
+                    day: "numeric",
+                    month: "short"
+                }),
+                amount: amount
+            });
+        }
+
+        const maxAmount = Math.max(
+            1,
+            ...items.map(function (item) {
+                return item.amount;
+            })
+        );
+
+        const total = items.reduce(function (sum, item) {
+            return sum + item.amount;
+        }, 0);
+
+        area.innerHTML = `
+            <div style="
+                display:flex;
+                align-items:flex-end;
+                gap:8px;
+                height:190px;
+                padding:12px 4px 4px;
+                min-width:0;
+            ">
+                ${items.map(function (item) {
+                    const height = item.amount > 0
+                        ? Math.max(5, item.amount / maxAmount * 130)
+                        : 3;
+
+                    return `
+                        <div
+                            title="${escapeHTML(item.key)}: Rs. ${money(item.amount)}"
+                            style="
+                                flex:1;
+                                min-width:0;
+                                display:flex;
+                                flex-direction:column;
+                                align-items:center;
+                                justify-content:flex-end;
+                                height:100%;
+                                gap:7px;
+                            "
+                        >
+                            <span style="
+                                font-size:10px;
+                                text-align:center;
+                                overflow-wrap:anywhere;
+                            ">
+                                ${item.amount ? escapeHTML(money(item.amount)) : ""}
+                            </span>
+
+                            <div style="
+                                width:min(100%,30px);
+                                height:${height}px;
+                                background:var(--gs-pink,#ec00ed);
+                                border-radius:5px 5px 0 0;
+                            "></div>
+
+                            <span style="
+                                font-size:10px;
+                                white-space:nowrap;
+                            ">
+                                ${escapeHTML(item.label)}
+                            </span>
+                        </div>
+                    `;
+                }).join("")}
+            </div>
+
+            <div style="
+                text-align:center;
+                font-size:12px;
+                margin-top:8px;
+            ">
+                कुल बिक्री: Rs. ${money(total)}
+            </div>
+        `;
+    }
+
+    // =========================================
+    // FAST-MOVING PRODUCTS
+    // =========================================
+
+    function renderFastMoving() {
+        const area = $("fastMovingArea");
+        if (!area) return;
+
+        const totals = new Map();
+
+        validSales().forEach(function (sale) {
+            const productId = String(
+                sale.productId ??
+                sale.itemId ??
+                sale.productName ??
+                sale.name ??
+                "unknown"
+            );
+
+            const name = String(
+                sale.productName ??
+                sale.itemName ??
+                sale.name ??
+                "Unknown product"
+            );
+
+            const previous = totals.get(productId) || {
+                name: name,
+                qty: 0,
+                amount: 0
+            };
+
+            previous.qty += quantityOfSale(sale);
+            previous.amount += totalOfSale(sale);
+
+            totals.set(productId, previous);
+        });
+
+        const rows = Array.from(totals.values())
+            .sort(function (a, b) {
+                return b.qty - a.qty;
+            })
+            .slice(0, 5);
+
+        if (!rows.length) {
+            area.innerHTML = `
+                <p style="padding:16px">
+                    अहिलेसम्म बिक्रीको रेकर्ड छैन।
+                </p>
+            `;
+            return;
+        }
+
+        area.innerHTML = `
+            <table style="width:100%;border-collapse:collapse">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;padding:10px">Product</th>
+                        <th style="text-align:right;padding:10px">Qty Sold</th>
+                        <th style="text-align:right;padding:10px">Sales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows.map(function (row) {
+                        return `
+                            <tr>
+                                <td style="padding:10px">
+                                    ${escapeHTML(row.name)}
+                                </td>
+                                <td style="padding:10px;text-align:right">
+                                    ${money(row.qty)}
+                                </td>
+                                <td style="padding:10px;text-align:right;white-space:nowrap">
+                                    Rs. ${money(row.amount)}
+                                </td>
+                            </tr>
+                        `;
+                    }).join("")}
+                </tbody>
+            </table>
+        `;
+    }
+
+    // =========================================
+    // RECENT ACTIVITY
+    // =========================================
+
+    function renderRecentActivity() {
+        const area = $("recentActivityArea");
+        if (!area) return;
+
+        const entries = [];
+
+        validSales().forEach(function (sale) {
+            entries.push({
+                date: dateOf(sale),
+                createdAt: String(sale.createdAt || sale.date || ""),
+                type: "Sale",
+                name: sale.billNumber ||
+                    sale.customerName ||
+                    sale.productName ||
+                    "बिक्री",
+                amount: totalOfSale(sale),
+                status: number(sale.balance) > 0
+                    ? "बाँकी रकम"
+                    : "बिक्री रेकर्ड"
+            });
+        });
+
+        validPurchases().forEach(function (purchase) {
+            entries.push({
+                date: dateOf(purchase),
+                createdAt: String(
+                    purchase.createdAt || purchase.date || ""
+                ),
+                type: "Purchase",
+                name: purchase.billNumber ||
+                    purchase.supplierName ||
+                    purchase.supplier ||
+                    "खरिद",
+                amount: totalOfPurchase(purchase),
+                status: number(purchase.balance) > 0
+                    ? "तिर्न बाँकी"
+                    : "खरिद रेकर्ड"
+            });
+        });
+
+        readArray(KEYS.finance).forEach(function (finance) {
+            const type = String(finance.type || "Finance").toUpperCase();
+
+            entries.push({
+                date: dateOf(finance),
+                createdAt: String(
+                    finance.createdAt || finance.date || ""
+                ),
+                type: type,
+                name: finance.category ||
+                    finance.description ||
+                    finance.note ||
+                    finance.reference ||
+                    "Finance",
+                amount: number(finance.amount),
+                status: type === "INCOME"
+                    ? "आम्दानी"
+                    : "वित्तीय कारोबार"
+            });
+        });
+
+        readArray(KEYS.returns).forEach(function (item) {
+            entries.push({
+                date: dateOf(item),
+                createdAt: String(
+                    item.createdAt || item.date || ""
+                ),
+                type: "Sales Return",
+                name: item.productName ||
+                    item.billNumber ||
+                    item.saleId ||
+                    "बिक्री फिर्ता",
+                amount: number(
+                    item.returnAmount ??
+                    item.totalAmount ??
+                    item.amount
+                ),
+                status: "फिर्ता रेकर्ड"
+            });
+        });
+
+        entries.sort(function (a, b) {
+            return String(b.createdAt || b.date)
+                .localeCompare(String(a.createdAt || a.date));
+        });
+
+        const recent = entries.slice(0, 8);
+
+        if (!recent.length) {
+            area.innerHTML = `
+                <p style="padding:16px">
+                    अहिलेसम्म कारोबारको रेकर्ड छैन।
+                </p>
+            `;
+            return;
+        }
+
+        area.innerHTML = `
+            <table style="width:100%;border-collapse:collapse">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;padding:10px">Date</th>
+                        <th style="text-align:left;padding:10px">Type / Details</th>
+                        <th style="text-align:right;padding:10px">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${recent.map(function (item) {
+                        return `
+                            <tr>
+                                <td style="padding:10px;white-space:nowrap">
+                                    ${escapeHTML(item.date || "-")}
+                                </td>
+                                <td style="padding:10px">
+                                    <strong>${escapeHTML(item.type)}</strong>
+                                    <div>${escapeHTML(item.name)}</div>
+                                    <small>${escapeHTML(item.status)}</small>
+                                </td>
+                                <td style="padding:10px;text-align:right;white-space:nowrap">
+                                    Rs. ${money(item.amount)}
+                                </td>
+                            </tr>
+                        `;
+                    }).join("")}
+                </tbody>
+            </table>
+        `;
+    }
+
+    // =========================================
+    // FINANCE BALANCE
+    // =========================================
+
+    function calculateAvailableBalance(finance) {
+        let balance = 0;
+
+        finance.forEach(function (item) {
+            const type = String(item.type || "").toUpperCase();
+            const amount = number(item.amount);
+
+            if (amount <= 0) return;
+
+            if ([
+                "INCOME",
+                "RECEIPT",
+                "CUSTOMER_PAYMENT",
+                "SALE_RECEIPT"
+            ].includes(type)) {
+                balance += amount;
+            } else if ([
+                "EXPENSE",
+                "PAYMENT",
+                "PURCHASE_PAYMENT",
+                "SUPPLIER_PAYMENT"
+            ].includes(type)) {
+                balance -= amount;
+            }
+        });
+
+        return balance;
+    }
+
+    // =========================================
+    // MAIN DASHBOARD
+    // =========================================
+
+    function renderDashboard() {
+        const sales = validSales();
+        const purchases = validPurchases();
+        const products = activeProducts();
+        const lots = readArray(KEYS.lots);
+        const finance = readArray(KEYS.finance);
+        const suppliers = readArray(KEYS.suppliers);
+
+        const todaySales = todayRecords(sales);
+        const todayFinance = todayRecords(finance);
+
+        const todayGross = todaySales.reduce(function (sum, sale) {
+            return sum + totalOfSale(sale);
+        }, 0);
+
+        const grossProfit = todaySales.reduce(function (sum, sale) {
+            return sum + getProfit(sale);
+        }, 0);
+
+        const todayExpenses = todayFinance
+            .filter(function (item) {
+                const type = String(item.type || "").toUpperCase();
+                const category = String(item.category || "").toUpperCase();
+
+                return type === "EXPENSE" ||
+                    category === "EXPENSE" ||
+                    category === "SHOP_EXPENSE";
+            })
+            .reduce(function (sum, item) {
+                return sum + number(item.amount);
+            }, 0);
+
+        text("todaySales", money(todayGross));
+        text("grossProfit", money(grossProfit));
+        text("expenses", money(todayExpenses));
+        text("netProfit", money(grossProfit - todayExpenses));
+        text("salesChange", todaySales.length + " bills");
+
+        // Customer receivable
+        const receivable = sales.reduce(function (sum, sale) {
+            return sum + Math.max(0, number(sale.balance));
+        }, 0);
+
+        text("customerReceivable", money(receivable));
+
+        // Supplier payable
+        const payable = suppliers.reduce(function (sum, supplier) {
+            if (
+                supplier.currentBalance !== undefined &&
+                supplier.currentBalance !== null
+            ) {
+                return sum + Math.max(
+                    0,
+                    number(supplier.currentBalance)
+                );
+            }
+
+            const opening = supplier.balanceType === "ADVANCE"
+                ? -Math.abs(number(supplier.openingBalance))
+                : Math.abs(number(supplier.openingBalance));
+
+            const calculated = opening +
+                number(supplier.purchaseTotal) -
+                number(supplier.paymentTotal) -
+                number(supplier.returnTotal);
+
+            return sum + Math.max(0, calculated);
+        }, 0);
+
+        text("supplierPayable", money(payable));
+
+        // Stock valuation
+        let stockValue = 0;
+
+        if (lots.length) {
+            stockValue = lots.reduce(function (sum, lot) {
+                const remaining = number(
+                    lot.remainingQty ??
+                    lot.remainingQuantity ??
+                    lot.qtyRemaining
+                );
+
+                const cost = number(
+                    lot.effectiveCost ??
+                    lot.unitCost ??
+                    lot.costPrice ??
+                    lot.purchasePrice
+                );
+
+                return sum + Math.max(0, remaining) * Math.max(0, cost);
+            }, 0);
+        } else {
+            stockValue = products.reduce(function (sum, product) {
+                return sum +
+                    Math.max(0, number(product.stock)) *
+                    Math.max(0, number(
+                        product.purchasePrice ??
+                        product.costPrice ??
+                        product.unitCost
+                    ));
+            }, 0);
+        }
+
+        text("stockValue", money(stockValue));
+        text("availableBalance", money(
+            calculateAvailableBalance(finance)
+        ));
+
+        // Low stock
+        const lowStock = products.filter(function (product) {
+            return number(product.stock) <= number(product.minStock);
+        });
+
+        text("lowStockCount", lowStock.length + " products");
+
+        // Expiring stock within 30 days
+        const today = localDate();
+        const expiryLimit = new Date();
+
+        expiryLimit.setDate(expiryLimit.getDate() + 30);
+
+        const lastDate = localDate(expiryLimit);
+        const expiringIds = new Set();
+
+        lots.forEach(function (lot) {
+            const expiry = String(
+                lot.expiryDate || lot.expiry || ""
+            ).slice(0, 10);
+
+            const remaining = number(
+                lot.remainingQty ??
+                lot.remainingQuantity ??
+                lot.qtyRemaining
+            );
+
+            if (
+                expiry &&
+                expiry >= today &&
+                expiry <= lastDate &&
+                remaining > 0
+            ) {
+                expiringIds.add(String(
+                    lot.productId ?? lot.itemId ?? lot.productName
+                ));
+            }
+        });
+
+        products.forEach(function (product) {
+            const expiry = String(
+                product.expiryDate || product.expiry || ""
+            ).slice(0, 10);
+
+            if (
+                expiry &&
+                expiry >= today &&
+                expiry <= lastDate
+            ) {
+                expiringIds.add(String(product.id ?? product.name));
+            }
+        });
+
+        text("expiryCount", expiringIds.size + " products");
+
+        // Customers with unpaid balances
+        const dueCustomers = new Set();
+
+        sales.forEach(function (sale) {
+            if (number(sale.balance) > 0) {
+                dueCustomers.add(String(
+                    sale.customerId ??
+                    sale.customerName ??
+                    "walk-in"
+                ));
+            }
+        });
+
+        text("creditDueCount", dueCustomers.size + " customers");
+
+        // Suppliers with outstanding balance
+        const supplierDueCount = suppliers.filter(function (supplier) {
+            if (
+                supplier.currentBalance !== undefined &&
+                supplier.currentBalance !== null
+            ) {
+                return number(supplier.currentBalance) > 0;
+            }
+
+            const opening = supplier.balanceType === "ADVANCE"
+                ? -Math.abs(number(supplier.openingBalance))
+                : Math.abs(number(supplier.openingBalance));
+
+            const balance = opening +
+                number(supplier.purchaseTotal) -
+                number(supplier.paymentTotal) -
+                number(supplier.returnTotal);
+
+            return balance > 0;
+        }).length;
+
+        text("supplierDueCount", supplierDueCount + " suppliers");
+
+        renderChart();
+        renderFastMoving();
+        renderRecentActivity();
+    }
+
+    // =========================================
+    // STORAGE CHANGE LISTENER
+    // =========================================
+
+    window.addEventListener("storage", function (event) {
+        const watchedKeys = Object.values(KEYS);
+
+        if (!event.key || watchedKeys.includes(event.key)) {
+            renderDashboard();
+        }
+
+        if (!event.key || event.key === KEYS.settings) {
+            renderStoreProfile();
+        }
     });
-  }
 
-  /* SALES CHART */
-
-  function renderChart() {
-    const area = $("salesChart");
-    if (!area) return;
-
-    const days = Math.max(
-      1,
-      Math.min(30, number($("salesPeriod")?.value) || 7)
-    );
-
-    const sales = validSales();
-    const now = new Date();
-    const items = [];
-
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate() - i
-      );
-      const key = localDate(d);
-
-      const amount = sales
-        .filter(s => dateOf(s) === key)
-        .reduce((sum, s) => sum + number(s.total), 0);
-
-      items.push({
-        key,
-        label: d.toLocaleDateString("en", {
-          day: "numeric",
-          month: "short"
-        }),
-        amount
-      });
-    }
-
-    const max = Math.max(...items.map(x => x.amount), 1);
-
-    area.innerHTML = `
-      <div style="display:flex;align-items:flex-end;gap:8px;height:190px;padding:12px 4px 4px;">
-        ${items.map(item => {
-          const height = item.amount > 0
-            ? Math.max(5, item.amount / max * 135)
-            : 3;
-
-          return `
-            <div title="${escapeHTML(item.key)}: Rs. ${money(item.amount)}"
-                 style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:7px;">
-              <span style="font-size:10px;overflow-wrap:anywhere;text-align:center;color:var(--dash-muted,#64748b)">
-                ${item.amount ? escapeHTML(money(item.amount)) : ""}
-              </span>
-              <div style="width:min(100%,30px);height:${height}px;background:var(--primary,#2563eb);border-radius:5px 5px 0 0;"></div>
-              <span style="font-size:10px;color:var(--dash-muted,#64748b);white-space:nowrap">${escapeHTML(item.label)}</span>
-            </div>`;
-        }).join("")}
-      </div>
-      <div style="text-align:center;font-size:12px;color:var(--dash-muted,#64748b);margin-top:8px">
-        कुल बिक्री: Rs. ${money(items.reduce((sum, x) => sum + x.amount, 0))}
-      </div>
-    `;
-  }
-
-  /* FAST MOVING PRODUCTS */
-
-  function renderFastMoving() {
-    const area = $("fastMovingArea");
-    if (!area) return;
-
-    const totals = new Map();
-
-    validSales().forEach(sale => {
-      const id = String(sale.productId || sale.productName || "unknown");
-      const previous = totals.get(id) || {
-        name: sale.productName || "Unknown product",
-        qty: 0,
-        amount: 0
-      };
-
-      previous.qty += number(sale.qty);
-      previous.amount += number(sale.total);
-      totals.set(id, previous);
+    // Other modules can request a refresh
+    window.addEventListener("gs:settings-updated", function () {
+        renderStoreProfile();
+        renderDashboard();
     });
 
-    const rows = [...totals.values()]
-      .sort((a, b) => b.qty - a.qty)
-      .slice(0, 5);
+    // =========================================
+    // INITIALIZATION
+    // =========================================
 
-    if (!rows.length) {
-      area.innerHTML =
-        '<p style="padding:16px">अहिलेसम्म बिक्री रेकर्ड छैन।</p>';
-      return;
+    function init() {
+        renderDate();
+        renderStoreProfile();
+        renderDashboard();
+
+        const period = $("salesPeriod");
+
+        if (period) {
+            period.addEventListener("change", renderChart);
+        }
+
+        console.log(
+            "Dashboard initialized with current index.html IDs."
+        );
     }
 
-    area.innerHTML = `
-      <table style="width:100%;border-collapse:collapse">
-        <thead><tr>
-          <th style="text-align:left;padding:10px">Product</th>
-          <th style="text-align:right;padding:10px">Qty Sold</th>
-          <th style="text-align:right;padding:10px">Sales</th>
-        </tr></thead>
-        <tbody>
-          ${rows.map(row => `
-            <tr>
-              <td style="padding:10px">${escapeHTML(row.name)}</td>
-              <td style="padding:10px;text-align:right">${money(row.qty)}</td>
-              <td style="padding:10px;text-align:right">Rs. ${money(row.amount)}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>`;
-  }
-
-  /* RECENT ACTIVITY */
-
-  function renderRecentActivity() {
-    const area = $("recentActivityArea");
-    if (!area) return;
-
-    const entries = [
-      ...validSales().map(s => ({
-        date: dateOf(s),
-        createdAt: s.createdAt || s.date,
-        type: "Sale",
-        name: s.productName || s.customerName || s.billNumber || "बिक्री",
-        amount: number(s.total),
-        status: number(s.balance) > 0 ? "बाँकी" : "भुक्तानी"
-      })),
-      ...validPurchases().map(p => ({
-        date: dateOf(p),
-        createdAt: p.createdAt || p.date,
-        type: "Purchase",
-        name: p.supplierName || p.supplier || p.billNumber || "खरिद",
-        amount: number(p.total),
-        status: number(p.balance) > 0 ? "तिर्न बाँकी" : "भुक्तानी"
-      })),
-      ...read(KEYS.finance).map(f => ({
-        date: dateOf(f),
-        createdAt: f.createdAt || f.date,
-        type: f.type || "Finance",
-        name: f.category || f.description || f.note || "Finance",
-        amount: number(f.amount),
-        status: "रेकर्ड"
-      }))
-    ].sort((a, b) =>
-      String(b.createdAt || b.date).localeCompare(
-        String(a.createdAt || a.date)
-      )
-    ).slice(0, 8);
-
-    if (!entries.length) {
-      area.innerHTML =
-        '<p style="padding:16px">अहिलेसम्म कारोबारको रेकर्ड छैन।</p>';
-      return;
-    }
-
-    area.innerHTML = `
-      <table style="width:100%;border-collapse:collapse">
-        <thead><tr>
-          <th style="text-align:left;padding:10px">Date</th>
-          <th style="text-align:left;padding:10px">Type / Details</th>
-          <th style="text-align:right;padding:10px">Amount</th>
-        </tr></thead>
-        <tbody>
-          ${entries.map(item => `
-            <tr>
-              <td style="padding:10px;white-space:nowrap">${escapeHTML(item.date || "-")}</td>
-              <td style="padding:10px">
-                <strong>${escapeHTML(item.type)}</strong>
-                <div>${escapeHTML(item.name)}</div>
-                <small>${escapeHTML(item.status)}</small>
-              </td>
-              <td style="padding:10px;text-align:right;white-space:nowrap">Rs. ${money(item.amount)}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>`;
-  }
-
-  /* MAIN DASHBOARD TOTALS */
-
-  function renderDashboard() {
-    const sales = validSales();
-    const products = activeProducts();
-    const lots = read(KEYS.lots);
-    const finance = read(KEYS.finance);
-    const customers = read(KEYS.customers);
-    const suppliers = read(KEYS.suppliers);
-
-    const todaySales = todayRecords(sales);
-    const todayFinance = todayRecords(finance);
-
-    const todayGross = todaySales.reduce(
-      (sum, s) => sum + number(s.total), 0
-    );
-    const grossProfit = todaySales.reduce(
-      (sum, s) => sum + getProfit(s), 0
-    );
-
-    const todayExpenses = todayFinance
-      .filter(f => {
-        const type = String(f.type || "").toUpperCase();
-        const category = String(f.category || "").toUpperCase();
-        return type === "EXPENSE" ||
-          category === "EXPENSE" ||
-          category === "SHOP_EXPENSE";
-      })
-      .reduce((sum, f) => sum + number(f.amount), 0);
-
-    text("todaySales", money(todayGross));
-    text("grossProfit", money(grossProfit));
-    text("expenses", money(todayExpenses));
-    text("netProfit", money(grossProfit - todayExpenses));
-    text("salesChange", `${todaySales.length} bills`);
-
-    const receivable = sales.reduce(
-      (sum, s) => sum + Math.max(0, number(s.balance)), 0
-    );
-    text("customerReceivable", money(receivable));
-
-    const payable = suppliers.reduce((sum, s) => {
-      if (s.currentBalance !== undefined && s.currentBalance !== null) {
-        return sum + Math.max(0, number(s.currentBalance));
-      }
-
-      const opening = s.balanceType === "ADVANCE"
-        ? -Math.abs(number(s.openingBalance))
-        : Math.abs(number(s.openingBalance));
-
-      return sum + Math.max(
-        0,
-        opening + number(s.purchaseTotal) -
-          number(s.paymentTotal) - number(s.returnTotal)
-      );
-    }, 0);
-
-    text("supplierPayable", money(payable));
-
-    let stockValue = 0;
-    if (lots.length) {
-      stockValue = lots.reduce((sum, lot) =>
-        sum + Math.max(0, number(lot.remainingQty)) *
-          number(lot.effectiveCost), 0);
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
     } else {
-      stockValue = products.reduce((sum, p) =>
-        sum + Math.max(0, number(p.stock)) *
-          number(p.purchasePrice), 0);
-    }
-    text("stockValue", money(stockValue));
-
-    let balance = 0;
-    finance.forEach(f => {
-      const type = String(f.type || "").toUpperCase();
-      const amount = number(f.amount);
-
-      if ([
-        "INCOME", "RECEIPT", "CUSTOMER_PAYMENT", "SALE_RECEIPT"
-      ].includes(type)) {
-        balance += amount;
-      } else if ([
-        "EXPENSE", "PAYMENT", "PURCHASE_PAYMENT", "SUPPLIER_PAYMENT"
-      ].includes(type)) {
-        balance -= amount;
-      }
-    });
-    text("availableBalance", money(balance));
-
-    const lowStock = products.filter(p =>
-      number(p.stock) <= number(p.minStock)
-    );
-    text("lowStockCount", `${lowStock.length} products`);
-
-    const expiryLimit = new Date();
-    expiryLimit.setDate(expiryLimit.getDate() + 30);
-    const today = localDate();
-
-    const expiringLots = lots.filter(lot => {
-      const expiry = String(
-        lot.expiryDate || lot.expiry || ""
-      ).slice(0, 10);
-
-      return expiry && expiry >= today &&
-        expiry <= localDate(expiryLimit) &&
-        number(lot.remainingQty) > 0;
-    });
-
-    const expiringProducts = products.filter(p => {
-      const expiry = String(p.expiryDate || p.expiry || "").slice(0, 10);
-      return expiry && expiry >= today && expiry <= localDate(expiryLimit);
-    });
-
-    text("expiryCount", `${new Set([
-      ...expiringLots.map(l => String(l.productId)),
-      ...expiringProducts.map(p => String(p.id))
-    ]).size} products`);
-
-    const dueCustomers = new Set(
-      sales.filter(s => number(s.balance) > 0)
-        .map(s => String(s.customerId || s.customerName || "walk-in"))
-    );
-    text("creditDueCount", `${dueCustomers.size} customers`);
-
-    text("supplierDueCount",
-      `${suppliers.filter(s => number(s.currentBalance) > 0 ||
-        (s.currentBalance == null &&
-          number(s.openingBalance) > 0)).length} suppliers`
-    );
-
-    renderChart();
-    renderFastMoving();
-    renderRecentActivity();
-  }
-
-  /* SEARCH */
-
-  function setupSearch() {
-    const input = $("searchInput");
-    if (!input) return;
-
-    input.addEventListener("keydown", event => {
-      if (event.key !== "Enter") return;
-
-      const query = input.value.trim().toLowerCase();
-      if (!query) return;
-
-      const sales = validSales();
-      const products = read(KEYS.products);
-      const customers = read(KEYS.customers);
-      const suppliers = read(KEYS.suppliers);
-
-      const product = products.find(p =>
-        String(p.name || "").toLowerCase().includes(query) ||
-        String(p.id || "").toLowerCase().includes(query)
-      );
-
-      const sale = sales.find(s =>
-        [s.billNumber, s.customerName, s.productName, s.date]
-          .some(value => String(value || "").toLowerCase().includes(query))
-      );
-
-      const customer = customers.find(c =>
-        [c.name, c.phone]
-          .some(value => String(value || "").toLowerCase().includes(query))
-      );
-
-      const supplier = suppliers.find(s =>
-        [s.name, s.phone]
-          .some(value => String(value || "").toLowerCase().includes(query))
-      );
-
-      if (product) {
-        alert(`Product: ${product.name}\nStock: ${number(product.stock)} ${product.unit || ""}`);
-      } else if (sale) {
-        alert(`Bill: ${sale.billNumber || "-"}\nDate: ${sale.date || "-"}\nProduct: ${sale.productName || "-"}\nTotal: Rs. ${money(sale.total)}\nPaid: Rs. ${money(sale.paidAmount)}\nBalance: Rs. ${money(sale.balance)}`);
-      } else if (customer) {
-        alert(`Customer: ${customer.name}\nPhone: ${customer.phone || "-"}`);
-      } else if (supplier) {
-        alert(`Supplier: ${supplier.name}\nPhone: ${supplier.phone || "-"}`);
-      } else {
-        alert("मिल्दो Product, Bill, Customer वा Supplier भेटिएन।");
-      }
-    });
-  }
-
-  /* THEME BUTTON */
-
-  $("themeBtn")?.addEventListener("click", () => {
-    const root = document.documentElement;
-    const current = root.getAttribute("data-theme") ||
-      localStorage.getItem("gs_theme") || "light";
-    const next = current === "dark" ? "light" : "dark";
-
-    root.setAttribute("data-theme", next);
-
-    try {
-      const saved = readSettings();
-      saved.appearance = saved.appearance || {};
-      saved.appearance.theme = next;
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved));
-    } catch (error) {
-      console.warn("Theme preference was not saved:", error);
+        init();
     }
 
-    const btn = $("themeBtn");
-    if (btn) btn.textContent = next === "dark" ? "☀️" : "🌙";
-  });
+    window.refreshDashboard = renderDashboard;
 
-  /* LOCK BUTTON - visual lock only, not security protection */
-
-  $("lockBtn")?.addEventListener("click", () => {
-    alert("Dashboard को यो बटन visual सूचना मात्र हो। वास्तविक MPIN lock का लागि साझा authentication आवश्यक हुन्छ।");
-  });
-
-  /* REFRESH WHEN DATA CHANGES IN ANOTHER TAB */
-
-  window.addEventListener("storage", event => {
-    if (!event.key || Object.values(KEYS).includes(event.key)) {
-      renderDashboard();
-    }
-
-    if (!event.key || event.key === SETTINGS_KEY) {
-      renderStoreProfile();
-    }
-  });
-
-  $("salesPeriod")?.addEventListener("change", renderChart);
-
-  function init() {
-    renderDate();
-    renderStoreProfile();
-    setupSearch();
-    renderDashboard();
-
-    const theme = document.documentElement.getAttribute("data-theme") || "light";
-    const btn = $("themeBtn");
-    if (btn) btn.textContent = theme === "dark" ? "☀️" : "🌙";
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-
-  window.refreshDashboard = renderDashboard;
-
-  console.log("Dashboard connected to existing localStorage keys.");
 })();
