@@ -1,8 +1,8 @@
 
 /* =========================================================
    GS GENERAL STORE MANAGEMENT SYSTEM
-   SALE MODULE — BARCODE SCAN + FIFO + SETTINGS
-   Existing storage keys and single-product sale format kept.
+   SALE MODULE — A4 INVOICE + DAILY INVOICE PREFIX
+   Barcode + FIFO + Existing Sales Data preserved
    ========================================================= */
 
 (() => {
@@ -100,13 +100,36 @@
     ].join("-");
   }
 
-  function newBillNumber() {
-    const settings = readSettings();
-    const prefix = String(settings.invoicePrefix || "SALE")
-      .trim()
-      .replace(/\s+/g, "-");
+  /* ---------------- Invoice Prefix ---------------- */
 
-    return prefix + "-" + Date.now();
+  function billNumberDetails(dateValue = $("saleDate")?.value || today()) {
+    const settings = readSettings();
+    const prefix = String(settings.invoicePrefix || "INV")
+      .trim()
+      .replace(/\s+/g, "-") || "INV";
+
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(String(dateValue || ""))
+      ? new Date(String(dateValue) + "T00:00:00")
+      : new Date();
+
+    const datePart = [
+      String(date.getDate()).padStart(2, "0"),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getFullYear())
+    ].join("");
+
+    const counterKey = "gs_invoice_counter_" + datePart;
+    const counter = (Number(localStorage.getItem(counterKey)) || 0) + 1;
+
+    return {
+      billNumber: prefix + "-" + datePart + String(counter).padStart(2, "0"),
+      counterKey,
+      counter
+    };
+  }
+
+  function newBillNumber(dateValue = $("saleDate")?.value || today()) {
+    return billNumberDetails(dateValue).billNumber;
   }
 
   function newId(prefix) {
@@ -114,7 +137,7 @@
       Math.floor(Math.random() * 1000000);
   }
 
-  /* ---------------- In-page notification ---------------- */
+  /* ---------------- Notifications ---------------- */
 
   function toast(message, type = "success") {
     let box = $("saleToast");
@@ -162,7 +185,7 @@
     }, 4200);
   }
 
-  /* ---------------- Modal helpers ---------------- */
+  /* ---------------- Sale Modal ---------------- */
 
   const modal = $("saleModal");
   const form = $("saleForm");
@@ -182,8 +205,9 @@
       $("saleDate").value = today();
     }
 
-    if ($("billNumber") && !$("billNumber").value) {
-      $("billNumber").value = newBillNumber();
+    if ($("billNumber")) {
+      $("billNumber").readOnly = true;
+      $("billNumber").value = newBillNumber($("saleDate")?.value);
     }
 
     loadProducts();
@@ -214,7 +238,7 @@
     if (event.key === "Escape") closeSaleModal();
   });
 
-  /* ---------------- Product helpers ---------------- */
+  /* ---------------- Products ---------------- */
 
   function getProducts() {
     return readArray(PRODUCT_KEY);
@@ -301,7 +325,7 @@
     calculateSale();
   }
 
-  /* ---------------- Barcode scanner UI ---------------- */
+  /* ---------------- Barcode Scanner UI ---------------- */
 
   function createScannerUI() {
     if ($("saleBarcodePanel")) return;
@@ -417,7 +441,6 @@
       return;
     }
 
-    // उही Product फेरि Scan गर्दा Quantity बढाउने।
     const qtyInput = $("saleQty");
     const oldProductId = lookupBarcode._lastProductId;
     const currentQty = num(qtyInput?.value);
@@ -458,7 +481,7 @@
     qtyInput?.focus();
   }
 
-  /* ---------------- Mobile camera scan ---------------- */
+  /* ---------------- Mobile Camera Scan ---------------- */
 
   async function startCamera() {
     if (scannerOpen) return;
@@ -520,9 +543,7 @@
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: {
-          facingMode: { ideal: "environment" }
-        }
+        video: { facingMode: { ideal: "environment" } }
       });
 
       video.srcObject = cameraStream;
@@ -544,7 +565,6 @@
     if (!scannerOpen || !detector) return;
 
     const video = $("saleCameraVideo");
-
     if (!video || video.readyState < 2) return;
 
     try {
@@ -568,7 +588,6 @@
 
       lookupBarcode(code, true);
     } catch (error) {
-      // क्यामेराको एउटा Frame पढ्न नसक्दा Scan प्रक्रिया जारी रहन्छ।
       console.debug("Barcode frame skipped:", error);
     }
   }
@@ -593,7 +612,7 @@
     if (area) area.hidden = true;
   }
 
-  /* ---------------- Sale calculation ---------------- */
+  /* ---------------- Sale Calculation ---------------- */
 
   function calculateSale() {
     const qty = num($("saleQty")?.value);
@@ -672,7 +691,7 @@
     });
   });
 
-  /* ---------------- Sales history ---------------- */
+  /* ---------------- Sales History ---------------- */
 
   function renderSales() {
     const tbody = $("salesHistoryBody");
@@ -766,6 +785,14 @@
 
   $("saleSearch")?.addEventListener("input", renderSales);
 
+  $("saleDate")?.addEventListener("change", () => {
+    if ($("billNumber")) {
+      $("billNumber").value = newBillNumber($("saleDate").value);
+    }
+  });
+
+  /* ---------------- View / Print A4 Invoice ---------------- */
+
   $("salesHistoryBody")?.addEventListener("click", event => {
     const button = event.target.closest("[data-view-sale]");
     if (!button) return;
@@ -783,6 +810,7 @@
       p => String(p.id) === String(sale.productId)
     );
 
+    const config = readSettings();
     const barcode = sale.barcode || product?.barcode || "-";
     const win = window.open("", "_blank");
 
@@ -791,49 +819,206 @@
       return;
     }
 
+    const storeName = config.storeName || "General Store";
+    const storeAddress = config.storeAddress || "";
+    const storePhone = config.storePhone || "";
+    const storeEmail = config.storeEmail || "";
+    const ownerName = config.ownerName || "";
+    const taxNumber = config.taxNumber || "";
+    const invoiceFooter =
+      config.invoiceFooter || "हाम्रो पसलमा आउनुभएकोमा धन्यवाद!";
+
+    const photo = config.operatorPhoto
+      ? `<img class="store-photo" src="${esc(config.operatorPhoto)}" alt="Store photo">`
+      : "";
+
     win.document.write(`
       <!doctype html>
       <html lang="ne">
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Sale Bill</title>
+        <title>Invoice ${esc(sale.billNumber || "")}</title>
         <style>
-          body{font-family:Arial,sans-serif;padding:24px;color:#111}
-          table{width:100%;border-collapse:collapse}
-          td,th{border:1px solid #ccc;padding:8px;text-align:left}
-          .right{text-align:right}
-          @media print{button{display:none}}
+          @page { size: A4 portrait; margin: 14mm; }
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            color: #17211b;
+            font-family: Arial, "Noto Sans Devanagari", sans-serif;
+            font-size: 12px;
+          }
+          .invoice { width: 100%; max-width: 182mm; margin: 0 auto; }
+          .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 16px;
+            border-bottom: 3px solid #166534;
+          }
+          .store-photo {
+            width: 76px;
+            height: 76px;
+            object-fit: contain;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 4px;
+          }
+          .brand-info { flex: 1; min-width: 0; }
+          .brand h1 {
+            margin: 0 0 6px;
+            color: #166534;
+            font-size: 25px;
+            overflow-wrap: anywhere;
+          }
+          .brand p { margin: 3px 0; color: #4b5563; overflow-wrap: anywhere; }
+          .invoice-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0;
+          }
+          .invoice-title h2 { margin: 0; font-size: 21px; letter-spacing: 1px; }
+          .invoice-title span { color: #166534; font-weight: 700; }
+          .meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 18px;
+            padding: 13px;
+            background: #f3f7f4;
+            border: 1px solid #dbe7dd;
+            border-radius: 8px;
+            margin-bottom: 18px;
+          }
+          .meta p { margin: 0; line-height: 1.6; overflow-wrap: anywhere; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+          th { background: #166534; color: white; font-weight: 700; }
+          td, th { border: 1px solid #d1d5db; padding: 10px 8px; text-align: left; }
+          .num { text-align: right; white-space: nowrap; }
+          .totals { width: 78%; max-width: 105mm; margin: 16px 0 0 auto; }
+          .totals div {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 7px 0;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          .totals .grand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #166534;
+            border-bottom: 2px solid #166534;
+          }
+          .notes {
+            margin-top: 18px;
+            padding: 10px 12px;
+            border-left: 3px solid #166534;
+            background: #f8faf8;
+            overflow-wrap: anywhere;
+          }
+          .footer {
+            margin-top: 28px;
+            padding-top: 12px;
+            text-align: center;
+            border-top: 1px solid #d1d5db;
+            color: #4b5563;
+            line-height: 1.7;
+          }
+          .actions { display: flex; justify-content: center; gap: 10px; margin: 20px auto; }
+          button {
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 7px;
+            background: #166534;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+          }
+          @media print {
+            .actions { display: none; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+          @media screen {
+            body { background: #e5e7eb; padding: 18px; }
+            .invoice {
+              background: white;
+              min-height: 260mm;
+              padding: 16mm;
+              box-shadow: 0 3px 18px #0002;
+            }
+          }
         </style>
       </head>
       <body>
-        <h2>GENERAL STORE</h2>
-        <h3>Sales Receipt</h3>
-        <p>Bill: ${esc(sale.billNumber)}</p>
-        <p>Date: ${esc(sale.date)}</p>
-        <p>Customer: ${esc(sale.customerName || "Walk-in Customer")}</p>
+        <main class="invoice">
+          <header class="brand">
+            ${photo}
+            <div class="brand-info">
+              <h1>${esc(storeName)}</h1>
+              ${storeAddress ? `<p>${esc(storeAddress)}</p>` : ""}
+              ${storePhone ? `<p>Phone: ${esc(storePhone)}</p>` : ""}
+              ${storeEmail ? `<p>Email: ${esc(storeEmail)}</p>` : ""}
+              ${ownerName ? `<p>Owner: ${esc(ownerName)}</p>` : ""}
+              ${taxNumber ? `<p>PAN/VAT: ${esc(taxNumber)}</p>` : ""}
+            </div>
+          </header>
 
-        <table>
-          <tr>
-            <th>Product</th><th>Barcode</th><th>Qty</th>
-            <th>Rate</th><th>Amount</th>
-          </tr>
-          <tr>
-            <td>${esc(sale.productName)}</td>
-            <td>${esc(barcode)}</td>
-            <td>${num(sale.qty)} ${esc(sale.unit || "")}</td>
-            <td>${money(sale.rate)}</td>
-            <td>${money(sale.itemAmount)}</td>
-          </tr>
-        </table>
+          <section class="invoice-title">
+            <h2>SALES INVOICE</h2>
+            <span>ORIGINAL</span>
+          </section>
 
-        <p class="right">Discount: ${money(sale.discount)}</p>
-        <h3 class="right">Total: ${money(sale.total)}</h3>
-        <p class="right">Paid: ${money(sale.paidAmount)}</p>
-        <p class="right">Balance: ${money(sale.balance)}</p>
-        <p>Payment: ${esc(sale.paymentMethod || "-")}</p>
-        <p>Notes: ${esc(sale.note || "-")}</p>
-        <button onclick="window.print()">Print</button>
+          <section class="meta">
+            <p><strong>Invoice No.:</strong> ${esc(sale.billNumber || "-")}</p>
+            <p><strong>Date:</strong> ${esc(sale.date || "-")}</p>
+            <p><strong>Customer:</strong> ${esc(sale.customerName || "Walk-in Customer")}</p>
+            <p><strong>Payment:</strong> ${esc(sale.paymentMethod || "-")}</p>
+          </section>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width:7%">SN</th>
+                <th>Product / Description</th>
+                <th>Barcode</th>
+                <th class="num">Qty</th>
+                <th class="num">Rate</th>
+                <th class="num">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>${esc(sale.productName || "-")}</td>
+                <td>${esc(barcode)}</td>
+                <td class="num">${num(sale.qty)} ${esc(sale.unit || "")}</td>
+                <td class="num">${money(sale.rate)}</td>
+                <td class="num">${money(sale.itemAmount)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <section class="totals">
+            <div><span>Subtotal</span><strong>${money(sale.itemAmount)}</strong></div>
+            <div><span>Discount</span><strong>${money(sale.discount)}</strong></div>
+            <div class="grand"><span>Grand Total</span><strong>${money(sale.total)}</strong></div>
+            <div><span>Paid Amount</span><strong>${money(sale.paidAmount)}</strong></div>
+            <div><span>Balance Due</span><strong>${money(sale.balance)}</strong></div>
+          </section>
+
+          ${sale.note ? `<section class="notes"><strong>Notes:</strong> ${esc(sale.note)}</section>` : ""}
+
+          <footer class="footer">
+            <strong>${esc(invoiceFooter)}</strong><br>
+            <span>This is a computer-generated invoice.</span>
+          </footer>
+
+          <div class="actions">
+            <button type="button" onclick="window.print()">Print / Save as PDF</button>
+            <button type="button" onclick="window.close()">Close</button>
+          </div>
+        </main>
       </body>
       </html>
     `);
@@ -841,7 +1026,7 @@
     win.document.close();
   });
 
-  /* ---------------- FIFO sale saving ---------------- */
+  /* ---------------- FIFO ---------------- */
 
   function allocateFIFO(lots, productId, quantity, productStock) {
     const productLots = lots
@@ -895,7 +1080,6 @@
       );
     }
 
-    // यहाँ original lots लाई मात्र calculation गरेर प्रतिलिपिमा update गरिन्छ।
     const updatedLots = lots.map(lot => ({ ...lot }));
 
     for (const allocation of allocations) {
@@ -916,21 +1100,24 @@
     return { allocations, fifoCost, updatedLots };
   }
 
-  function saveSaleTransaction(updatedLots, updatedProducts, updatedSales) {
+  function saveSaleTransaction(updatedLots, updatedProducts, updatedSales, counterUpdate) {
     const keys = [LOT_KEY, PRODUCT_KEY, SALE_KEY];
-    const oldValues = {};
+    if (counterUpdate?.key) keys.push(counterUpdate.key);
 
+    const oldValues = {};
     keys.forEach(key => {
       oldValues[key] = localStorage.getItem(key);
     });
 
     try {
-      // Sales record अन्त्यमा लेखिन्छ।
       write(LOT_KEY, updatedLots);
       write(PRODUCT_KEY, updatedProducts);
       write(SALE_KEY, updatedSales);
+
+      if (counterUpdate?.key) {
+        localStorage.setItem(counterUpdate.key, String(counterUpdate.value));
+      }
     } catch (error) {
-      // कुनै लेखाइ असफल भए पुराना values फर्काउने प्रयास।
       keys.forEach(key => {
         try {
           if (oldValues[key] === null) {
@@ -948,6 +1135,8 @@
       );
     }
   }
+
+  /* ---------------- Save Sale ---------------- */
 
   if (form) {
     form.addEventListener("submit", event => {
@@ -988,7 +1177,6 @@
           return;
         }
 
-        // Data लाई फेरि पढेर पछिल्लो Stock जाँच्ने।
         const allProducts = getProducts();
         const productIndex = allProducts.findIndex(
           p => String(p.id) === String(product.id)
@@ -1022,8 +1210,11 @@
           currentProduct.stock
         );
 
-        const billNumber =
-          $("billNumber")?.value.trim() || newBillNumber();
+        // सफल बिक्रीमा मात्र दैनिक क्रम संख्या सुरक्षित हुन्छ।
+        const billInfo = billNumberDetails($("saleDate").value);
+        const billNumber = billInfo.billNumber;
+
+        if ($("billNumber")) $("billNumber").value = billNumber;
 
         const barcode = String(currentProduct.barcode || "").trim();
 
@@ -1063,11 +1254,11 @@
         const updatedSales = readArray(SALE_KEY);
         updatedSales.push(sale);
 
-        // सबै validation र FIFO calculation सफल भएपछि मात्र Save।
         saveSaleTransaction(
           fifo.updatedLots,
           updatedProducts,
-          updatedSales
+          updatedSales,
+          { key: billInfo.counterKey, value: billInfo.counter }
         );
 
         toast("Sale सफलतापूर्वक सुरक्षित भयो।");
@@ -1075,7 +1266,7 @@
         form.reset();
 
         if ($("saleDate")) $("saleDate").value = today();
-        if ($("billNumber")) $("billNumber").value = newBillNumber();
+        if ($("billNumber")) $("billNumber").value = newBillNumber($("saleDate")?.value);
         if ($("saleQty")) $("saleQty").value = "";
         if ($("saleRate")) $("saleRate").value = "";
         if ($("saleDiscount")) $("saleDiscount").value = "0";
@@ -1098,7 +1289,7 @@
     });
   }
 
-  /* ---------------- Form reset ---------------- */
+  /* ---------------- Form Reset ---------------- */
 
   form?.addEventListener("reset", () => {
     stopCamera();
@@ -1125,7 +1316,12 @@
     createScannerUI();
 
     if ($("saleDate")) $("saleDate").value = today();
-    if ($("billNumber")) $("billNumber").value = newBillNumber();
+
+    if ($("billNumber")) {
+      $("billNumber").readOnly = true;
+      $("billNumber").placeholder = "Settings Prefix अनुसार स्वतः बन्नेछ";
+      $("billNumber").value = newBillNumber($("saleDate")?.value);
+    }
 
     if ($("saleDiscount") && $("saleDiscount").value === "") {
       $("saleDiscount").value = "0";
