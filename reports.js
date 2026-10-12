@@ -8,40 +8,37 @@ document.addEventListener("DOMContentLoaded", function () {
     products: "gs_products",
     customers: "gs_customers",
     suppliers: "gs_suppliers",
-    finance: "gs_finance"
+    finance: "gs_finance",
+    settings: "gs_settings"
   };
 
-  const $ = (id) => document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
   const fromDate = $("reportFromDate");
   const toDate = $("reportToDate");
-  const applyButton = $("applyReportFilterBtn");
-  const refreshButton = $("refreshReportsBtn");
   const errorBox = $("reportError");
 
-  const today = localDateString(new Date());
-  fromDate.value = today.slice(0, 8) + "01";
-  toDate.value = today;
-
-  function localDateString(date) {
-    return [
-      date.getFullYear(),
-      String(date.getMonth() + 1).padStart(2, "0"),
-      String(date.getDate()).padStart(2, "0")
-    ].join("-");
+  function read(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw === null) return fallback;
+      const parsed = JSON.parse(raw);
+      return parsed == null ? fallback : parsed;
+    } catch (error) {
+      console.error("Could not read " + key, error);
+      return fallback;
+    }
   }
 
   function readArray(key) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return [];
+    const value = read(key, []);
+    return Array.isArray(value) ? value : [];
+  }
 
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.error("Could not read " + key, error);
-      return [];
-    }
+  function readSettings() {
+    const value = read(KEYS.settings, {});
+    return value && typeof value === "object" && !Array.isArray(value)
+      ? value : {};
   }
 
   function loadData() {
@@ -56,53 +53,47 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function num(value) {
-    if (typeof value === "string") {
-      value = value.replace(/,/g, "").trim();
-    }
-
+    if (typeof value === "string") value = value.replace(/,/g, "").trim();
     const result = Number(value);
     return Number.isFinite(result) ? result : 0;
   }
 
-  function firstNumber(object, keys, fallback = 0) {
+  function firstNumber(object, keys, fallback) {
     for (const key of keys) {
-      if (
-        object &&
-        object[key] !== undefined &&
-        object[key] !== null &&
-        object[key] !== ""
-      ) {
+      if (object && object[key] !== undefined &&
+          object[key] !== null && object[key] !== "") {
         return num(object[key]);
       }
     }
-
-    return fallback;
+    return fallback === undefined ? 0 : fallback;
   }
 
-  function firstValue(object, keys, fallback = "") {
+  function firstValue(object, keys, fallback) {
     for (const key of keys) {
-      if (
-        object &&
-        object[key] !== undefined &&
-        object[key] !== null &&
-        object[key] !== ""
-      ) {
+      if (object && object[key] !== undefined &&
+          object[key] !== null && object[key] !== "") {
         return object[key];
       }
     }
+    return fallback === undefined ? "" : fallback;
+  }
 
-    return fallback;
+  function currencySymbol() {
+    const s = readSettings();
+    const value = s.currencySymbol || s.currency || "Rs.";
+    return typeof value === "string" || typeof value === "number"
+      ? String(value) : "Rs.";
   }
 
   function money(value) {
-    return "Rs. " + num(value).toLocaleString("en-IN", {
+    return currencySymbol() + " " + num(value).toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
   }
 
   function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    return String(value == null ? "" : value).replace(/[&<>"']/g, character => ({
       "&": "&amp;",
       "<": "&lt;",
       ">": "&gt;",
@@ -111,39 +102,36 @@ document.addEventListener("DOMContentLoaded", function () {
     })[character]);
   }
 
+  function localDateString(date) {
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0")
+    ].join("-");
+  }
+
   function dateOf(record) {
     const raw = firstValue(record, [
-      "date",
-      "saleDate",
-      "purchaseDate",
-      "transactionDate",
-      "createdAt"
+      "date", "saleDate", "purchaseDate",
+      "transactionDate", "createdAt"
     ], "");
 
     if (!raw) return "";
 
     const text = String(raw);
-
-    // ISO date/time र YYYY-MM-DD format।
     const match = text.match(/^(\d{4}-\d{2}-\d{2})/);
     if (match) return match[1];
 
     const parsed = new Date(text);
     if (Number.isNaN(parsed.getTime())) return "";
-
     return localDateString(parsed);
   }
 
   function dateAllowed(record) {
     const date = dateOf(record);
-    const from = fromDate.value;
-    const to = toDate.value;
-
-    // Date नभएका पुराना records लाई स्वतः छानेको अवधिमा समावेश नगर्ने।
     if (!date) return false;
-    if (from && date < from) return false;
-    if (to && date > to) return false;
-
+    if (fromDate.value && date < fromDate.value) return false;
+    if (toDate.value && date > toDate.value) return false;
     return true;
   }
 
@@ -180,15 +168,75 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
   }
 
-  function descendingByDate(a, b) {
-    return dateOf(b).localeCompare(dateOf(a));
+  function transactionTotal(record) {
+    return firstNumber(record, [
+      "grandTotal", "netTotal", "total", "amount", "subtotal"
+    ], 0);
   }
 
-  // Product र bill दुवै format लाई report row मा बदल्ने।
-  function expandTransactions(records, kind) {
-    const result = [];
+  function transactionItems(record) {
+    const items = firstValue(record, [
+      "items", "cart", "products", "lines", "details"
+    ], null);
+    return Array.isArray(items) ? items : [];
+  }
 
-    records.forEach((record) => {
+  function buildProductLookups(products) {
+    const byId = new Map();
+    const byName = new Map();
+    const byBarcode = new Map();
+
+    products.forEach(product => {
+      const id = firstValue(product, ["id", "productId", "product_id"], "");
+      const name = String(firstValue(product, ["name", "productName"], ""))
+        .trim().toLowerCase();
+      const barcode = String(firstValue(product, [
+        "barcode", "barCode", "productBarcode", "productCode"
+      ], "")).trim();
+
+      if (id !== "") byId.set(String(id), product);
+      if (name) byName.set(name, product);
+      if (barcode) byBarcode.set(barcode, product);
+    });
+
+    return { byId, byName, byBarcode };
+  }
+
+  function findProduct(item, lookups) {
+    const id = firstValue(item, ["productId", "product_id", "id"], "");
+    const name = String(firstValue(item, [
+      "productName", "name", "itemName", "title"
+    ], "")).trim().toLowerCase();
+    const barcode = String(firstValue(item, [
+      "barcode", "barCode", "productBarcode", "productCode"
+    ], "")).trim();
+
+    return (id !== "" && lookups.byId.get(String(id))) ||
+      (name && lookups.byName.get(name)) ||
+      (barcode && lookups.byBarcode.get(barcode)) ||
+      null;
+  }
+
+  function itemBarcode(item, lookups) {
+    const direct = firstValue(item, [
+      "barcode", "barCode", "productBarcode", "productCode"
+    ], "");
+
+    if (direct !== "") return String(direct);
+
+    const product = findProduct(item, lookups);
+    return product ? String(firstValue(product, [
+      "barcode", "barCode", "productBarcode", "productCode"
+    ], "")) : "";
+  }
+
+  function expandTransactions(records, kind, products) {
+    const result = [];
+    const lookups = buildProductLookups(products);
+
+    records.forEach(record => {
+      if (!dateAllowed(record)) return;
+
       const date = dateOf(record);
       const billNumber = firstValue(record, [
         "billNumber", "invoiceNumber", "invoiceNo",
@@ -203,165 +251,112 @@ document.addEventListener("DOMContentLoaded", function () {
         "supplierName", "supplier", "partyName"
       ], "-");
 
-      const items = firstValue(record, [
-        "items", "cart", "products", "lines", "details"
-      ], null);
+      const items = transactionItems(record);
+      const lines = items.length ? items : [record];
 
-      if (Array.isArray(items) && items.length > 0) {
-        items.forEach((item, index) => {
-          const qty = firstNumber(item, [
-            "qty", "quantity", "soldQty", "purchaseQty"
-          ]);
+      lines.forEach((item, index) => {
+        const qty = firstNumber(item, [
+          "qty", "quantity", "soldQty", "purchaseQty"
+        ], 0);
 
-          const rate = firstNumber(item, [
-            "rate", "price", "salePrice", "purchasePrice", "unitPrice"
-          ]);
+        const rate = firstNumber(item, [
+          "rate", "price", "salePrice", "purchasePrice", "unitPrice"
+        ], 0);
 
-          const total = firstNumber(item, [
-            "total", "lineTotal", "amount", "subtotal"
-          ], qty * rate);
+        const lineTotal = firstNumber(item, [
+          "lineTotal", "total", "amount", "subtotal"
+        ], qty * rate);
 
-          result.push({
-            date,
-            billNumber: items.length > 1
-              ? String(billNumber) + (index ? "" : "")
-              : String(billNumber),
-            customerName,
-            supplierName,
-            productName: firstValue(item, [
-              "productName", "name", "itemName", "title"
-            ], "-"),
-            qty,
-            rate,
-            total,
-            paidAmount: 0,
-            balance: 0,
-            source: record,
-            item
-          });
-        });
+        const product = findProduct(item, lookups);
+        const productName = firstValue(item, [
+          "productName", "name", "itemName", "title", "product"
+        ], product ? firstValue(product, ["name", "productName"], "-") : "-");
 
-        // भुक्तानी/balance लाई पहिलो row मा मात्र राख्ने।
-        const group = result.slice(-items.length);
-        if (group.length) {
-          group[0].paidAmount = firstNumber(record, [
-            "paidAmount", "paid", "amountPaid", "payment"
-          ]);
-
-          group[0].balance = firstNumber(record, [
-            "balance", "due", "remainingBalance"
-          ], Math.max(
-            firstNumber(record, ["total", "grandTotal", "netTotal"]) -
-            group[0].paidAmount,
-            0
-          ));
-        }
-
-        return;
-      }
-
-      const qty = firstNumber(record, [
-        "qty", "quantity", "soldQty", "purchaseQty"
-      ]);
-
-      const rate = firstNumber(record, [
-        "rate", "price", "salePrice", "purchasePrice", "unitPrice"
-      ]);
-
-      const total = firstNumber(record, [
-        "total", "grandTotal", "netTotal", "amount", "subtotal"
-      ], qty * rate);
-
-      result.push({
-        date,
-        billNumber,
-        customerName,
-        supplierName,
-        productName: firstValue(record, [
-          "productName", "name", "itemName", "product"
-        ], "-"),
-        qty,
-        rate,
-        total,
-        paidAmount: firstNumber(record, [
+        const paid = firstNumber(record, [
           "paidAmount", "paid", "amountPaid", "payment"
-        ]),
-        balance: firstNumber(record, [
+        ], 0);
+
+        const total = transactionTotal(record);
+        const balance = firstNumber(record, [
           "balance", "due", "remainingBalance"
-        ], Math.max(
-          total - firstNumber(record, ["paidAmount", "paid", "amountPaid"]),
-          0
-        )),
-        source: record,
-        item: record
+        ], Math.max(total - paid, 0));
+
+        result.push({
+          date,
+          billNumber,
+          customerName,
+          supplierName,
+          productName,
+          barcode: itemBarcode(item, lookups),
+          qty,
+          rate,
+          total: lineTotal,
+          paidAmount: index === 0 ? paid : 0,
+          balance: index === 0 ? balance : 0,
+          source: record,
+          item
+        });
       });
     });
 
-    return result.filter((row) => {
-      return row.date && dateAllowed({ date: row.date });
-    });
+    return result.sort((a, b) => b.date.localeCompare(a.date));
   }
 
-  function renderSalesReport(sales) {
+  function renderSalesReport(data) {
     const body = $("salesReportBody");
-    const rows = expandTransactions(sales, "sale").sort(descendingByDate);
+    const rows = expandTransactions(data.sales, "sale", data.products);
 
     setCount("salesReportCount", rows.length, "items");
 
     if (!rows.length) {
-      showEmpty(body, 8, "No sales found for the selected period.");
-      return 0;
+      showEmpty(body, 9, "No sales found for the selected period.");
+    } else {
+      body.innerHTML = rows.map(sale => `
+        <tr>
+          <td>${escapeHTML(sale.date || "-")}</td>
+          <td>${escapeHTML(sale.billNumber || "-")}</td>
+          <td>${escapeHTML(sale.customerName || "Walk-in")}</td>
+          <td>${escapeHTML(sale.productName || "-")}</td>
+          <td>${escapeHTML(sale.barcode || "-")}</td>
+          <td>${num(sale.qty).toLocaleString("en-IN")}</td>
+          <td>${money(sale.total)}</td>
+          <td>${money(sale.paidAmount)}</td>
+          <td>${money(sale.balance)}</td>
+        </tr>
+      `).join("");
     }
 
-    body.innerHTML = rows.map((sale) => `
-      <tr>
-        <td>${escapeHTML(sale.date || "-")}</td>
-        <td>${escapeHTML(sale.billNumber)}</td>
-        <td>${escapeHTML(sale.customerName)}</td>
-        <td>${escapeHTML(sale.productName)}</td>
-        <td>${sale.qty.toLocaleString("en-IN")}</td>
-        <td>${money(sale.total)}</td>
-        <td>${money(sale.paidAmount)}</td>
-        <td>${money(sale.balance)}</td>
-      </tr>
-    `).join("");
-
-    // Bill मा multiple item भए bill total दोहोरिन नदिन source record बाट total निकाल्ने।
-    return sales.filter(dateAllowed).reduce((sum, sale) => {
-      return sum + firstNumber(sale, [
-        "total", "grandTotal", "netTotal", "amount"
-      ], 0);
+    // Summary मा प्रत्येक invoice को रकम एकपटक मात्र जोडिन्छ।
+    return data.sales.filter(dateAllowed).reduce((sum, sale) => {
+      return sum + transactionTotal(sale);
     }, 0);
   }
 
-  function renderPurchaseReport(purchases) {
+  function renderPurchaseReport(data) {
     const body = $("purchaseReportBody");
-    const rows = expandTransactions(purchases, "purchase").sort(descendingByDate);
+    const rows = expandTransactions(data.purchases, "purchase", data.products);
 
     setCount("purchaseReportCount", rows.length, "items");
 
     if (!rows.length) {
       showEmpty(body, 8, "No purchases found for the selected period.");
-      return 0;
+    } else {
+      body.innerHTML = rows.map(purchase => `
+        <tr>
+          <td>${escapeHTML(purchase.date || "-")}</td>
+          <td>${escapeHTML(purchase.billNumber || "-")}</td>
+          <td>${escapeHTML(purchase.supplierName || "-")}</td>
+          <td>${escapeHTML(purchase.productName || "-")}</td>
+          <td>${num(purchase.qty).toLocaleString("en-IN")}</td>
+          <td>${money(purchase.rate)}</td>
+          <td>${money(purchase.total)}</td>
+          <td>${money(purchase.paidAmount)}</td>
+        </tr>
+      `).join("");
     }
 
-    body.innerHTML = rows.map((purchase) => `
-      <tr>
-        <td>${escapeHTML(purchase.date || "-")}</td>
-        <td>${escapeHTML(purchase.billNumber)}</td>
-        <td>${escapeHTML(purchase.supplierName)}</td>
-        <td>${escapeHTML(purchase.productName)}</td>
-        <td>${purchase.qty.toLocaleString("en-IN")}</td>
-        <td>${money(purchase.rate)}</td>
-        <td>${money(purchase.total)}</td>
-        <td>${money(purchase.paidAmount)}</td>
-      </tr>
-    `).join("");
-
-    return purchases.filter(dateAllowed).reduce((sum, purchase) => {
-      return sum + firstNumber(purchase, [
-        "total", "grandTotal", "netTotal", "amount"
-      ], 0);
+    return data.purchases.filter(dateAllowed).reduce((sum, purchase) => {
+      return sum + transactionTotal(purchase);
     }, 0);
   }
 
@@ -375,31 +370,43 @@ document.addEventListener("DOMContentLoaded", function () {
     setCount("stockReportCount", sorted.length, "products");
 
     if (!sorted.length) {
-      showEmpty(body, 8, "No products found.");
+      showEmpty(body, 9, "No products found.");
       return;
     }
 
-    body.innerHTML = sorted.map((product) => {
-      const stock = firstNumber(product, ["stock", "quantity", "currentStock"]);
+    body.innerHTML = sorted.map(product => {
+      const stock = firstNumber(product, [
+        "stock", "quantity", "currentStock"
+      ], 0);
+
       const purchasePrice = firstNumber(product, [
         "purchasePrice", "costPrice", "cost", "purchaseRate"
-      ]);
+      ], 0);
+
       const salePrice = firstNumber(product, [
         "salePrice", "sellingPrice", "price", "rate"
-      ]);
-      const minStock = firstNumber(product, ["minStock", "minimumStock", "reorderLevel"]);
+      ], 0);
+
+      const minimum = firstNumber(product, [
+        "minStock", "minimumStock", "reorderLevel"
+      ], 0);
+
+      const barcode = firstValue(product, [
+        "barcode", "barCode", "productBarcode", "productCode"
+      ], "-");
 
       let status = '<span class="report-status ok">In Stock</span>';
 
       if (stock <= 0) {
         status = '<span class="report-status out">Out of Stock</span>';
-      } else if (stock <= minStock) {
+      } else if (minimum > 0 && stock <= minimum) {
         status = '<span class="report-status low">Low Stock</span>';
       }
 
       return `
         <tr>
           <td>${escapeHTML(firstValue(product, ["name", "productName"], "-"))}</td>
+          <td>${escapeHTML(barcode)}</td>
           <td>${escapeHTML(firstValue(product, ["category", "categoryName"], "-"))}</td>
           <td>${escapeHTML(firstValue(product, ["unit", "unitName"], "-"))}</td>
           <td>${stock.toLocaleString("en-IN")}</td>
@@ -413,24 +420,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function currentCustomerDue(customer) {
-    const explicit = customer.currentBalance;
+    const explicit = firstValue(customer, ["currentBalance"], null);
+    if (explicit !== null) return num(explicit);
 
-    if (explicit !== undefined && explicit !== null && explicit !== "") {
-      return num(explicit);
-    }
-
-    const opening = num(customer.openingBalance);
-    const credit = firstNumber(customer, [
-      "creditSaleTotal", "creditSales", "totalCreditSales"
-    ]);
-    const payment = firstNumber(customer, [
-      "paymentTotal", "totalPayments", "receivedTotal"
-    ]);
-    const returns = firstNumber(customer, [
-      "returnTotal", "salesReturnTotal"
-    ]);
-
-    return opening + credit - payment - returns;
+    return num(customer.openingBalance) +
+      firstNumber(customer, ["creditSaleTotal", "creditSales", "totalCreditSales"], 0) -
+      firstNumber(customer, ["paymentTotal", "totalPayments", "receivedTotal"], 0) -
+      firstNumber(customer, ["returnTotal", "salesReturnTotal"], 0);
   }
 
   function renderCustomerReport(customers) {
@@ -446,14 +442,14 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    body.innerHTML = sorted.map((customer) => {
+    body.innerHTML = sorted.map(customer => {
       const opening = num(customer.openingBalance);
       const credit = firstNumber(customer, [
         "creditSaleTotal", "creditSales", "totalCreditSales"
-      ]);
-      const payment = firstNumber(customer, [
+      ], 0);
+      const payments = firstNumber(customer, [
         "paymentTotal", "totalPayments", "receivedTotal"
-      ]);
+      ], 0);
       const due = currentCustomerDue(customer);
 
       return `
@@ -462,7 +458,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <td>${escapeHTML(customer.phone || "-")}</td>
           <td>${money(Math.abs(opening))}</td>
           <td>${money(credit)}</td>
-          <td>${money(payment)}</td>
+          <td>${money(payments)}</td>
           <td class="${due > 0 ? "report-orange" : "report-green"}">
             <strong>${money(Math.max(due, 0))}</strong>
             ${due < 0 ? " (Advance " + escapeHTML(money(Math.abs(due))) + ")" : ""}
@@ -473,23 +469,17 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function currentSupplierBalance(supplier) {
-    if (
-      supplier.currentBalance !== undefined &&
-      supplier.currentBalance !== null &&
-      supplier.currentBalance !== ""
-    ) {
-      return num(supplier.currentBalance);
-    }
+    const explicit = firstValue(supplier, ["currentBalance"], null);
+    if (explicit !== null) return num(explicit);
 
     const opening = num(supplier.openingBalance);
-    const signedOpening = supplier.balanceType === "ADVANCE"
-      ? -Math.abs(opening)
-      : Math.abs(opening);
+    const signedOpening = String(supplier.balanceType || "").toUpperCase() === "ADVANCE"
+      ? -Math.abs(opening) : Math.abs(opening);
 
     return signedOpening +
-      firstNumber(supplier, ["purchaseTotal", "totalPurchases"]) -
-      firstNumber(supplier, ["paymentTotal", "totalPayments"]) -
-      firstNumber(supplier, ["returnTotal", "purchaseReturnTotal"]);
+      firstNumber(supplier, ["purchaseTotal", "totalPurchases"], 0) -
+      firstNumber(supplier, ["paymentTotal", "totalPayments"], 0) -
+      firstNumber(supplier, ["returnTotal", "purchaseReturnTotal"], 0);
   }
 
   function renderSupplierReport(suppliers) {
@@ -505,10 +495,14 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    body.innerHTML = sorted.map((supplier) => {
+    body.innerHTML = sorted.map(supplier => {
       const opening = num(supplier.openingBalance);
-      const purchase = firstNumber(supplier, ["purchaseTotal", "totalPurchases"]);
-      const payment = firstNumber(supplier, ["paymentTotal", "totalPayments"]);
+      const purchases = firstNumber(supplier, [
+        "purchaseTotal", "totalPurchases"
+      ], 0);
+      const payments = firstNumber(supplier, [
+        "paymentTotal", "totalPayments"
+      ], 0);
       const balance = currentSupplierBalance(supplier);
 
       return `
@@ -516,8 +510,8 @@ document.addEventListener("DOMContentLoaded", function () {
           <td>${escapeHTML(supplier.name || "-")}</td>
           <td>${escapeHTML(supplier.phone || "-")}</td>
           <td>${money(Math.abs(opening))}</td>
-          <td>${money(purchase)}</td>
-          <td>${money(payment)}</td>
+          <td>${money(purchases)}</td>
+          <td>${money(payments)}</td>
           <td class="${balance > 0 ? "report-orange" : "report-green"}">
             <strong>${money(Math.max(balance, 0))}</strong>
             ${balance < 0 ? " (Advance " + escapeHTML(money(Math.abs(balance))) + ")" : ""}
@@ -532,77 +526,44 @@ document.addEventListener("DOMContentLoaded", function () {
       "type", "transactionType", "categoryType"
     ], "")).trim().toUpperCase();
 
-    return type === "EXPENSE" ||
-      type === "EXPENSES" ||
-      type === "OUTFLOW";
+    return ["EXPENSE", "EXPENSES", "OUTFLOW"].includes(type);
   }
 
-  function calculateProfit(data, saleTotal) {
+  function calculateProfit(data, salesTotal, purchaseTotal) {
     const filteredSales = data.sales.filter(dateAllowed);
     const filteredFinance = data.finance.filter(dateAllowed);
 
     const expenses = filteredFinance.reduce((sum, transaction) => {
-      return isExpense(transaction)
-        ? sum + firstNumber(transaction, ["amount", "total", "value"])
-        : sum;
+      return sum + (isExpense(transaction)
+        ? firstNumber(transaction, ["amount", "total", "value"], 0)
+        : 0);
     }, 0);
 
-    // Map products by ID and name for legacy sales with a product reference.
-    const productMap = new Map();
-
-    data.products.forEach((product) => {
-      const id = firstValue(product, ["id", "productId"], "");
-      const name = String(firstValue(product, ["name", "productName"], ""))
-        .trim().toLowerCase();
-
-      if (id !== "") productMap.set("id:" + id, product);
-      if (name) productMap.set("name:" + name, product);
-    });
-
+    const lookups = buildProductLookups(data.products);
     let cost = 0;
     let costKnown = true;
     let costRows = 0;
 
-    filteredSales.forEach((sale) => {
-      const items = firstValue(sale, [
-        "items", "cart", "products", "lines", "details"
-      ], null);
+    filteredSales.forEach(sale => {
+      const items = transactionItems(sale);
+      const lines = items.length ? items : [sale];
 
-      const lines = Array.isArray(items) && items.length
-        ? items
-        : [sale];
-
-      lines.forEach((item) => {
+      lines.forEach(item => {
         const qty = firstNumber(item, [
           "qty", "quantity", "soldQty"
-        ]);
+        ], 0);
 
-        const explicitCost = firstValue(item, [
+        let unitCost = firstValue(item, [
           "unitCost", "costPrice", "purchasePrice", "costRate",
           "averageCost", "fifoCost"
         ], null);
 
-        let unitCost = explicitCost === null
-          ? null
-          : num(explicitCost);
-
         if (unitCost === null) {
-          const productId = firstValue(item, ["productId", "product_id"], "");
-          const productName = String(firstValue(item, [
-            "productName", "name", "itemName"
-          ], "")).trim().toLowerCase();
-
-          const product = (productId !== "" && productMap.get("id:" + productId)) ||
-            (productName && productMap.get("name:" + productName));
-
+          const product = findProduct(item, lookups);
           if (product) {
-            const fallbackCost = firstValue(product, [
+            unitCost = firstValue(product, [
               "purchasePrice", "costPrice", "purchaseRate"
             ], null);
-
-            if (fallbackCost !== null) {
-              unitCost = num(fallbackCost);
-            }
           }
         }
 
@@ -611,24 +572,20 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
 
-        cost += qty * unitCost;
+        cost += qty * num(unitCost);
         costRows++;
       });
     });
 
-    // कुनै पनि sales line को लागत नचिनिएमा अपूर्ण cost लाई पूरा भनेर देखाउँदैन।
-    const hasSales = filteredSales.length > 0;
-    const costAvailable = hasSales && costKnown && costRows > 0;
+    const costAvailable = filteredSales.length > 0 && costKnown && costRows > 0;
 
     return {
-      salesTotal: saleTotal,
+      salesTotal,
       expenseTotal: expenses,
-      purchaseTotal: data.purchases.filter(dateAllowed).reduce((sum, purchase) =>
-        sum + firstNumber(purchase, ["total", "grandTotal", "netTotal", "amount"]), 0
-      ),
-      purchaseCost: cost,
-      grossProfit: costAvailable ? saleTotal - cost : null,
-      netProfit: costAvailable ? saleTotal - cost - expenses : null,
+      purchaseTotal,
+      cost,
+      grossProfit: costAvailable ? salesTotal - cost : null,
+      netProfit: costAvailable ? salesTotal - cost - expenses : null,
       costAvailable
     };
   }
@@ -646,31 +603,30 @@ document.addEventListener("DOMContentLoaded", function () {
       setText("profitNet", "N/A");
       setText("reportGrossProfit", "N/A");
 
-      warning.style.display = "block";
       warning.textContent =
-        "नाफा सही निकाल्न बिक्रीका item मा unitCost/costPrice/purchasePrice " +
+        "नाफा निकाल्न बिक्रीका item मा unitCost/costPrice/purchasePrice " +
         "वा product मा purchasePrice चाहिन्छ। लागत उपलब्ध नभएकाले Gross Profit " +
-        "र Net Profit अहिले देखाइएको छैन। Product को अहिलेको लागत प्रयोग भएको " +
-        "अवस्थामा नतिजा अनुमानित हुन सक्छ, ऐतिहासिक FIFO cost होइन।";
+        "र Net Profit देखाइएको छैन। हालको product लागत प्रयोग भए नतिजा अनुमानित " +
+        "हुन सक्छ; यो ऐतिहासिक FIFO cost नहुन सक्छ।";
       return;
     }
 
-    warning.style.display = "none";
-
-    setMoney("profitCost", profit.purchaseCost);
+    warning.textContent = "";
+    setMoney("profitCost", profit.cost);
     setMoney("profitGross", profit.grossProfit);
     setMoney("profitNet", profit.netProfit);
     setMoney("reportGrossProfit", profit.grossProfit);
 
-    const grossElement = $("profitGross");
-    const netElement = $("profitNet");
-
-    grossElement.classList.toggle("report-green", profit.grossProfit >= 0);
-    grossElement.classList.toggle("report-red", profit.grossProfit < 0);
-    netElement.classList.toggle("report-green", profit.netProfit >= 0);
-    netElement.classList.toggle("report-red", profit.netProfit < 0);
-    grossSummary.classList.toggle("report-green", profit.grossProfit >= 0);
-    grossSummary.classList.toggle("report-red", profit.grossProfit < 0);
+    [
+      ["profitGross", profit.grossProfit],
+      ["profitNet", profit.netProfit],
+      ["reportGrossProfit", profit.grossProfit]
+    ].forEach(([id, value]) => {
+      const element = $(id);
+      if (!element) return;
+      element.classList.toggle("report-green", value >= 0);
+      element.classList.toggle("report-red", value < 0);
+    });
   }
 
   function renderReports() {
@@ -683,55 +639,70 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const data = loadData();
 
-    $("reportPeriodNote").textContent =
+    setText("reportPeriodNote",
       "Transactions: " + (fromDate.value || "Any date") +
       " to " + (toDate.value || "Any date") +
-      ". Stock and current balances show the present position.";
+      ". Stock and current balances show the present position."
+    );
 
-    const salesTotal = renderSalesReport(data.sales);
-    renderPurchaseReport(data.purchases);
+    const salesTotal = renderSalesReport(data);
+    const purchaseTotal = renderPurchaseReport(data);
+
     renderStockReport(data.products);
     renderCustomerReport(data.customers);
     renderSupplierReport(data.suppliers);
 
-    const profit = calculateProfit(data, salesTotal);
+    const profit = calculateProfit(data, salesTotal, purchaseTotal);
 
     setMoney("reportSales", salesTotal);
-    setMoney("reportPurchases", profit.purchaseTotal);
+    setMoney("reportPurchases", purchaseTotal);
     setMoney("reportExpenses", profit.expenseTotal);
 
     renderProfit(profit);
   }
 
-  // Tab switching
-  document.querySelectorAll(".report-tab").forEach((button) => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".report-tab").forEach((tab) => {
-        tab.classList.remove("active");
-        tab.setAttribute("aria-selected", "false");
-      });
+  function selectReport(name) {
+    document.querySelectorAll("[data-report-tab]").forEach(tab => {
+      const active = tab.getAttribute("data-report-tab") === name;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", active ? "true" : "false");
+    });
 
-      document.querySelectorAll(".report-panel").forEach((panel) => {
-        panel.classList.remove("active");
-      });
+    document.querySelectorAll(".report-panel[data-report]").forEach(panel => {
+      panel.hidden = panel.getAttribute("data-report") !== name;
+    });
+  }
 
-      button.classList.add("active");
-      button.setAttribute("aria-selected", "true");
+  function initializeDates() {
+    const today = localDateString(new Date());
+    if (!fromDate.value && !toDate.value) {
+      fromDate.value = today.slice(0, 8) + "01";
+      toDate.value = today;
+    }
+  }
 
-      const panel = $("report-" + button.dataset.report);
-      if (panel) panel.classList.add("active");
+  document.querySelectorAll("[data-report-tab]").forEach(tab => {
+    tab.addEventListener("click", () => {
+      selectReport(tab.getAttribute("data-report-tab"));
     });
   });
 
-  applyButton.addEventListener("click", renderReports);
-  refreshButton.addEventListener("click", renderReports);
+  $("applyReportFilterBtn").addEventListener("click", renderReports);
+  $("refreshReportsBtn").addEventListener("click", renderReports);
 
-  // अन्य tab वा browser मा data परिवर्तन भएको भए refresh गर्दा पुनः पढिन्छ।
-  window.addEventListener("storage", (event) => {
+  $("clearReportFilterBtn").addEventListener("click", () => {
+    fromDate.value = "";
+    toDate.value = "";
+    renderReports();
+  });
+
+  window.addEventListener("storage", event => {
     if (!event.key || Object.values(KEYS).includes(event.key)) {
       renderReports();
     }
   });
 
+  initializeDates();
+  selectReport("sales");
   renderReports();
 });
