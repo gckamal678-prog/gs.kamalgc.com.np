@@ -1,4 +1,4 @@
-ल/* =========================================================
+/* =========================================================
    GS GENERAL STORE MANAGEMENT SYSTEM
    SALE MODULE — MULTI-PRODUCT A4 INVOICE
    Barcode + FIFO + Daily Invoice Prefix + Signature
