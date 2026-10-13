@@ -923,516 +923,356 @@
 
   /* -------------------- PDF / PRINT -------------------- */
 
-  
-function printReport(panel) {
-  const profile = storeProfile();
-  const makeReport = findReportFunction(panel);
+  function printReport(panel) {
+    const profile = storeProfile();
+    const makeReport = findReportFunction(panel);
 
-  if (!makeReport) {
-    showToast("यो रिपोर्टको प्रकार पहिचान भएन।", true);
-    return;
-  }
+    if (!makeReport) {
+      showToast("यो रिपोर्टको प्रकार पहिचान भएन।", true);
+      return;
+    }
 
-  let report;
+    const report = makeReport();
+    const title = panelTitle(panel, report.title);
+    const dateRange = startDate || endDate
+      ? `${startDate ? formatDate(startDate) : "Beginning"} — ${endDate ? formatDate(endDate) : "Today"}`
+      : "All available records";
 
-  try {
-    report = makeReport();
-  } catch (error) {
-    console.error("GS PDF report error:", error);
-    showToast("रिपोर्ट तयार गर्न सकिएन।", true);
-    return;
-  }
+    const now = new Date().toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
 
-  const title = panelTitle(panel, report.title);
-  const dateRange = startDate || endDate
-    ? `${startDate ? formatDate(startDate) : "सुरुदेखि"} — ${endDate ? formatDate(endDate) : "आजसम्म"}`
-    : "सबै उपलब्ध रेकर्ड";
+    const logoHTML = profile.photo
+      ? `<img class="store-logo" src="${escapeHTML(profile.photo)}" alt="Store Logo" onerror="this.style.display='none';">`
+      : `<div class="store-logo-placeholder">GS</div>`;
 
-  const now = new Date().toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-
-  const logoHTML = profile.photo
-    ? `<img class="store-logo" src="${escapeHTML(profile.photo)}" alt="Store Logo">`
-    : `<div class="store-logo-placeholder">GS</div>`;
-
-  const ownerHTML = profile.owner
-    ? `<div class="owner-name">Owner: ${escapeHTML(profile.owner)}</div>`
-    : "";
-
-  const addressHTML = profile.address
-    ? `<div class="owner-address">${escapeHTML(profile.address)}</div>`
-    : "";
-
-  const documentHTML = `<!DOCTYPE html>
+    const documentHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHTML(title)} - ${escapeHTML(profile.name)}</title>
-
 <style>
-  @page {
-    size: A4 portrait;
-    margin: 30mm 12mm 25mm 12mm;
+  @page { size:A4 portrait; margin:12mm; }
+
+  * { box-sizing:border-box; }
+
+  body {
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    color:#111827;
+    font-size:11px;
+    background:#fff;
   }
 
-  * {
-    box-sizing: border-box;
-  }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #fff;
-    color: #26332d;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 10px;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* Print controls: screen only */
   .print-toolbar {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 12px;
-    margin-bottom: 18px;
-    background: #f3f6f4;
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin:0 0 18px;
   }
 
   .print-toolbar button {
-    border: 0;
-    border-radius: 7px;
-    padding: 11px 18px;
-    background: #176b48;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
+    padding:10px 18px;
+    border:0;
+    border-radius:7px;
+    background:#166534;
+    color:white;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
   }
 
-  .print-toolbar .close-button {
-    background: #374151;
-  }
+  .print-toolbar .close-button { background:#374151; }
 
-  /* Same header on every printed page */
   .store-header {
-    position: fixed;
-    top: -25mm;
-    left: 0;
-    right: 0;
-    height: 25mm;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #fff;
-    border-bottom: 2px solid #24734f;
-    padding: 0 0 5mm;
-    z-index: 10;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding:0 0 13px;
+    border-bottom:2px solid #166534;
+    margin-bottom:18px;
   }
 
   .store-logo,
   .store-logo-placeholder {
-    width: 19mm;
-    height: 19mm;
-    flex: 0 0 19mm;
-    object-fit: contain;
-    border: 1px solid #e0e8e2;
-    border-radius: 4mm;
-    padding: 2px;
-    background: #fff;
+    width:76px;
+    height:76px;
+    flex:0 0 76px;
+    object-fit:contain;
+    border:1px solid #d1d5db;
+    border-radius:9px;
   }
 
   .store-logo-placeholder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #176b48;
-    background: #f0f7f2;
-    font-size: 19px;
-    font-weight: 800;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#166534;
+    color:#fff;
+    font-size:25px;
+    font-weight:bold;
   }
 
-  .store-details {
-    flex: 1;
-    min-width: 0;
-  }
+  .store-details { flex:1; min-width:0; }
 
   .store-name {
-    margin: 0;
-    color: #216b49;
-    font-size: 18px;
-    line-height: 1.35;
-    font-weight: 800;
-    overflow-wrap: anywhere;
+    margin:0 0 5px;
+    font-size:23px;
+    color:#14532d;
+    font-weight:800;
+    overflow-wrap:anywhere;
   }
 
   .store-contact {
-    margin-top: 3px;
-    color: #66716b;
-    font-size: 9px;
-    line-height: 1.45;
-    overflow-wrap: anywhere;
+    line-height:1.65;
+    color:#374151;
+    overflow-wrap:anywhere;
   }
 
-  .owner-details {
-    flex: 0 0 37%;
-    max-width: 37%;
-    text-align: right;
-    align-self: center;
-    overflow-wrap: anywhere;
-  }
-
-  .owner-name {
-    color: #303a34;
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 1.5;
-  }
-
-  .owner-address {
-    color: #68716c;
-    font-size: 10px;
-    line-height: 1.5;
-  }
-
-  /* Report title and date range */
   .report-heading {
-    margin: 0 0 14px;
-    padding: 0 0 10px;
-    border-bottom: 1px solid #e2e9e4;
+    text-align:center;
+    margin:18px 0 15px;
   }
 
   .report-heading h2 {
-    margin: 0 0 7px;
-    color: #174d35;
-    font-size: 16px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .35px;
+    font-size:18px;
+    margin:0 0 6px;
+    text-transform:uppercase;
   }
 
-  .report-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 8px 10px;
-    border: 1px solid #e1e9e3;
-    border-radius: 5px;
-    background: #f4f8f5;
+  .report-heading p {
+    color:#4b5563;
+    margin:4px 0;
   }
 
-  .meta-label {
-    display: block;
-    margin-bottom: 3px;
-    color: #738078;
-    font-size: 8px;
+  .summary {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:12px 0 18px;
   }
 
-  .meta-value {
-    color: #303c34;
-    font-size: 9px;
-    font-weight: 700;
-    overflow-wrap: anywhere;
+  .summary-card {
+    border:1px solid #d1d5db;
+    border-radius:6px;
+    padding:9px;
+    min-width:100px;
+    flex:1;
   }
 
-  /* Summary cards */
+  .summary-label {
+    color:#6b7280;
+    font-size:10px;
+    margin-bottom:6px;
+  }
+
+  .summary-value {
+    color:#111827;
+    font-size:13px;
+    font-weight:bold;
+    overflow-wrap:anywhere;
+  }
+
   .gs-report-stats {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 7px;
-    margin: 12px 0 16px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:12px 0 18px;
   }
 
   .gs-report-stat {
-    min-width: 0;
-    padding: 9px 8px;
-    border: 1px solid #dfe8e1;
-    border-radius: 5px;
-    background: #f7faf8;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    border:1px solid #d1d5db;
+    border-radius:6px;
+    padding:9px;
+    min-width:100px;
+    flex:1;
   }
 
   .gs-report-stat-label {
-    margin-bottom: 5px;
-    color: #68766d;
-    font-size: 8px;
-    line-height: 1.4;
+    color:#6b7280;
+    font-size:10px;
+    margin-bottom:6px;
   }
 
   .gs-report-stat-value {
-    color: #176342;
-    font-size: 11px;
-    font-weight: 800;
-    line-height: 1.4;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    color:#111827;
+    font-size:13px;
+    font-weight:bold;
+    overflow-wrap:anywhere;
   }
 
-  /* Report tables */
-  .gs-report-table-wrap {
-    width: 100%;
-    margin: 10px 0 14px;
+  .gs-report-table-wrap { width:100%; }
+
+  table {
+    width:100%;
+    border-collapse:collapse;
+    margin:10px 0 18px;
+    font-size:10px;
   }
 
-  table,
-  .gs-report-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: auto;
-    font-size: 8px;
-  }
-
-  thead {
-    display: table-header-group;
-  }
-
-  tfoot {
-    display: table-footer-group;
-  }
-
-  tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  th,
-  td {
-    padding: 6px 5px;
-    border: 1px solid #d9e2dc;
-    text-align: left;
-    vertical-align: top;
-    line-height: 1.4;
-    overflow-wrap: anywhere;
-    word-break: normal;
+  th, td {
+    border:1px solid #d1d5db;
+    padding:7px 6px;
+    text-align:left;
+    vertical-align:top;
+    overflow-wrap:anywhere;
   }
 
   th {
-    background: #176b48;
-    color: #fff;
-    font-size: 8px;
-    font-weight: 700;
+    background:#f3f4f6;
+    font-weight:bold;
+    color:#111827;
   }
 
-  tbody tr:nth-child(even) {
-    background: #f2f7f3;
-  }
-
-  tbody tr:nth-child(odd) {
-    background: #fff;
-  }
+  tr { page-break-inside:avoid; }
 
   .gs-report-empty {
-    padding: 18px 12px;
-    border: 1px dashed #cbd8ce;
-    border-radius: 5px;
-    color: #68766d;
-    text-align: center;
-  }
-
-  /* Same footer on every printed page */
-  .page-footer {
-    position: fixed;
-    bottom: -21mm;
-    left: 0;
-    right: 0;
-    height: 20mm;
-    padding-top: 2mm;
-    background: #fff;
-    border-top: 1px solid #dce5de;
-    text-align: center;
+    border:1px dashed #d1d5db;
+    padding:20px;
+    text-align:center;
+    color:#6b7280;
   }
 
   .signature-area {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 15px;
-    margin: 0 0 5mm;
+    display:flex;
+    justify-content:space-between;
+    gap:22px;
+    margin-top:42px;
+    page-break-inside:avoid;
   }
 
   .signature {
-    flex: 1;
-    min-width: 0;
-    padding-top: 5px;
-    border-top: 1px solid #929d95;
-    color: #657068;
-    font-size: 8px;
-    text-align: center;
+    flex:1;
+    min-width:0;
+    border-top:1px solid #374151;
+    padding-top:7px;
+    text-align:center;
+    font-size:10px;
   }
 
   .thank-you {
-    margin: 0 0 4px;
-    color: #216b49;
-    font-size: 12px;
-    font-weight: 800;
+    margin-top:28px;
+    padding-top:12px;
+    border-top:1px solid #d1d5db;
+    text-align:center;
+    color:#166534;
+    font-size:13px;
+    font-weight:bold;
   }
 
   .print-note {
-    color: #727c75;
-    font-size: 8px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-  }
-
-  .page-number {
-    margin-top: 2px;
-    color: #657068;
-    font-size: 8px;
-  }
-
-  @media screen {
-    body {
-      max-width: 210mm;
-      min-height: 297mm;
-      margin: 20px auto;
-      padding: 30mm 12mm 25mm;
-      box-shadow: 0 2px 18px rgba(0,0,0,.12);
-    }
-
-    .store-header {
-      top: 20px;
-      left: max(calc((100vw - 210mm) / 2 + 12mm), 12px);
-      right: max(calc((100vw - 210mm) / 2 + 12mm), 12px);
-    }
-
-    .page-footer {
-      position: static;
-      height: auto;
-      margin-top: 30px;
-      padding-top: 12px;
-    }
+    margin-top:8px;
+    text-align:center;
+    color:#6b7280;
+    font-size:9px;
+    line-height:1.6;
   }
 
   @media print {
-    .print-toolbar {
-      display: none !important;
-    }
+    .print-toolbar { display:none !important; }
+    body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
 
-    body {
-      max-width: none;
-      min-height: 0;
-      padding: 0;
-      margin: 0;
-      box-shadow: none;
-    }
-
-    .store-header {
-      top: -25mm;
-      left: 0;
-      right: 0;
-    }
-
-    .page-footer {
-      position: fixed;
-      bottom: -21mm;
-      left: 0;
-      right: 0;
-    }
-
-    .gs-report-table-wrap {
-      overflow: visible;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+  @media screen {
+    body { max-width:190mm; margin:20px auto; padding:16px; }
   }
 </style>
 </head>
-
 <body>
   <div class="print-toolbar">
-    <button type="button" onclick="window.print()">Print / Save PDF</button>
-    <button type="button" class="close-button" onclick="window.close()">Close</button>
+    <button onclick="window.print()">Print / Save PDF</button>
+    <button class="close-button" onclick="window.close()">Close</button>
   </div>
 
   <header class="store-header">
     ${logoHTML}
-
     <div class="store-details">
       <h1 class="store-name">${escapeHTML(profile.name)}</h1>
       <div class="store-contact">
+        ${profile.address ? `<div>${escapeHTML(profile.address)}</div>` : ""}
         ${profile.phone ? `<div>Phone: ${escapeHTML(profile.phone)}</div>` : ""}
         ${profile.email ? `<div>Email: ${escapeHTML(profile.email)}</div>` : ""}
+        ${profile.owner ? `<div>Owner: ${escapeHTML(profile.owner)}</div>` : ""}
       </div>
-    </div>
-
-    <div class="owner-details">
-      ${ownerHTML}
-      ${addressHTML}
     </div>
   </header>
 
-  <main>
-    <section class="report-heading">
-      <h2>${escapeHTML(title)}</h2>
+  <section class="report-heading">
+    <h2>${escapeHTML(title)}</h2>
+    <p>Date Range: ${escapeHTML(dateRange)}</p>
+    <p>Generated: ${escapeHTML(now)}</p>
+  </section>
 
-      <div class="report-meta">
-        <div>
-          <span class="meta-label">Report Period</span>
-          <span class="meta-value">${escapeHTML(dateRange)}</span>
-        </div>
+  ${report.summary}
+  ${report.table}
 
-        <div style="text-align:right">
-          <span class="meta-label">Printed Date</span>
-          <span class="meta-value">${escapeHTML(now)}</span>
-        </div>
-      </div>
-    </section>
+  <section class="signature-area">
+    <div class="signature">Prepared By</div>
+    <div class="signature">Checked By</div>
+    <div class="signature">Authorized Signature</div>
+  </section>
 
-    ${report.summary}
-    ${report.table}
-  </main>
-
-  <footer class="page-footer">
-    <div class="signature-area">
-      <div class="signature">Prepared By</div>
-      <div class="signature">Checked By</div>
-      <div class="signature">Authorized Signature</div>
-    </div>
-
-    <div class="thank-you">Thank you, visit again 🙏</div>
-
+  <footer>
+    <div class="thank-you">Thank you for your business. Visit again! 🙏</div>
     <div class="print-note">
-      ${profile.phone ? `Phone: ${escapeHTML(profile.phone)}` : ""}
-      ${profile.phone && profile.email ? " &nbsp; | &nbsp; " : ""}
-      ${profile.email ? `Email: ${escapeHTML(profile.email)}` : ""}
-      <div>This is a computer-generated report.</div>
+      This is a computer-generated report.
+      ${profile.phone ? `<br>Phone: ${escapeHTML(profile.phone)}` : ""}
+      ${profile.email ? `<br>Email: ${escapeHTML(profile.email)}` : ""}
     </div>
-
-    <div class="page-number"></div>
   </footer>
 </body>
 </html>`;
 
-  const popup = window.open("", "_blank");
+    const popup = window.open("", "_blank");
 
-  if (!popup) {
-    showToast("PDF खोल्न popup अनुमति दिनुहोस्।", true);
-    return;
-  }
+    if (!popup) {
+      showToast("PDF खोल्न popup अनुमति दिनुहोस्।", true);
+      return;
+    }
 
-  try {
     popup.document.open();
     popup.document.write(documentHTML);
     popup.document.close();
     popup.focus();
-  } catch (error) {
-    console.error("GS PDF window error:", error);
-    showToast("PDF खोल्न समस्या भयो।", true);
   }
-}
 
+  /* -------------------- ONE PRINT BUTTON PER PANEL -------------------- */
+
+  function ensurePrintButtons() {
+    const panels = $$(".report-panel[data-report], [data-report].report-panel, [data-report].report-card");
+
+    panels.forEach(panel => {
+      if (!findReportFunction(panel)) return;
+
+      // Remove duplicate buttons created by this script.
+      const existing = $$(".gs-report-print-button", panel);
+      existing.slice(1).forEach(button => button.remove());
+
+      let button = $(".gs-report-print-button", panel);
+
+      if (!button) {
+        button = document.createElement("button");
+        button.type = "button";
+        button.className = "gs-report-action gs-report-print-button";
+        button.textContent = "Print / Save PDF";
+        button.addEventListener("click", () => printReport(panel));
+
+        const heading = $(".gs-report-panel-heading", panel) ||
+          $("h1, h2, h3, .report-title, .panel-title", panel);
+
+        if (heading && heading.parentElement) {
+          heading.parentElement.appendChild(button);
+        } else {
+          panel.insertBefore(button, panel.firstChild);
+        }
+      }
+    });
+  }
 
   /* -------------------- REFRESH BUTTON WIRING -------------------- */
 
