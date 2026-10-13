@@ -229,20 +229,44 @@
             <label for="paidAmount">Paid Amount</label>
             <input type="number" id="paidAmount" min="0" step="0.01" value="0">
           </div>
-
-          <div class="sale-field">
-            <label for="saleDiscount">Overall Discount</label>
-            <input type="number" id="saleDiscount" min="0" step="0.01" value="0">
-          </div>
-
-          <div class="sale-field" style="grid-column:1/-1">
-            <label for="saleNote">Notes</label>
-            <textarea id="saleNote" rows="2" maxlength="500" placeholder="ऐच्छिक टिप्पणी"></textarea>
-          </div>
         </div>
 
         <section class="sale-section">
           <h3>Sale Information</h3>
+
+          <!-- Product Selection Form -->
+          <div class="sale-grid" style="margin-top:15px;">
+
+            <div class="sale-field">
+              <label for="saleProduct">सामान छान्नुहोस् *</label>
+              <select id="saleProduct">
+                <option value="">Product छान्नुहोस्</option>
+              </select>
+            </div>
+
+            <div class="sale-field">
+              <label for="saleQty">मात्रा *</label>
+              <input
+                type="number"
+                id="saleQty"
+                min="0.01"
+                step="any"
+                placeholder="मात्रा राख्नुहोस्"
+              >
+            </div>
+
+            <div class="sale-field">
+              <label for="saleRate">बिक्री दर *</label>
+              <input
+                type="number"
+                id="saleRate"
+                min="0.01"
+                step="0.01"
+                placeholder="बिक्री दर राख्नुहोस्"
+              >
+            </div>
+
+          </div>
 
           <!-- Multi-product Bill Items यहाँ थपिएको छ -->
           <section class="sale-items-panel">
