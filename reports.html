@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Business Reports | General Store</title>
+
   <script src="appearance.js"></script>
   <link rel="stylesheet" href="style.css">
 
@@ -15,7 +16,7 @@
       --r-text: var(--text-color, #111827);
       --r-muted: var(--muted-color, #6b7280);
       --r-border: var(--border-color, #e5e7eb);
-      --r-accent: var(--accent-color, #166534);
+      --r-accent: #166534;
     }
 
     * { box-sizing: border-box; }
@@ -36,12 +37,12 @@
     .report-wrap {
       width: 100%;
       max-width: 1450px;
-      min-height: 100vh;
-      margin: 0 auto;
+      margin: auto;
       padding: 22px;
     }
 
-    .report-header, .report-panel-header, .print-profile-head {
+    .report-header,
+    .report-panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -50,10 +51,23 @@
     }
 
     .report-header { margin-bottom: 20px; }
-    .report-header h1 { margin: 0 0 7px; font-size: clamp(23px, 3vw, 30px); }
-    .report-header p { margin: 0; color: var(--r-muted); line-height: 1.6; }
 
-    .report-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .report-header h1 {
+      margin: 0 0 7px;
+      font-size: clamp(23px, 3vw, 30px);
+    }
+
+    .report-header p {
+      margin: 0;
+      color: var(--r-muted);
+      line-height: 1.6;
+    }
+
+    .report-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
 
     .report-btn {
       min-height: 42px;
@@ -70,7 +84,7 @@
     .report-btn.primary {
       background: var(--r-accent);
       border-color: var(--r-accent);
-      color: #fff;
+      color: white;
     }
 
     .report-card {
@@ -78,13 +92,11 @@
       padding: 19px;
       margin-bottom: 18px;
       border: 1px solid var(--r-border);
-      border-radius: 15px;
+      border-radius: 12px;
       background: var(--r-card);
       color: var(--r-text);
       box-shadow: 0 3px 12px #00000008;
     }
-
-    .report-card h2, .report-card h3 { color: var(--r-text); }
 
     .report-filter-grid {
       display: grid;
@@ -93,8 +105,18 @@
       align-items: end;
     }
 
-    .report-field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
-    .report-field label { color: var(--r-muted); font-size: 13px; font-weight: 700; }
+    .report-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .report-field label {
+      color: var(--r-muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
 
     .report-field input {
       width: 100%;
@@ -102,13 +124,14 @@
       min-height: 43px;
       padding: 10px 12px;
       border: 1px solid var(--r-border);
-      border-radius: 10px;
-      background: var(--input-bg, var(--r-card));
+      border-radius: 9px;
+      background: var(--r-card);
       color: var(--r-text);
       font: inherit;
     }
 
-    .report-period, .report-help {
+    .report-period,
+    .report-help {
       color: var(--r-muted);
       font-size: 12px;
       line-height: 1.7;
@@ -120,7 +143,7 @@
       margin-bottom: 15px;
       padding: 12px;
       border: 1px solid #ef4444;
-      border-radius: 10px;
+      border-radius: 9px;
       background: #fef2f2;
       color: #991b1b;
     }
@@ -136,30 +159,44 @@
 
     .report-stat {
       min-width: 0;
-      padding: 17px;
+      padding: 15px;
       border: 1px solid var(--r-border);
       border-left: 4px solid var(--stat-color, var(--r-accent));
-      border-radius: 14px;
+      border-radius: 11px;
       background: var(--r-card);
       overflow-wrap: anywhere;
     }
 
-    .stat-label { margin: 0 0 11px; color: var(--r-muted); font-size: 13px; font-weight: 700; }
-    .stat-value { margin: 0; color: var(--r-text); font-size: clamp(18px, 2.2vw, 26px); font-weight: 800; line-height: 1.4; }
-    .stat-note { margin: 8px 0 0; color: var(--r-muted); font-size: 12px; }
+    .stat-label {
+      margin: 0 0 9px;
+      color: var(--r-muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .stat-value {
+      margin: 0;
+      font-size: clamp(18px, 2.2vw, 26px);
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .stat-note {
+      margin: 8px 0 0;
+      color: var(--r-muted);
+      font-size: 12px;
+    }
 
     .report-tabs {
       display: flex;
-      flex-wrap: nowrap;
       gap: 7px;
       width: 100%;
       margin-bottom: 17px;
       padding: 6px;
       overflow-x: auto;
       border: 1px solid var(--r-border);
-      border-radius: 13px;
+      border-radius: 11px;
       background: var(--r-card);
-      -webkit-overflow-scrolling: touch;
     }
 
     .report-tab {
@@ -167,7 +204,7 @@
       min-height: 40px;
       padding: 10px 13px;
       border: 0;
-      border-radius: 9px;
+      border-radius: 8px;
       background: transparent;
       color: var(--r-muted);
       font: inherit;
@@ -177,20 +214,31 @@
       white-space: nowrap;
     }
 
-    .report-tab.active { background: var(--r-accent); color: #fff; }
+    .report-tab.active {
+      background: var(--r-accent);
+      color: white;
+    }
+
     .report-panel[hidden] { display: none !important; }
 
-    .report-panel-header { margin-bottom: 15px; }
-    .report-panel-header h2 { margin: 0; font-size: 19px; }
-    .report-count { color: var(--r-muted); font-size: 12px; }
+    .report-panel-header { margin-bottom: 13px; }
+
+    .report-panel-header h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .report-count {
+      color: var(--r-muted);
+      font-size: 12px;
+    }
 
     .report-table-wrap {
       width: 100%;
       max-width: 100%;
       overflow-x: auto;
       border: 1px solid var(--r-border);
-      border-radius: 11px;
-      -webkit-overflow-scrolling: touch;
+      border-radius: 8px;
     }
 
     .report-table {
@@ -199,31 +247,38 @@
       border-collapse: collapse;
       background: var(--r-card);
       color: var(--r-text);
-      font-size: 13px;
+      font-size: 12px;
       white-space: nowrap;
     }
 
     .report-table th {
-      padding: 13px 14px;
-      border-bottom: 1px solid var(--r-border);
-      background: var(--table-header-bg, var(--r-bg));
-      color: var(--r-muted);
+      padding: 10px 9px;
+      border: 1px solid var(--r-border);
+      background: #166534;
+      color: #fff;
       text-align: left;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: .035em;
+      letter-spacing: .02em;
     }
 
     .report-table td {
-      padding: 13px 14px;
-      border-bottom: 1px solid var(--r-border);
-      background: var(--r-card);
+      padding: 9px;
+      border: 1px solid var(--r-border);
       vertical-align: middle;
     }
 
-    .report-table tbody tr:last-child td { border-bottom: 0; }
-    .report-empty { padding: 25px !important; text-align: center; color: var(--r-muted); white-space: normal; }
+    .report-table tbody tr:nth-child(even) td {
+      background: #f3f8f4;
+    }
+
+    .report-empty {
+      padding: 25px !important;
+      text-align: center;
+      color: var(--r-muted);
+      white-space: normal;
+    }
 
     .report-status {
       display: inline-block;
@@ -245,11 +300,11 @@
       padding: 12px 14px;
       margin-bottom: 15px;
       border: 1px solid #f0d28d;
-      border-radius: 10px;
+      border-radius: 9px;
       background: #fff7e6;
       color: #805b10;
-      line-height: 1.6;
       font-size: 13px;
+      line-height: 1.6;
     }
 
     .report-warning:empty { display: none; }
@@ -262,76 +317,406 @@
 
     .profit-item {
       min-width: 0;
-      padding: 16px;
+      padding: 15px;
       border: 1px solid var(--r-border);
-      border-radius: 12px;
+      border-radius: 10px;
       background: var(--r-bg);
       overflow-wrap: anywhere;
     }
 
-    .profit-item span { display: block; margin-bottom: 9px; color: var(--r-muted); font-size: 12px; }
-    .profit-item strong { color: var(--r-text); font-size: 21px; }
+    .profit-item span {
+      display: block;
+      margin-bottom: 9px;
+      color: var(--r-muted);
+      font-size: 12px;
+    }
+
+    .profit-item strong { font-size: 20px; }
     .profit-item.net { border-color: var(--r-accent); }
 
+    /* Store profile: screen पर लुकेको, PDF मा प्रयोग हुने */
     .print-store-profile { display: none; }
 
     @media (max-width: 950px) {
-      .report-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .report-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .report-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .report-filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .report-filter-grid .report-btn { width: 100%; }
     }
 
     @media (max-width: 600px) {
       .report-wrap { padding: 13px; }
-      .report-card { padding: 14px; border-radius: 13px; }
+      .report-card { padding: 13px; }
       .report-actions { width: 100%; }
       .report-actions .report-btn { flex: 1; }
-      .report-filter-grid, .profit-grid { grid-template-columns: 1fr; }
+
+      .report-filter-grid,
+      .profit-grid { grid-template-columns: 1fr; }
+
       .report-summary-grid { gap: 9px; }
-      .report-stat { padding: 13px 11px; }
+      .report-stat { padding: 12px 10px; }
       .stat-label, .stat-note { font-size: 11px; }
       .stat-value { font-size: 18px; }
-      .report-tab { padding: 9px 11px; }
-      .report-panel-header h2 { font-size: 17px; }
     }
 
-    @page { size: A4 landscape; margin: 12mm; }
+    /* A4 print layout */
+    @page {
+      size: A4 portrait;
+      margin: 29mm 14mm 27mm 14mm;
+    }
 
     @media print {
       html, body {
         display: block !important;
-        width: 100% !important;
+        width: auto !important;
         height: auto !important;
+        min-height: 0 !important;
         overflow: visible !important;
         background: #fff !important;
         color: #111827 !important;
+        font-family: Arial, sans-serif !important;
         font-size: 9pt !important;
       }
 
-      .report-wrap { max-width: none !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
-      .no-print, .report-tabs { display: none !important; }
-      .print-store-profile { display: block !important; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 2px solid #111827; }
-      .print-profile-name { margin: 0 0 5px; font-size: 22pt; font-weight: 800; }
-      .print-profile-details { margin: 3px 0; font-size: 9pt; line-height: 1.5; overflow-wrap: anywhere; }
-      .print-report-title { margin-top: 13px; font-size: 16pt; font-weight: 800; }
-      .report-card, .report-stat, .profit-item { background: #fff !important; color: #111827 !important; box-shadow: none !important; border-color: #d1d5db !important; }
-      .report-card { padding: 10px !important; margin-bottom: 10px !important; }
-      .report-panel[hidden] { display: block !important; }
-      .report-table-wrap { overflow: visible !important; }
-      .report-table { min-width: 0 !important; width: 100% !important; font-size: 7.5pt !important; white-space: normal !important; }
-      .report-table th, .report-table td { padding: 5px !important; color: #111827 !important; background: #fff !important; border: 1px solid #d1d5db !important; overflow-wrap: anywhere; }
-      .report-table th { background: #f1f5f9 !important; }
-      .report-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-      .profit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-      .report-warning { background: #fff !important; color: #111827 !important; }
-      .report-panel, .report-stat, .profit-item { break-inside: avoid; }
-      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .report-wrap {
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .no-print,
+      .report-header,
+      .report-tabs,
+      .report-filter-grid,
+      #reportPeriodNote,
+      #reportError,
+      body > .no-print {
+        display: none !important;
+      }
+
+      /*
+       * Fixed header/footer are repeated by print engines on pages.
+       * Page margins above reserve space for them.
+       */
+      .print-store-profile {
+        display: block !important;
+        position: fixed;
+        top: -24mm;
+        left: 0;
+        right: 0;
+        height: 21mm;
+        margin: 0;
+        padding: 0 0 3mm;
+        background: #fff !important;
+        border: 0 !important;
+        z-index: 999;
+      }
+
+      .print-profile-head {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8mm;
+        min-height: 15mm;
+      }
+
+      .print-profile-left {
+        display: flex;
+        align-items: center;
+        gap: 4mm;
+        min-width: 0;
+      }
+
+      .print-store-logo {
+        display: none;
+        width: 17mm;
+        height: 17mm;
+        object-fit: contain;
+        border: 1px solid #e5e7eb;
+        border-radius: 3mm;
+        padding: 1mm;
+      }
+
+      .print-store-logo.visible { display: block; }
+
+      .print-profile-name {
+        margin: 0;
+        color: #166534 !important;
+        font-size: 17pt;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+
+      .print-profile-details {
+        margin: 1mm 0;
+        color: #4b5563 !important;
+        font-size: 8.5pt;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+
+      .print-profile-right {
+        max-width: 45%;
+        text-align: right;
+      }
+
+      .print-profile-right .owner-name {
+        color: #263238 !important;
+        font-weight: 700;
+        font-size: 9.5pt;
+      }
+
+      .print-header-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 0;
+        border-top: 2px solid #166534;
+      }
+
+      .print-report-title {
+        display: none !important;
+      }
+
+      .report-card {
+        margin: 0 0 5mm !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        color: #111827 !important;
+        box-shadow: none !important;
+      }
+
+      .report-panel[hidden] {
+        display: block !important;
+      }
+
+      .report-panel-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin: 0 0 3mm !important;
+        padding: 0 0 2mm !important;
+        border-bottom: 1px solid #d1d5db !important;
+      }
+
+      .report-panel-header h2 {
+        margin: 0 !important;
+        color: #166534 !important;
+        font-size: 13pt !important;
+      }
+
+      .report-count {
+        color: #4b5563 !important;
+        font-size: 8pt !important;
+      }
+
+      .report-table-wrap {
+        width: 100% !important;
+        max-width: none !important;
+        overflow: visible !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+      }
+
+      .report-table {
+        width: 100% !important;
+        min-width: 0 !important;
+        border-collapse: collapse !important;
+        table-layout: auto !important;
+        font-size: 7.2pt !important;
+        white-space: normal !important;
+      }
+
+      .report-table thead {
+        display: table-header-group !important;
+      }
+
+      .report-table tfoot {
+        display: table-footer-group !important;
+      }
+
+      .report-table tr {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+
+      .report-table th {
+        padding: 2mm 1.2mm !important;
+        background: #166534 !important;
+        color: #fff !important;
+        border: 1px solid #cbd5d1 !important;
+        font-size: 6.5pt !important;
+        overflow-wrap: anywhere !important;
+      }
+
+      .report-table td {
+        padding: 1.7mm 1.2mm !important;
+        background: #fff !important;
+        color: #111827 !important;
+        border: 1px solid #d1d5db !important;
+        font-size: 7pt !important;
+        overflow-wrap: anywhere !important;
+        word-break: normal !important;
+      }
+
+      .report-table tbody tr:nth-child(even) td {
+        background: #f3f8f4 !important;
+      }
+
+      .report-summary-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 3mm !important;
+        margin-bottom: 5mm !important;
+      }
+
+      .report-stat {
+        padding: 3mm !important;
+        border: 1px solid #d1d5db !important;
+        border-left: 3px solid var(--stat-color, #166534) !important;
+        border-radius: 2mm !important;
+        background: #fff !important;
+        break-inside: avoid !important;
+      }
+
+      .stat-label { font-size: 8pt !important; margin-bottom: 1mm !important; }
+      .stat-value { font-size: 13pt !important; }
+      .stat-note { font-size: 7pt !important; }
+
+      .profit-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 3mm !important;
+      }
+
+      .profit-item {
+        padding: 3mm !important;
+        background: #fff !important;
+        border: 1px solid #d1d5db !important;
+        break-inside: avoid !important;
+      }
+
+      .profit-item span { font-size: 8pt !important; }
+      .profit-item strong { font-size: 12pt !important; }
+
+      .report-warning {
+        background: #fff !important;
+        color: #111827 !important;
+      }
+
+      .report-help,
+      .screen-only { display: none !important; }
+
+      /*
+       * Footer is repeated on printed pages.
+       * Signature / thank-you are placed on the final page by a
+       * separate block after the report content.
+       */
+      .print-page-footer {
+        display: block !important;
+        position: fixed;
+        bottom: -22mm;
+        left: 0;
+        right: 0;
+        height: 19mm;
+        padding-top: 2mm;
+        border-top: 1px solid #d1d5db;
+        background: #fff !important;
+        text-align: center;
+      }
+
+      .print-footer-contact {
+        margin: 1mm 0;
+        color: #4b5563 !important;
+        font-size: 8pt;
+      }
+
+      .print-footer-note {
+        margin: 1mm 0;
+        color: #6b7280 !important;
+        font-size: 7pt;
+      }
+
+      .print-thank-you {
+        margin: 0 0 1mm;
+        color: #166534 !important;
+        font-size: 10pt;
+        font-weight: 800;
+      }
+
+      .print-signature-block {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8mm;
+        margin: 8mm 0 4mm;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .signature-item {
+        padding-top: 7mm;
+        border-top: 1px solid #9ca3af;
+        color: #4b5563;
+        text-align: center;
+        font-size: 8pt;
+      }
+
+      .print-final-note {
+        margin: 3mm 0;
+        text-align: center;
+        color: #166534 !important;
+        font-weight: 800;
+      }
+
+      .report-status {
+        padding: 1mm 2mm !important;
+        border: 1px solid #d1d5db !important;
+        background: #fff !important;
+        color: #111827 !important;
+      }
+
+      .report-orange, .report-green, .report-red {
+        color: #111827 !important;
+      }
+
+      .report-card,
+      .report-stat,
+      .profit-item {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    .print-page-footer,
+    .print-signature-block,
+    .print-final-note {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .report-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
 
 <body>
 <main class="report-wrap">
+
   <header class="report-header">
     <div>
       <h1>📊 Business Reports</h1>
@@ -343,21 +728,21 @@
     </div>
   </header>
 
+  <!-- PRINT HEADER: store profile data is filled from gs_settings -->
   <section class="print-store-profile" id="printStoreProfile">
     <div class="print-profile-head">
-      <div>
-        <h1 class="print-profile-name" id="printStoreName">General Store</h1>
-        <p class="print-profile-details" id="printOwnerName"></p>
-        <p class="print-profile-details" id="printStoreAddress"></p>
-        <p class="print-profile-details" id="printStoreContact"></p>
-        <p class="print-profile-details" id="printStoreTax"></p>
+      <div class="print-profile-left">
+        <img class="print-store-logo" id="printStoreLogo" alt="Store Logo">
+        <div>
+          <h1 class="print-profile-name" id="printStoreName">General Store</h1>
+        </div>
       </div>
-      <div style="text-align:right">
-        <p class="print-profile-details" id="printInvoiceFooter"></p>
-        <p class="print-profile-details" id="printGeneratedDate"></p>
+      <div class="print-profile-right">
+        <p class="print-profile-details owner-name" id="printOwnerName"></p>
+        <p class="print-profile-details" id="printStoreAddress"></p>
       </div>
     </div>
-    <div class="print-report-title">Business Reports</div>
+    <div class="print-header-line"></div>
   </section>
 
   <div id="reportError" role="alert"></div>
@@ -454,8 +839,9 @@
     <div class="report-table-wrap">
       <table class="report-table">
         <thead><tr>
-          <th>Product</th><th>Barcode</th><th>Category</th><th>Unit</th><th>Stock</th>
-          <th>Purchase Price</th><th>Selling Price</th><th>Stock Value</th><th>Status</th>
+          <th>Product</th><th>Barcode</th><th>Category</th><th>Unit</th>
+          <th>Stock</th><th>Purchase Price</th><th>Selling Price</th>
+          <th>Stock Value</th><th>Status</th>
         </tr></thead>
         <tbody id="stockReportBody">
           <tr><td class="report-empty" colspan="9">Loading stock report...</td></tr>
@@ -501,7 +887,9 @@
   </section>
 
   <section class="report-card report-panel" data-report="profit" hidden>
-    <div class="report-panel-header"><h2>💰 Profit & Loss Report</h2></div>
+    <div class="report-panel-header">
+      <h2>💰 Profit & Loss Report</h2>
+    </div>
     <div class="report-warning" id="profitWarning"></div>
     <div class="profit-grid">
       <div class="profit-item"><span>Sales Revenue</span><strong id="profitSales">Rs. 0.00</strong></div>
@@ -516,10 +904,27 @@
     </p>
   </section>
 
+  <!-- Print signature section: placed after report content -->
+  <section class="print-signature-block">
+    <div class="signature-item">Prepared By</div>
+    <div class="signature-item">Checked By</div>
+    <div class="signature-item">Authorized Signature</div>
+  </section>
+
+  <p class="print-final-note">Thank you, visit again 🙏</p>
+
+  <footer class="print-page-footer">
+    <p class="print-thank-you">Thank you, visit again 🙏</p>
+    <p class="print-footer-contact" id="printStoreContact"></p>
+    <p class="print-footer-note" id="printInvoiceFooter"></p>
+    <p class="print-footer-note">This is a computer-generated report.</p>
+  </footer>
+
   <p class="report-help">Reports are generated from the business data stored in this browser.</p>
 </main>
 
 <script src="reports.js"></script>
+
 <script>
 (function () {
   "use strict";
@@ -529,40 +934,101 @@
   function readStoreSettings() {
     try {
       const value = JSON.parse(localStorage.getItem("gs_settings") || "{}");
-      return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+      return value && typeof value === "object" && !Array.isArray(value)
+        ? value : {};
     } catch (error) {
       return {};
     }
   }
 
+  /*
+   * Different apps use different logo field names.
+   * Add your exact Store Profile field here if it uses another name.
+   */
+  function getStoreLogo(settings) {
+    const candidates = [
+      settings.storeLogo,
+      settings.storeLogoUrl,
+      settings.logo,
+      settings.logoUrl,
+      settings.logoData,
+      settings.logoBase64,
+      settings.storeLogoData
+    ];
+
+    return candidates.find(value =>
+      typeof value === "string" &&
+      /^(data:image\/|https?:\/\/|blob:)/i.test(value.trim())
+    ) || "";
+  }
+
   function updatePrintProfile() {
     const s = readStoreSettings();
+
     $("printStoreName").textContent = s.storeName || "General Store";
-    $("printOwnerName").textContent = s.ownerName ? "Owner: " + s.ownerName : "";
+
+    $("printOwnerName").textContent =
+      s.ownerName ? "Owner: " + s.ownerName : "";
+
     $("printStoreAddress").textContent = s.storeAddress || "";
 
     $("printStoreContact").textContent = [
       s.storePhone ? "Phone: " + s.storePhone : "",
       s.storeEmail ? "Email: " + s.storeEmail : ""
-    ].filter(Boolean).join(" | ");
-
-    $("printStoreTax").textContent = [
-      s.taxType && s.taxType !== "none" ? s.taxType : "",
-      s.taxNumber ? "Tax No.: " + s.taxNumber : ""
-    ].filter(Boolean).join(" | ");
+    ].filter(Boolean).join("    ");
 
     $("printInvoiceFooter").textContent = s.invoiceFooter || "";
-    $("printGeneratedDate").textContent =
-      "Generated: " + new Date().toLocaleString();
+
+    const logo = $("printStoreLogo");
+    const logoSrc = getStoreLogo(s);
+
+    if (logoSrc) {
+      logo.onload = function () {
+        logo.classList.add("visible");
+      };
+      logo.onerror = function () {
+        logo.classList.remove("visible");
+      };
+      logo.src = logoSrc;
+    } else {
+      logo.removeAttribute("src");
+      logo.classList.remove("visible");
+    }
   }
 
   $("printReportsBtn").addEventListener("click", function () {
     updatePrintProfile();
-    window.print();
+
+    // Wait for logo loading before opening the print dialog.
+    const logo = $("printStoreLogo");
+
+    if (logo.src && !logo.complete) {
+      logo.onload = function () {
+        logo.classList.add("visible");
+        window.print();
+      };
+      logo.onerror = function () {
+        window.print();
+      };
+    } else {
+      window.print();
+    }
+  });
+
+  $("refreshReportsBtn").addEventListener("click", function () {
+    updatePrintProfile();
+    // Existing report refresh logic remains in reports.js.
+    if (typeof window.loadReports === "function") {
+      window.loadReports();
+    } else if (typeof window.refreshReports === "function") {
+      window.refreshReports();
+    }
   });
 
   window.addEventListener("storage", function (event) {
-    if (event.key === "gs_settings" || event.key === null) updatePrintProfile();
+    if (event.key === "gs_settings" || event.key === null) {
+      updatePrintProfile();
+    }
   });
 
   updatePrintProfile();
