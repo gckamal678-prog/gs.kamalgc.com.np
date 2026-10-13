@@ -1,7 +1,8 @@
+
 /* =========================================================
    GS GENERAL STORE MANAGEMENT SYSTEM
-   SALE MODULE — MULTI-PRODUCT A4 INVOICE
-   Barcode + FIFO + Daily Invoice Prefix + Signature
+   SALE MODULE — A4 INVOICE + DAILY INVOICE PREFIX
+   Barcode + FIFO + Existing Sales Data preserved
    ========================================================= */
 
 (() => {
@@ -11,6 +12,7 @@
   const SALE_KEY = "gs_sales";
   const LOT_KEY = "gs_stock_lots";
   const SETTINGS_KEY = "gs_settings";
+
   const $ = id => document.getElementById(id);
 
   let cameraStream = null;
@@ -19,16 +21,14 @@
   let scannerOpen = false;
   let lastScannedCode = "";
   let lastScanTime = 0;
-  let billItems = [];
-
-  /* ---------------- Storage ---------------- */
 
   function read(key, fallback = []) {
     try {
       const raw = localStorage.getItem(key);
       if (raw === null) return fallback;
+
       const value = JSON.parse(raw);
-      return value == null ? fallback : value;
+      return value === null || value === undefined ? fallback : value;
     } catch (error) {
       console.error("Storage read error:", key, error);
       throw new Error(key + " को Data पढ्न सकिएन।");
@@ -46,7 +46,8 @@
   function readSettings() {
     const value = read(SETTINGS_KEY, {});
     return value && typeof value === "object" && !Array.isArray(value)
-      ? value : {};
+      ? value
+      : {};
   }
 
   function write(key, value) {
@@ -59,28 +60,39 @@
   }
 
   function money(value) {
-    const currency = String(readSettings().currency || "NPR").toUpperCase();
+    const settings = readSettings();
+    const currency = String(settings.currency || "NPR").toUpperCase();
+
     const symbols = {
-      NPR: "Rs.", RS: "Rs.", INR: "₹",
-      USD: "$", GBP: "£", EUR: "€"
+      NPR: "Rs.",
+      RS: "Rs.",
+      INR: "₹",
+      USD: "$",
+      GBP: "£",
+      EUR: "€"
     };
 
-    return (symbols[currency] || currency) + " " +
-      num(value).toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
+    const symbol = symbols[currency] || currency;
+
+    return symbol + " " + num(value).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
   }
 
   function esc(value) {
     return String(value ?? "").replace(/[&<>"']/g, c => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;",
-      '"': "&quot;", "'": "&#39;"
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
     })[c]);
   }
 
   function today() {
     const d = new Date();
+
     return [
       d.getFullYear(),
       String(d.getMonth() + 1).padStart(2, "0"),
@@ -88,20 +100,17 @@
     ].join("-");
   }
 
-  function newId(prefix) {
-    return prefix + "-" + Date.now() + "-" +
-      Math.floor(Math.random() * 1000000);
-  }
-
-  /* ---------------- Daily Invoice Number ---------------- */
+  /* ---------------- Invoice Prefix ---------------- */
 
   function billNumberDetails(dateValue = $("saleDate")?.value || today()) {
     const settings = readSettings();
     const prefix = String(settings.invoicePrefix || "INV")
-      .trim().replace(/\s+/g, "-") || "INV";
+      .trim()
+      .replace(/\s+/g, "-") || "INV";
 
     const date = /^\d{4}-\d{2}-\d{2}$/.test(String(dateValue || ""))
-      ? new Date(dateValue + "T00:00:00") : new Date();
+      ? new Date(String(dateValue) + "T00:00:00")
+      : new Date();
 
     const datePart = [
       String(date.getDate()).padStart(2, "0"),
@@ -113,15 +122,19 @@
     const counter = (Number(localStorage.getItem(counterKey)) || 0) + 1;
 
     return {
-      billNumber: prefix + "-" + datePart +
-        String(counter).padStart(2, "0"),
+      billNumber: prefix + "-" + datePart + String(counter).padStart(2, "0"),
       counterKey,
       counter
     };
   }
 
-  function newBillNumber(dateValue) {
+  function newBillNumber(dateValue = $("saleDate")?.value || today()) {
     return billNumberDetails(dateValue).billNumber;
+  }
+
+  function newId(prefix) {
+    return prefix + "-" + Date.now() + "-" +
+      Math.floor(Math.random() * 1000000);
   }
 
   /* ---------------- Notifications ---------------- */
@@ -141,6 +154,7 @@
         bottom: "20px",
         transform: "translateX(-50%)",
         zIndex: "10010",
+        width: "max-content",
         maxWidth: "calc(100% - 32px)",
         padding: "13px 17px",
         borderRadius: "12px",
@@ -157,12 +171,15 @@
     }
 
     box.style.background = type === "error"
-      ? "#b91c1c" : type === "info" ? "#1d4ed8" : "#166534";
+      ? "#b91c1c"
+      : type === "info"
+        ? "#1d4ed8"
+        : "#166534";
 
     box.textContent = message;
     box.style.display = "block";
-    clearTimeout(box._hideTimer);
 
+    clearTimeout(box._hideTimer);
     box._hideTimer = setTimeout(() => {
       box.style.display = "none";
     }, 4200);
@@ -175,7 +192,7 @@
 
   function openSaleModal() {
     if (!modal) {
-      toast("Sale Modal भेटिएन। sale.html जाँच्नुहोस्।", "error");
+      toast("Sale Modal भेटिएन। sale.html को संरचना जाँच्नुहोस्।", "error");
       return;
     }
 
@@ -195,12 +212,12 @@
 
     loadProducts();
     applySaleDefaults();
-    renderBillItems();
     calculateSale();
   }
 
   function closeSaleModal() {
     stopCamera();
+
     if (!modal) return;
 
     modal.classList.remove("show");
@@ -213,12 +230,12 @@
   $("closeSaleModal")?.addEventListener("click", closeSaleModal);
   $("cancelSaleBtn")?.addEventListener("click", closeSaleModal);
 
-  modal?.addEventListener("click", e => {
-    if (e.target === modal) closeSaleModal();
+  modal?.addEventListener("click", event => {
+    if (event.target === modal) closeSaleModal();
   });
 
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeSaleModal();
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeSaleModal();
   });
 
   /* ---------------- Products ---------------- */
@@ -227,8 +244,10 @@
     return readArray(PRODUCT_KEY);
   }
 
-  function isActive(p) {
-    return p && p.active !== false && p.status !== "INACTIVE";
+  function isActive(product) {
+    return product &&
+      product.active !== false &&
+      product.status !== "INACTIVE";
   }
 
   function selectedProduct() {
@@ -243,7 +262,8 @@
     if (!barcode) return null;
 
     return getProducts().find(p =>
-      isActive(p) && String(p.barcode || "").trim() === barcode
+      isActive(p) &&
+      String(p.barcode || "").trim() === barcode
     ) || null;
   }
 
@@ -256,12 +276,15 @@
 
     select.innerHTML = '<option value="">Product छान्नुहोस्</option>';
 
-    products.filter(isActive).forEach(p => {
+    products.filter(isActive).forEach(product => {
       const option = document.createElement("option");
-      option.value = p.id;
+      option.value = product.id;
+
       option.textContent =
-        `${p.name || "Product"} — Stock: ${num(p.stock)} ${p.unit || ""}` +
-        (p.barcode ? ` — ${p.barcode}` : "");
+        `${product.name || "Product"} — Stock: ` +
+        `${num(product.stock)} ${product.unit || ""}` +
+        (product.barcode ? ` — ${product.barcode}` : "");
+
       select.appendChild(option);
     });
 
@@ -275,223 +298,44 @@
   }
 
   function updateProductInfo() {
-    const p = selectedProduct();
+    const product = selectedProduct();
 
-    if ($("infoProduct")) $("infoProduct").textContent = p?.name || "-";
-    if ($("infoUnit")) $("infoUnit").textContent = p?.unit || "-";
-    if ($("infoStock")) $("infoStock").textContent = p ? num(p.stock) : "0";
+    if ($("infoProduct")) {
+      $("infoProduct").textContent = product?.name || "-";
+    }
+
+    if ($("infoUnit")) {
+      $("infoUnit").textContent = product?.unit || "-";
+    }
+
+    if ($("infoStock")) {
+      $("infoStock").textContent = product ? num(product.stock) : "0";
+    }
 
     if ($("stockInfo")) {
-      $("stockInfo").textContent = p
-        ? `Available stock: ${num(p.stock)} ${p.unit || ""}`
+      $("stockInfo").textContent = product
+        ? `Available stock: ${num(product.stock)} ${product.unit || ""}`
         : "Available stock: -";
     }
 
-    if (p && $("saleRate") && !$("saleRate").value) {
-      $("saleRate").value = num(p.salePrice || p.sellingPrice);
+    if (product && $("saleRate") && !$("saleRate").value) {
+      $("saleRate").value = num(product.salePrice || product.sellingPrice);
     }
 
     calculateSale();
   }
 
-  /* ---------------- Multi-Product Bill UI ---------------- */
-
-  function ensureMultiProductUI() {
-    if (!$("saleForm") || $("saleBillItemsPanel")) return;
-
-    const anchor = $("saleProduct")?.closest(".sale-field")
-      || $("saleProduct")?.parentElement;
-
-    if (!anchor) return;
-
-    const panel = document.createElement("section");
-    panel.id = "saleBillItemsPanel";
-    panel.style.cssText =
-      "margin:14px 0;padding:14px;border:1px solid #d1d5db;" +
-      "border-radius:12px;background:var(--card-bg,transparent)";
-
-    panel.innerHTML = `
-      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <strong>🧾 एउटै बिलमा सामानहरू</strong>
-        <span id="saleBillItemCount">0 प्रकारका सामान</span>
-      </div>
-
-      <div style="overflow-x:auto;margin-top:10px">
-        <table style="width:100%;border-collapse:collapse;min-width:520px">
-          <thead>
-            <tr style="background:#166534;color:white">
-              <th style="padding:9px">Product</th>
-              <th style="padding:9px">Qty</th>
-              <th style="padding:9px">Rate</th>
-              <th style="padding:9px">Discount</th>
-              <th style="padding:9px">Amount</th>
-              <th style="padding:9px">Action</th>
-            </tr>
-          </thead>
-          <tbody id="saleBillItemsBody"></tbody>
-        </table>
-      </div>
-
-      <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <div style="width:300px;max-width:100%">
-          <div style="display:flex;justify-content:space-between;padding:4px 0">
-            <span>Subtotal</span><strong id="saleCartSubtotal">Rs. 0.00</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:4px 0">
-            <span>Total Discount</span><strong id="saleCartDiscount">Rs. 0.00</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:9px 0;border-top:2px solid #166534;color:#166534;font-size:17px">
-            <span>Grand Total</span><strong id="saleCartTotal">Rs. 0.00</strong>
-          </div>
-        </div>
-      </div>
-
-      <button type="button" id="saleAddItemBtn" class="sale-btn primary" style="margin-top:10px">
-        ＋ हालको Product बिलमा थप्नुहोस्
-      </button>
-      <button type="button" id="saleClearItemsBtn" class="sale-btn" style="margin-top:10px">
-        सबै सामान हटाउनुहोस्
-      </button>
-      <p style="font-size:12px;margin-bottom:0">
-        Product, Quantity, Rate र Discount राखेर “बिलमा थप्नुहोस्” थिच्नुहोस्।
-        अर्को सामानका लागि Product छान्नुहोस्।
-      </p>
-    `;
-
-    anchor.parentNode.insertBefore(panel, anchor.nextSibling);
-
-    $("saleAddItemBtn").addEventListener("click", addCurrentItem);
-
-    $("saleClearItemsBtn").addEventListener("click", () => {
-      if (!billItems.length || confirm("बिलका सबै सामान हटाउने?")) {
-        billItems = [];
-        renderBillItems();
-        calculateSale();
-      }
-    });
-
-    $("saleBillItemsBody").addEventListener("click", e => {
-      const button = e.target.closest("[data-remove-bill-item]");
-      if (!button) return;
-
-      billItems.splice(Number(button.dataset.removeBillItem), 1);
-      renderBillItems();
-      calculateSale();
-    });
-  }
-
-  function currentEntry() {
-    const p = selectedProduct();
-    if (!p) throw new Error("कृपया Product छान्नुहोस्।");
-
-    const qty = num($("saleQty")?.value);
-    const rate = num($("saleRate")?.value);
-    const discount = num($("saleDiscount")?.value);
-    const alreadyAdded = billItems
-      .filter(i => String(i.productId) === String(p.id))
-      .reduce((sum, i) => sum + num(i.qty), 0);
-
-    if (qty <= 0) throw new Error("Quantity शून्यभन्दा बढी हुनुपर्छ।");
-    if (rate <= 0) throw new Error("Sale Rate शून्यभन्दा बढी हुनुपर्छ।");
-    if (discount < 0 || discount > qty * rate) {
-      throw new Error("Discount मिलाउनुहोस्।");
-    }
-
-    if (qty + alreadyAdded > num(p.stock)) {
-      throw new Error(
-        `पर्याप्त Stock छैन। ${p.name} को उपलब्ध Stock: ` +
-        `${num(p.stock) - alreadyAdded}`
-      );
-    }
-
-    return {
-      productId: p.id,
-      productName: p.name || "",
-      barcode: String(p.barcode || "").trim(),
-      unit: p.unit || "",
-      qty,
-      rate,
-      discount,
-      itemAmount: qty * rate,
-      total: Math.max(0, qty * rate - discount)
-    };
-  }
-
-  function addCurrentItem() {
-    try {
-      const item = currentEntry();
-
-      const same = billItems.find(i =>
-        String(i.productId) === String(item.productId) &&
-        num(i.rate) === num(item.rate) &&
-        num(i.discount) === 0 && num(item.discount) === 0
-      );
-
-      if (same) {
-        same.qty += item.qty;
-        same.itemAmount = same.qty * same.rate;
-        same.total = same.itemAmount - same.discount;
-      } else {
-        billItems.push(item);
-      }
-
-      renderBillItems();
-
-      if ($("saleQty")) $("saleQty").value = "1";
-      if ($("saleDiscount")) $("saleDiscount").value = "0";
-      if ($("paidAmount")) $("paidAmount").value = "0";
-
-      calculateSale();
-      toast(`${item.productName} बिलमा थपियो।`);
-    } catch (error) {
-      toast(error.message, "error");
-    }
-  }
-
-  function renderBillItems() {
-    const body = $("saleBillItemsBody");
-
-    if (body) {
-      body.innerHTML = billItems.length
-        ? billItems.map((item, index) => `
-          <tr>
-            <td style="padding:8px;border-bottom:1px solid #ddd">
-              ${esc(item.productName)}<br>
-              <small>${esc(item.barcode || "Barcode: -")}</small>
-            </td>
-            <td style="padding:8px;text-align:right">${num(item.qty)} ${esc(item.unit)}</td>
-            <td style="padding:8px;text-align:right">${money(item.rate)}</td>
-            <td style="padding:8px;text-align:right">${money(item.discount)}</td>
-            <td style="padding:8px;text-align:right">${money(item.total)}</td>
-            <td style="padding:8px;text-align:center">
-              <button type="button" class="sale-btn danger"
-                data-remove-bill-item="${index}">हटाउनुहोस्</button>
-            </td>
-          </tr>
-        `).join("")
-        : '<tr><td colspan="6" style="padding:14px;text-align:center">सामान थपिएको छैन।</td></tr>';
-    }
-
-    if ($("saleBillItemCount")) {
-      $("saleBillItemCount").textContent = `${billItems.length} प्रकारका सामान`;
-    }
-
-    const subtotal = billItems.reduce((s, i) => s + num(i.itemAmount), 0);
-    const discount = billItems.reduce((s, i) => s + num(i.discount), 0);
-    const total = billItems.reduce((s, i) => s + num(i.total), 0);
-
-    if ($("saleCartSubtotal")) $("saleCartSubtotal").textContent = money(subtotal);
-    if ($("saleCartDiscount")) $("saleCartDiscount").textContent = money(discount);
-    if ($("saleCartTotal")) $("saleCartTotal").textContent = money(total);
-  }
-
-  /* ---------------- Barcode Scanner ---------------- */
+  /* ---------------- Barcode Scanner UI ---------------- */
 
   function createScannerUI() {
     if ($("saleBarcodePanel")) return;
 
-    const field = $("saleProduct")?.closest(".sale-field");
-    if (!field) return;
+    const productField = $("saleProduct")?.closest(".sale-field");
+
+    if (!productField) {
+      console.error("saleProduct field भेटिएन।");
+      return;
+    }
 
     const panel = document.createElement("section");
     panel.id = "saleBarcodePanel";
@@ -500,33 +344,54 @@
 
     panel.innerHTML = `
       <strong>Barcode Scanner</strong>
-      <p>Barcode लेख्नुहोस् वा क्यामेराबाट Scan गर्नुहोस्।</p>
+      <p>Barcode नम्बर लेख्नुहोस् वा मोबाइल क्यामेराबाट Scan गर्नुहोस्।</p>
+
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-        <input id="saleBarcodeInput" type="search" inputmode="numeric"
-          autocomplete="off" placeholder="Barcode नम्बर..."
+        <input
+          id="saleBarcodeInput"
+          type="search"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="Barcode नम्बर..."
           aria-label="Barcode नम्बर"
-          style="flex:1;min-width:150px;padding:11px;border:1px solid #d1d5db;border-radius:8px">
-        <button id="saleBarcodeFind" class="sale-btn primary" type="button">Find / Add</button>
-        <button id="saleStartCamera" class="sale-btn" type="button">📷 Scan</button>
+          style="flex:1;min-width:150px;padding:11px;border:1px solid var(--border-color,#d1d5db);border-radius:8px;background:var(--input-bg,transparent);color:inherit"
+        >
+        <button id="saleBarcodeFind" class="sale-btn primary" type="button">
+          Find / Add
+        </button>
+        <button id="saleStartCamera" class="sale-btn" type="button">
+          📷 Scan
+        </button>
       </div>
+
       <div id="saleCameraArea" hidden style="margin-top:12px">
-        <video id="saleCameraVideo" autoplay muted playsinline
-          style="width:100%;max-width:480px;max-height:320px;background:#111"></video>
-        <p id="saleCameraStatus">क्यामेरा सुरु हुँदैछ...</p>
-        <button id="saleStopCamera" class="sale-btn danger" type="button">Stop Camera</button>
+        <video
+          id="saleCameraVideo"
+          autoplay
+          muted
+          playsinline
+          style="width:100%;max-width:480px;max-height:320px;object-fit:contain;background:#111;border-radius:10px"
+        ></video>
+        <p id="saleCameraStatus" aria-live="polite">
+          क्यामेरा सुरु हुँदैछ...
+        </p>
+        <button id="saleStopCamera" class="sale-btn danger" type="button">
+          Stop Camera
+        </button>
       </div>
-      <p id="saleBarcodeStatus" aria-live="polite"></p>
+
+      <p id="saleBarcodeStatus" aria-live="polite" style="margin-bottom:0"></p>
     `;
 
-    field.parentNode.insertBefore(panel, field);
+    productField.parentNode.insertBefore(panel, productField);
 
-    $("saleBarcodeFind").addEventListener("click", () =>
-      lookupBarcode($("saleBarcodeInput").value)
-    );
+    $("saleBarcodeFind").addEventListener("click", () => {
+      lookupBarcode($("saleBarcodeInput").value);
+    });
 
-    $("saleBarcodeInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        e.preventDefault();
+    $("saleBarcodeInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
         lookupBarcode($("saleBarcodeInput").value);
       }
     });
@@ -540,8 +405,11 @@
     if (!el) return;
 
     el.textContent = message;
-    el.style.color = type === "error" ? "#b91c1c"
-      : type === "success" ? "#15803d" : "inherit";
+    el.style.color = type === "error"
+      ? "#b91c1c"
+      : type === "success"
+        ? "#15803d"
+        : "inherit";
   }
 
   function lookupBarcode(rawCode, fromCamera = false) {
@@ -552,10 +420,13 @@
       return;
     }
 
-    const p = findProductByBarcode(code);
+    const product = findProductByBarcode(code);
 
-    if (!p) {
-      setBarcodeStatus("Barcode भएको Active Product भेटिएन।", "error");
+    if (!product) {
+      setBarcodeStatus(
+        "यो Barcode भएको Active Product भेटिएन। Inventory मा Barcode जाँच्नुहोस्।",
+        "error"
+      );
       toast("Barcode बाट Product भेटिएन।", "error");
       return;
     }
@@ -563,52 +434,111 @@
     const select = $("saleProduct");
     if (!select) return;
 
-    select.value = String(p.id);
+    select.value = String(product.id);
 
-    if ($("saleQty")) $("saleQty").value = "1";
-    if ($("saleRate")) $("saleRate").value = num(p.salePrice || p.sellingPrice);
+    if (select.value !== String(product.id)) {
+      setBarcodeStatus("Product Select गर्न सकिएन।", "error");
+      return;
+    }
+
+    const qtyInput = $("saleQty");
+    const oldProductId = lookupBarcode._lastProductId;
+    const currentQty = num(qtyInput?.value);
+
+    if (qtyInput) {
+      if (oldProductId === String(product.id) && currentQty > 0) {
+        qtyInput.value = String(currentQty + 1);
+      } else {
+        qtyInput.value = "1";
+      }
+    }
+
+    lookupBarcode._lastProductId = String(product.id);
+
+    if ($("saleRate")) {
+      $("saleRate").value = num(product.salePrice || product.sellingPrice);
+    }
+
     if ($("saleDiscount")) $("saleDiscount").value = "0";
+    if ($("paidAmount")) $("paidAmount").value = "0";
 
     updateProductInfo();
 
     setBarcodeStatus(
-      `Product: ${p.name} | Barcode: ${code} | Stock: ${num(p.stock)}`,
+      `Product: ${product.name} | Barcode: ${code} | ` +
+      `Stock: ${num(product.stock)} ${product.unit || ""}`,
       "success"
     );
 
     if ($("saleBarcodeInput")) $("saleBarcodeInput").value = "";
 
-    toast(fromCamera
-      ? `${p.name} Scan भयो। बिलमा थप्नुहोस् थिच्नुहोस्।`
-      : `${p.name} छानियो। बिलमा थप्नुहोस् थिच्नुहोस्।`
-    );
+    if (fromCamera) {
+      toast(`${product.name} Scan भयो। Quantity: ${num(qtyInput?.value)}`);
+    } else {
+      toast(`${product.name} Sale Form मा थपियो।`);
+    }
 
-    $("saleQty")?.focus();
+    qtyInput?.focus();
   }
+
+  /* ---------------- Mobile Camera Scan ---------------- */
 
   async function startCamera() {
     if (scannerOpen) return;
 
-    if (!navigator.mediaDevices?.getUserMedia || !("BarcodeDetector" in window)) {
-      setBarcodeStatus("यो Browser मा Camera Barcode Scan उपलब्ध छैन। Manual Barcode प्रयोग गर्नुहोस्।", "error");
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setBarcodeStatus(
+        "यो Browser मा Camera उपलब्ध छैन। Barcode हातैले राख्नुहोस्।",
+        "error"
+      );
+      return;
+    }
+
+    if (!("BarcodeDetector" in window)) {
+      setBarcodeStatus(
+        "यो Browser ले Native Barcode Scan समर्थन गर्दैन। " +
+        "Barcode हातैले राखेर Find / Add थिच्नुहोस्।",
+        "error"
+      );
+      toast("Camera Barcode Scan उपलब्ध छैन; Manual Barcode प्रयोग गर्नुहोस्।", "info");
       return;
     }
 
     try {
       detector = new BarcodeDetector({
-        formats: ["ean_13", "ean_8", "upc_a", "upc_e",
-          "code_128", "code_39", "codabar", "itf", "qr_code"]
+        formats: [
+          "ean_13",
+          "ean_8",
+          "upc_a",
+          "upc_e",
+          "code_128",
+          "code_39",
+          "codabar",
+          "itf",
+          "qr_code"
+        ]
       });
-    } catch (e) {
-      detector = new BarcodeDetector();
+    } catch (error) {
+      try {
+        detector = new BarcodeDetector();
+      } catch (fallbackError) {
+        setBarcodeStatus("Barcode Detector सुरु हुन सकेन।", "error");
+        return;
+      }
     }
 
     const area = $("saleCameraArea");
     const video = $("saleCameraVideo");
+
     if (!area || !video) return;
 
     area.hidden = false;
     scannerOpen = true;
+
+    if ($("saleCameraStatus")) {
+      $("saleCameraStatus").textContent =
+        "क्यामेरा अनुमति दिनुहोस् र Barcode क्यामेरामा देखाउनुहोस्।";
+    }
 
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -618,10 +548,16 @@
 
       video.srcObject = cameraStream;
       await video.play();
+
       scanTimer = setInterval(scanVideoFrame, 300);
     } catch (error) {
+      console.error("Camera error:", error);
       stopCamera();
-      setBarcodeStatus("क्यामेरा खोल्न सकिएन। Permission र HTTPS जाँच्नुहोस्।", "error");
+
+      setBarcodeStatus(
+        "क्यामेरा खोल्न सकिएन। Browser Permission र HTTPS जाँच्नुहोस्।",
+        "error"
+      );
     }
   }
 
@@ -633,19 +569,23 @@
 
     try {
       const codes = await detector.detect(video);
-      if (!codes?.length) return;
+      if (!codes || !codes.length) return;
 
       const code = String(codes[0].rawValue || "").trim();
+      if (!code) return;
+
       const now = Date.now();
 
-      if (!code || (code === lastScannedCode && now - lastScanTime < 1800)) return;
+      if (code === lastScannedCode && now - lastScanTime < 1800) {
+        return;
+      }
 
       lastScannedCode = code;
       lastScanTime = now;
 
       stopCamera();
-
       if ($("saleBarcodeInput")) $("saleBarcodeInput").value = code;
+
       lookupBarcode(code, true);
     } catch (error) {
       console.debug("Barcode frame skipped:", error);
@@ -661,7 +601,7 @@
     }
 
     if (cameraStream) {
-      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream.getTracks().forEach(track => track.stop());
       cameraStream = null;
     }
 
@@ -680,40 +620,35 @@
     const discountInput = num($("saleDiscount")?.value);
     const paid = num($("paidAmount")?.value);
 
-    const amount = qty * rate;
-    const discount = Math.min(Math.max(0, discountInput), amount);
-    const total = Math.max(0, amount - discount);
-
-    const cartSubtotal = billItems.reduce((s, i) => s + num(i.itemAmount), 0);
-    const cartDiscount = billItems.reduce((s, i) => s + num(i.discount), 0);
-    const cartTotal = billItems.reduce((s, i) => s + num(i.total), 0);
-
-    const hasItems = billItems.length > 0;
-    const shownTotal = hasItems ? cartTotal : total;
-    const shownPaid = paid;
-    const balance = Math.max(0, shownTotal - shownPaid);
+    const itemAmount = qty * rate;
+    const discount = Math.min(Math.max(0, discountInput), itemAmount);
+    const total = Math.max(0, itemAmount - discount);
+    const balance = Math.max(0, total - paid);
 
     if ($("previewItemAmount")) {
-      $("previewItemAmount").textContent = money(hasItems ? cartSubtotal : amount);
+      $("previewItemAmount").textContent = money(itemAmount);
     }
     if ($("previewDiscount")) {
-      $("previewDiscount").textContent = money(hasItems ? cartDiscount : discount);
+      $("previewDiscount").textContent = money(discount);
     }
-    if ($("previewTotal")) $("previewTotal").textContent = money(shownTotal);
-    if ($("previewPaid")) $("previewPaid").textContent = money(shownPaid);
-    if ($("previewBalance")) $("previewBalance").textContent = money(balance);
-
+    if ($("previewTotal")) {
+      $("previewTotal").textContent = money(total);
+    }
+    if ($("previewPaid")) {
+      $("previewPaid").textContent = money(paid);
+    }
+    if ($("previewBalance")) {
+      $("previewBalance").textContent = money(balance);
+    }
     if ($("infoQty")) {
-      $("infoQty").textContent = String(hasItems
-        ? billItems.reduce((s, i) => s + num(i.qty), 0) : qty);
+      $("infoQty").textContent = String(qty);
     }
-
     if ($("infoPayment")) {
-      $("infoPayment").textContent = $("paymentMethod")?.value || "CASH";
+      $("infoPayment").textContent =
+        $("paymentMethod")?.value || "CASH";
     }
 
-    renderBillItems();
-    return { qty, rate, discount, itemAmount: amount, total, paid, balance };
+    return { qty, rate, discount, itemAmount, total, paid, balance };
   }
 
   function applySaleDefaults() {
@@ -721,17 +656,21 @@
 
     if ($("paymentMethod") && settings.defaultPayment) {
       const payment = String(settings.defaultPayment).toUpperCase();
-      const exists = [...$("paymentMethod").options].some(
-        o => o.value.toUpperCase() === payment
+      const optionExists = [...$("paymentMethod").options].some(
+        option => option.value.toUpperCase() === payment
       );
 
-      if (exists) $("paymentMethod").value = payment;
+      if (optionExists) $("paymentMethod").value = payment;
     }
   }
 
   [
-    "saleProduct", "saleQty", "saleRate",
-    "saleDiscount", "paidAmount", "paymentMethod"
+    "saleProduct",
+    "saleQty",
+    "saleRate",
+    "saleDiscount",
+    "paidAmount",
+    "paymentMethod"
   ].forEach(id => {
     const el = $(id);
     if (!el) return;
@@ -739,6 +678,7 @@
     el.addEventListener("input", () => {
       if (id === "saleProduct") {
         if ($("saleRate")) $("saleRate").value = "";
+        lookupBarcode._lastProductId = null;
         updateProductInfo();
       } else {
         calculateSale();
@@ -755,80 +695,90 @@
 
   function renderSales() {
     const tbody = $("salesHistoryBody");
-
     const allSales = readArray(SALE_KEY)
       .filter(s => !s.voided && !s.isVoid)
-      .sort((a, b) => String(b.createdAt || b.date || "")
-        .localeCompare(String(a.createdAt || a.date || "")));
+      .sort((a, b) =>
+        String(b.createdAt || b.date || "").localeCompare(
+          String(a.createdAt || a.date || "")
+        )
+      );
 
     const query = ($("saleSearch")?.value || "").toLowerCase().trim();
-    const products = getProducts();
-    const groups = new Map();
 
-    allSales.forEach(s => {
-      const key = String(s.billNumber || s.id);
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(s);
+    const shown = allSales.filter(s => {
+      const product = getProducts().find(
+        p => String(p.id) === String(s.productId)
+      );
+
+      return [
+        s.date,
+        s.billNumber,
+        s.customerName,
+        s.productName,
+        s.barcode,
+        product?.barcode,
+        s.paymentMethod
+      ].some(value =>
+        String(value || "").toLowerCase().includes(query)
+      );
     });
 
-    const shown = [...groups.entries()].filter(([, items]) =>
-      items.some(s => {
-        const p = products.find(x => String(x.id) === String(s.productId));
-
-        return [
-          s.date, s.billNumber, s.customerName, s.productName,
-          s.barcode, p?.barcode, s.paymentMethod
-        ].some(v => String(v || "").toLowerCase().includes(query));
-      })
-    );
-
     if (tbody) {
-      tbody.innerHTML = shown.length ? shown.map(([key, items]) => {
-        const s = items[0];
-        const total = items.reduce((a, x) => a + num(x.total), 0);
-        const paid = Math.max(...items.map(x => num(x.paidAmount)));
-        const balance = Math.max(0, total - paid);
+      tbody.innerHTML = shown.length
+        ? shown.map(s => {
+            const product = getProducts().find(
+              p => String(p.id) === String(s.productId)
+            );
 
-        return `<tr>
-          <td>${esc(s.date || "-")}</td>
-          <td>${esc(s.billNumber || "-")}</td>
-          <td>${esc(s.customerName || "Walk-in Customer")}</td>
-          <td>${esc(items.map(x => x.productName || "-").join(", "))}<br>
-            <small>${items.length} item type(s)</small></td>
-          <td>${items.reduce((a, x) => a + num(x.qty), 0)}</td>
-          <td>${money(total)}</td>
-          <td>${money(paid)}</td>
-          <td>${money(balance)}</td>
-          <td>${esc(s.paymentMethod || "-")}</td>
-          <td><button type="button" class="sale-btn"
-            data-view-sale="${esc(s.id)}">View Bill</button></td>
-        </tr>`;
-      }).join("") : '<tr><td colspan="10" class="sale-empty">Sales विवरण छैन।</td></tr>';
+            const barcode = s.barcode || product?.barcode || "-";
+
+            return `
+              <tr>
+                <td>${esc(s.date || "-")}</td>
+                <td>${esc(s.billNumber || "-")}</td>
+                <td>${esc(s.customerName || "Walk-in Customer")}</td>
+                <td>
+                  ${esc(s.productName || "-")}
+                  <br>
+                  <small>Barcode: ${esc(barcode)}</small>
+                </td>
+                <td>${num(s.qty)}</td>
+                <td>${money(s.total)}</td>
+                <td>${money(s.paidAmount)}</td>
+                <td>${money(s.balance)}</td>
+                <td>${esc(s.paymentMethod || "-")}</td>
+                <td>
+                  <button type="button"
+                    class="sale-btn"
+                    data-view-sale="${esc(s.id)}">
+                    View Bill
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join("")
+        : '<tr><td colspan="10" class="sale-empty">Sales विवरण छैन।</td></tr>';
     }
 
-    if ($("totalSales")) $("totalSales").textContent = String(groups.size);
+    if ($("totalSales")) {
+      $("totalSales").textContent = String(allSales.length);
+    }
 
     if ($("salesValue")) {
       $("salesValue").textContent = money(
-        [...groups.values()].reduce((t, items) =>
-          t + items.reduce((a, s) => a + num(s.total), 0), 0)
+        allSales.reduce((total, sale) => total + num(sale.total), 0)
       );
     }
 
     if ($("salesPaidValue")) {
       $("salesPaidValue").textContent = money(
-        [...groups.values()].reduce((t, items) =>
-          t + Math.max(...items.map(s => num(s.paidAmount))), 0)
+        allSales.reduce((total, sale) => total + num(sale.paidAmount), 0)
       );
     }
 
     if ($("salesBalanceValue")) {
       $("salesBalanceValue").textContent = money(
-        [...groups.values()].reduce((t, items) => {
-          const total = items.reduce((a, s) => a + num(s.total), 0);
-          const paid = Math.max(...items.map(s => num(s.paidAmount)));
-          return t + Math.max(0, total - paid);
-        }, 0)
+        allSales.reduce((total, sale) => total + num(sale.balance), 0)
       );
     }
   }
@@ -841,27 +791,27 @@
     }
   });
 
-  /* ---------------- A4 Invoice / PDF / Signature ---------------- */
+  /* ---------------- View / Print A4 Invoice ---------------- */
 
   $("salesHistoryBody")?.addEventListener("click", event => {
     const button = event.target.closest("[data-view-sale]");
     if (!button) return;
 
-    const allSales = readArray(SALE_KEY);
-    const selected = allSales.find(s => String(s.id) === button.dataset.viewSale);
+    const sale = readArray(SALE_KEY).find(
+      s => String(s.id) === button.dataset.viewSale
+    );
 
-    if (!selected) {
+    if (!sale) {
       toast("Sale record भेटिएन।", "error");
       return;
     }
 
-    const items = allSales.filter(s =>
-      !s.voided && !s.isVoid &&
-      String(s.billNumber || s.id) === String(selected.billNumber || selected.id)
+    const product = getProducts().find(
+      p => String(p.id) === String(sale.productId)
     );
 
-    const billItemsForPrint = items.length ? items : [selected];
     const config = readSettings();
+    const barcode = sale.barcode || product?.barcode || "-";
     const win = window.open("", "_blank");
 
     if (!win) {
@@ -875,173 +825,702 @@
     const storeEmail = config.storeEmail || "";
     const ownerName = config.ownerName || "";
     const taxNumber = config.taxNumber || "";
-    const invoiceFooter = config.invoiceFooter || "हाम्रो पसलमा आउनुभएकोमा धन्यवाद!";
+    const invoiceFooter =
+      config.invoiceFooter || "हाम्रो पसलमा आउनुभएकोमा धन्यवाद!";
 
     const photo = config.operatorPhoto
       ? `<img class="store-photo" src="${esc(config.operatorPhoto)}" alt="Store photo">`
       : "";
 
-    const subtotal = billItemsForPrint.reduce((s, i) => s + num(i.itemAmount), 0);
-    const discount = billItemsForPrint.reduce((s, i) => s + num(i.discount), 0);
-    const grandTotal = billItemsForPrint.reduce((s, i) => s + num(i.total), 0);
-    const paid = Math.max(...billItemsForPrint.map(i => num(i.paidAmount)));
-    const balance = Math.max(0, grandTotal - paid);
+    win.document.write(`
+      <!doctype html>
+      <html lang="ne">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Invoice ${esc(sale.billNumber || "")}</title>
+        <style>
+          @page { size: A4 portrait; margin: 14mm; }
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            color: #17211b;
+            font-family: Arial, "Noto Sans Devanagari", sans-serif;
+            font-size: 12px;
+          }
+          .invoice { width: 100%; max-width: 182mm; margin: 0 auto; }
+          .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 16px;
+            border-bottom: 3px solid #166534;
+          }
+          .store-photo {
+            width: 76px;
+            height: 76px;
+            object-fit: contain;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 4px;
+          }
+          .brand-info { flex: 1; min-width: 0; }
+          .brand h1 {
+            margin: 0 0 6px;
+            color: #166534;
+            font-size: 25px;
+            overflow-wrap: anywhere;
+          }
+          .brand p { margin: 3px 0; color: #4b5563; overflow-wrap: anywhere; }
+          .invoice-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0;
+          }
+          .invoice-title h2 { margin: 0; font-size: 21px; letter-spacing: 1px; }
+          .invoice-title span { color: #166534; font-weight: 700; }
+          .meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 18px;
+            padding: 13px;
+            background: #f3f7f4;
+            border: 1px solid #dbe7dd;
+            border-radius: 8px;
+            margin-bottom: 18px;
+          }
+          .meta p { margin: 0; line-height: 1.6; overflow-wrap: anywhere; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+          th { background: #166534; color: white; font-weight: 700; }
+          td, th { border: 1px solid #d1d5db; padding: 10px 8px; text-align: left; }
+          .num { text-align: right; white-space: nowrap; }
+          .totals { width: 78%; max-width: 105mm; margin: 16px 0 0 auto; }
+          .totals div {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 7px 0;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          .totals .grand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #166534;
+            border-bottom: 2px solid #166534;
+          }
+          .notes {
+            margin-top: 18px;
+            padding: 10px 12px;
+            border-left: 3px solid #166534;
+            background: #f8faf8;
+            overflow-wrap: anywhere;
+          }
+          .footer {
+            margin-top: 28px;
+            padding-top: 12px;
+            text-align: center;
+            border-top: 1px solid #d1d5db;
+            color: #4b5563;
+            line-height: 1.7;
+          }
+          .actions { display: flex; justify-content: center; gap: 10px; margin: 20px auto; }
+          button {
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 7px;
+            background: #166534;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+          }
+          @media print {
+            .actions { display: none; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+          @media screen {
+            body { background: #e5e7eb; padding: 18px; }
+            .invoice {
+              background: white;
+              min-height: 260mm;
+              padding: 16mm;
+              box-shadow: 0 3px 18px #0002;
+            }
+          }
+        </style>
+      </head>
+      <body>
 
-    const rows = billItemsForPrint.map((item, index) => {
-      const product = getProducts().find(p => String(p.id) === String(item.productId));
-      const barcode = item.barcode || product?.barcode || "-";
 
-      return `<tr>
-        <td class="center">${index + 1}</td>
-        <td>${esc(item.productName || "-")}</td>
-        <td>${esc(barcode)}</td>
-        <td class="num">${num(item.qty)} ${esc(item.unit || "")}</td>
-        <td class="num">${money(item.rate)}</td>
-        <td class="num">${money(item.itemAmount)}</td>
-      </tr>`;
-    }).join("");
+  /* ---------------- View / Print A4 Invoice ---------------- */
 
-    win.document.open();
-    win.document.write(`<!doctype html>
-<html lang="ne">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Invoice ${esc(selected.billNumber || "")}</title>
-<style>
-@page{size:A4 portrait;margin:12mm}
-*{box-sizing:border-box}
-body{margin:0;background:#eef2ef;color:#1f2937;font-family:Arial,"Noto Sans Devanagari",sans-serif;font-size:11px;line-height:1.45}
-.invoice{width:100%;max-width:186mm;min-height:273mm;margin:0 auto;background:#fff;padding:8mm 9mm;display:flex;flex-direction:column}
-.brand{display:flex;align-items:center;gap:13px;padding-bottom:10px;border-bottom:2px solid #166534}
-.store-photo{width:68px;height:68px;object-fit:contain;border:1px solid #e5e7eb;border-radius:8px;padding:3px;flex-shrink:0}
-.brand-info{flex:1;min-width:0}
-.brand h1{font-size:23px;line-height:1.25;color:#166534;margin:0 0 4px;overflow-wrap:anywhere}
-.brand p{margin:1px 0;color:#4b5563;overflow-wrap:anywhere}
-.brand .contact{display:flex;flex-wrap:wrap;gap:4px 18px}
-.invoice-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:13px 0 11px}
-.invoice-title h2{font-size:19px;letter-spacing:.7px;margin:0}
-.invoice-title span{font-weight:700;color:#166534;border:1px solid #bbd7c2;padding:4px 10px;border-radius:4px}
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;padding:10px 12px;background:#f3f7f4;border:1px solid #dbe7dd;border-radius:6px;margin-bottom:12px}
-.meta p{margin:0;line-height:1.55;overflow-wrap:anywhere}
-table{width:100%;border-collapse:collapse;table-layout:fixed}
-th{background:#166534;color:#fff;font-weight:700}
-td,th{border:1px solid #d1d5db;padding:8px 7px;text-align:left;overflow-wrap:anywhere}
-th:nth-child(1){width:6%}
-th:nth-child(2){width:34%}
-th:nth-child(3){width:17%}
-th:nth-child(4){width:12%}
-th:nth-child(5){width:15%}
-th:nth-child(6){width:16%}
-.center{text-align:center}
-.num{text-align:right;white-space:nowrap}
-tbody tr:nth-child(even){background:#f8faf9}
-.totals-wrap{display:flex;justify-content:flex-end;width:100%;margin-top:12px}
-.totals{width:80%;max-width:100mm;border-collapse:collapse}
-.totals td{padding:6px 8px;border:0;border-bottom:1px solid #e5e7eb}
-.totals td:last-child{text-align:right;font-weight:600;white-space:nowrap}
-.totals .grand td{font-size:15px;font-weight:700;color:#166534;border-top:2px solid #166534;border-bottom:2px solid #166534;background:#f3f7f4}
-.notes{margin-top:12px;padding:9px 11px;border-left:3px solid #166534;background:#f8faf8;overflow-wrap:anywhere}
-.bottom-area{margin-top:auto;padding-top:18px}
-.signature-row{display:flex;justify-content:space-between;gap:28px;margin:12px 0 20px;page-break-inside:avoid}
-.signature{width:43%;text-align:center;padding-top:27px;border-bottom:1px solid #374151}
-.signature span{position:relative;top:7px;background:#fff;padding:0 8px;color:#374151}
-.footer{margin-top:14px;padding-top:10px;text-align:center;border-top:1px solid #d1d5db;color:#4b5563;line-height:1.6}
-.footer .thanks{font-weight:700;color:#166534;font-size:14px;margin-bottom:3px}
-.footer .contact{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:4px 20px;margin:4px 0}
-.actions{display:flex;justify-content:center;gap:10px;margin:18px auto}
-button{padding:10px 18px;border:0;border-radius:7px;background:#166534;color:white;cursor:pointer;font-size:14px}
-@media print{body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.invoice{max-width:none;min-height:273mm;padding:0}.actions{display:none}.bottom-area{margin-top:auto}}
-@media screen{body{background:#eef2ef;padding:16px}.invoice{box-shadow:0 3px 18px #0002;min-height:273mm}}
-@media(max-width:520px){.brand h1{font-size:19px}.store-photo{width:55px;height:55px}.meta{grid-template-columns:1fr}.totals{width:100%}td,th{padding:6px 4px;font-size:10px}.signature-row{gap:16px}}
-</style>
-</head>
-<body>
-<main class="invoice">
-<header class="brand">
-${photo}
-<div class="brand-info">
-<h1>${esc(storeName)}</h1>
-${storeAddress ? `<p>${esc(storeAddress)}</p>` : ""}
-<div class="contact">
-${storePhone ? `<p>Phone: ${esc(storePhone)}</p>` : ""}
-${storeEmail ? `<p>Email: ${esc(storeEmail)}</p>` : ""}
-</div>
-${ownerName ? `<p>Owner: ${esc(ownerName)}</p>` : ""}
-${taxNumber ? `<p>PAN/VAT: ${esc(taxNumber)}</p>` : ""}
-</div>
-</header>
+  $("salesHistoryBody")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-view-sale]");
+    if (!button) return;
 
-<section class="invoice-title">
-<h2>SALES INVOICE</h2><span>ORIGINAL</span>
-</section>
+    const sale = readArray(SALE_KEY).find(
+      s => String(s.id) === button.dataset.viewSale
+    );
 
-<section class="meta">
-<p><strong>Invoice No.:</strong> ${esc(selected.billNumber || "-")}</p>
-<p><strong>Date:</strong> ${esc(selected.date || "-")}</p>
-<p><strong>Customer:</strong> ${esc(selected.customerName || "Walk-in Customer")}</p>
-<p><strong>Payment:</strong> ${esc(selected.paymentMethod || "-")}</p>
-</section>
+    if (!sale) {
+      toast("Sale record भेटिएन।", "error");
+      return;
+    }
 
-<table>
-<thead><tr>
-<th class="center">SN</th><th>Product / Description</th><th>Barcode</th>
-<th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th>
-</tr></thead>
-<tbody>${rows}</tbody>
-</table>
+    const product = getProducts().find(
+      p => String(p.id) === String(sale.productId)
+    );
 
-<div class="totals-wrap">
-<table class="totals">
-<tr><td>Subtotal</td><td>${money(subtotal)}</td></tr>
-<tr><td>Discount</td><td>${money(discount)}</td></tr>
-<tr class="grand"><td>Grand Total</td><td>${money(grandTotal)}</td></tr>
-<tr><td>Paid Amount</td><td>${money(paid)}</td></tr>
-<tr><td>Balance Due</td><td>${money(balance)}</td></tr>
-</table>
-</div>
+    const config = readSettings();
+    const barcode = sale.barcode || product?.barcode || "-";
+    const win = window.open("", "_blank");
 
-${billItemsForPrint.some(i => i.note) ? `<section class="notes"><strong>Notes:</strong> ${esc([...new Set(billItemsForPrint.map(i => i.note).filter(Boolean))].join(" | "))}</section>` : ""}
+    if (!win) {
+      toast("Bill खोल्न Browser मा Popup अनुमति दिनुहोस्।", "error");
+      return;
+    }
 
-<div class="bottom-area">
-<div class="signature-row">
-<div class="signature"><span>Customer Signature</span></div>
-<div class="signature"><span>Authorized Signature</span></div>
-</div>
+    const storeName = config.storeName || "कृष्ण किराना पसल";
+    const storeAddress = config.storeAddress || "";
+    const storePhone = config.storePhone || "";
+    const storeEmail = config.storeEmail || "";
+    const ownerName = config.ownerName || "";
+    const taxNumber = config.taxNumber || "";
+    const invoiceFooter =
+      config.invoiceFooter || "हाम्रो पसलमा आउनुभएकोमा धन्यवाद!";
 
-<footer class="footer">
-<div class="thanks">Thank you, visit again 🙏</div>
-<strong>${esc(invoiceFooter)}</strong>
-<div class="contact">
-${storePhone ? `<span>Phone: ${esc(storePhone)}</span>` : ""}
-${storeEmail ? `<span>Email: ${esc(storeEmail)}</span>` : ""}
-</div>
-<div>This is a computer-generated invoice.</div>
-</footer>
-</div>
+    const photo = config.operatorPhoto
+      ? `<img class="store-photo" src="${esc(config.operatorPhoto)}" alt="Store photo">`
+      : "";
 
-<div class="actions">
-<button type="button" onclick="window.print()">Print / Save as PDF</button>
-<button type="button" onclick="window.close()">Close</button>
-</div>
-</main>
-</body>
-</html>`);
+    win.document.write(`
+      <!doctype html>
+      <html lang="ne">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Invoice ${esc(sale.billNumber || "")}</title>
+
+        <style>
+          @page {
+            size: A4 portrait;
+            margin: 12mm;
+          }
+
+          * {
+            box-sizing: border-box;
+          }
+
+          html, body {
+            margin: 0;
+            padding: 0;
+            color: #27313a;
+            font-family: Arial, "Noto Sans Devanagari", sans-serif;
+            font-size: 12px;
+          }
+
+          .invoice {
+            width: 100%;
+            min-height: 273mm;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+          }
+
+          /* Header: shop left, owner and address right */
+
+          .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 13px;
+            border-bottom: 3px solid #17683a;
+          }
+
+          .store-photo {
+            width: 19mm;
+            height: 19mm;
+            flex-shrink: 0;
+            object-fit: contain;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 3px;
+          }
+
+          .brand-info {
+            flex: 1;
+            min-width: 0;
+          }
+
+          .brand h1 {
+            margin: 0 0 5px;
+            color: #17683a;
+            font-size: 21px;
+            overflow-wrap: anywhere;
+          }
+
+          .brand p {
+            margin: 3px 0;
+            color: #626b73;
+            overflow-wrap: anywhere;
+          }
+
+          .owner-info {
+            flex: 0 0 34%;
+            text-align: right;
+            align-self: center;
+            overflow-wrap: anywhere;
+          }
+
+          .owner-info .owner {
+            margin: 0 0 5px;
+            color: #27313a;
+            font-weight: 700;
+          }
+
+          .owner-info .address {
+            margin: 0;
+            color: #626b73;
+          }
+
+          .tax-number {
+            margin-top: 5px !important;
+            font-size: 10px;
+          }
+
+          /* Invoice heading */
+
+          .invoice-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin: 14px 0;
+          }
+
+          .invoice-title h2 {
+            margin: 0;
+            font-size: 21px;
+            letter-spacing: .3px;
+          }
+
+          .invoice-title span {
+            color: #17683a;
+            font-weight: 700;
+            border: 1px solid #d9e4dd;
+            border-radius: 5px;
+            padding: 7px 10px;
+          }
+
+          /* Invoice details */
+
+          .meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 16px;
+            padding: 12px;
+            background: #f0f6f2;
+            border: 1px solid #d9e4dd;
+            border-radius: 6px;
+            margin-bottom: 14px;
+          }
+
+          .meta p {
+            margin: 0;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+          }
+
+          /* Products table */
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+            margin: 8px 0 0;
+          }
+
+          th {
+            background: #17683a;
+            color: white;
+            font-weight: 700;
+          }
+
+          td, th {
+            border: 1px solid #c9d0d3;
+            padding: 9px 7px;
+            text-align: left;
+            overflow-wrap: anywhere;
+          }
+
+          th.num, td.num {
+            text-align: right;
+          }
+
+          .num {
+            white-space: nowrap;
+          }
+
+          /* Large blank area; totals move towards page bottom */
+
+          .totals {
+            width: 100%;
+            max-width: none;
+            margin: auto 0 0;
+            padding-top: 8px;
+          }
+
+          .totals div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            min-height: 29px;
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e4e2;
+          }
+
+          .totals div strong {
+            white-space: nowrap;
+            text-align: right;
+          }
+
+          .totals .grand {
+            min-height: 36px;
+            padding: 7px 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #17683a;
+            background: #f0f6f2;
+            border-top: 2px solid #17683a;
+            border-bottom: 2px solid #17683a;
+          }
+
+          .notes {
+            margin-top: 8px;
+            padding: 8px 10px;
+            border-left: 3px solid #17683a;
+            background: #f8faf8;
+            overflow-wrap: anywhere;
+          }
+
+          /* Signatures */
+
+          .signatures {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 25px;
+            margin-top: 25px;
+            padding-bottom: 12px;
+          }
+
+          .signature {
+            width: 42%;
+            text-align: center;
+          }
+
+          .signature-line {
+            height: 22px;
+            border-bottom: 1px solid #626b73;
+            margin-bottom: 6px;
+          }
+
+          .signature-label {
+            font-size: 11px;
+            color: #626b73;
+          }
+
+          /* Footer */
+
+          .footer {
+            margin-top: 0;
+            padding-top: 10px;
+            text-align: center;
+            border-top: 1px solid #c9d0d3;
+            color: #626b73;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+          }
+
+          .footer .thank-you {
+            display: block;
+            color: #17683a;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 3px;
+          }
+
+          .footer .contact {
+            margin-top: 5px;
+          }
+
+          .actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px auto;
+          }
+
+          .actions button {
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 7px;
+            background: #17683a;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+          }
+
+          .actions button:last-child {
+            background: #4b5563;
+          }
+
+          @media print {
+            .actions {
+              display: none !important;
+            }
+
+            body {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+
+            .invoice {
+              min-height: 273mm;
+            }
+
+            .totals {
+              break-inside: avoid;
+            }
+
+            .signatures,
+            .footer {
+              break-inside: avoid;
+            }
+          }
+
+          @media screen {
+            body {
+              background: #e5e7eb;
+              padding: 18px;
+            }
+
+            .invoice {
+              max-width: 210mm;
+              min-height: 273mm;
+              padding: 12mm;
+              background: white;
+              box-shadow: 0 3px 18px #0002;
+            }
+          }
+
+          @media screen and (max-width: 560px) {
+            body {
+              padding: 5px;
+            }
+
+            .invoice {
+              padding: 12px;
+              min-height: 0;
+            }
+
+            .brand {
+              gap: 8px;
+            }
+
+            .store-photo {
+              width: 48px;
+              height: 48px;
+            }
+
+            .brand h1 {
+              font-size: 16px;
+            }
+
+            .owner-info {
+              flex-basis: 34%;
+              font-size: 10px;
+            }
+
+            .meta {
+              grid-template-columns: 1fr 1fr;
+              gap: 8px;
+              padding: 9px;
+              font-size: 10px;
+            }
+
+            td, th {
+              padding: 6px 4px;
+              font-size: 10px;
+            }
+
+            .totals {
+              margin-top: 30px;
+            }
+
+            .signatures {
+              margin-top: 25px;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <main class="invoice">
+
+          <header class="brand">
+            ${photo}
+
+            <div class="brand-info">
+              <h1>${esc(storeName)}</h1>
+            </div>
+
+            <div class="owner-info">
+              ${ownerName
+                ? `<p class="owner">Owner: ${esc(ownerName)}</p>`
+                : ""}
+              ${storeAddress
+                ? `<p class="address">${esc(storeAddress)}</p>`
+                : ""}
+              ${taxNumber
+                ? `<p class="tax-number">PAN/VAT: ${esc(taxNumber)}</p>`
+                : ""}
+            </div>
+          </header>
+
+          <section class="invoice-title">
+            <h2>SALES INVOICE</h2>
+            <span>ORIGINAL</span>
+          </section>
+
+          <section class="meta">
+            <p><strong>Invoice No.:</strong> ${esc(sale.billNumber || "-")}</p>
+            <p><strong>Date:</strong> ${esc(sale.date || "-")}</p>
+            <p><strong>Customer:</strong> ${esc(sale.customerName || "Walk-in Customer")}</p>
+            <p><strong>Payment:</strong> ${esc(sale.paymentMethod || "-")}</p>
+          </section>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width:6%">SN</th>
+                <th style="width:34%">Product / Description</th>
+                <th style="width:17%">Barcode</th>
+                <th class="num" style="width:11%">Qty</th>
+                <th class="num" style="width:15%">Rate</th>
+                <th class="num" style="width:17%">Amount</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>${esc(sale.productName || "-")}</td>
+                <td>${esc(barcode)}</td>
+                <td class="num">${num(sale.qty)} ${esc(sale.unit || "")}</td>
+                <td class="num">${money(sale.rate)}</td>
+                <td class="num">${money(sale.itemAmount)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          ${sale.note
+            ? `<section class="notes"><strong>Notes:</strong> ${esc(sale.note)}</section>`
+            : ""}
+
+          <section class="totals">
+            <div>
+              <span>Subtotal</span>
+              <strong>${money(sale.itemAmount)}</strong>
+            </div>
+
+            <div>
+              <span>Discount</span>
+              <strong>${money(sale.discount)}</strong>
+            </div>
+
+            <div class="grand">
+              <span>Grand Total</span>
+              <strong>${money(sale.total)}</strong>
+            </div>
+
+            <div>
+              <span>Paid Amount</span>
+              <strong>${money(sale.paidAmount)}</strong>
+            </div>
+
+            <div>
+              <span>Balance Due</span>
+              <strong>${money(sale.balance)}</strong>
+            </div>
+          </section>
+
+          <section class="signatures">
+            <div class="signature">
+              <div class="signature-line"></div>
+              <div class="signature-label">Customer Signature</div>
+            </div>
+
+            <div class="signature">
+              <div class="signature-line"></div>
+              <div class="signature-label">Authorized Signature</div>
+            </div>
+          </section>
+
+          <footer class="footer">
+            <strong class="thank-you">Thank you, visit again 🙏</strong>
+            <strong>${esc(invoiceFooter)}</strong>
+
+            <div class="contact">
+              ${storePhone
+                ? `Phone: ${esc(storePhone)}`
+                : ""}
+              ${storePhone && storeEmail ? "&nbsp;&nbsp;&nbsp;" : ""}
+              ${storeEmail
+                ? `Email: ${esc(storeEmail)}`
+                : ""}
+            </div>
+
+            <div>This is a computer-generated invoice.</div>
+          </footer>
+
+          <div class="actions">
+            <button type="button" onclick="window.print()">
+              Print / Save as PDF
+            </button>
+            <button type="button" onclick="window.close()">
+              Close
+            </button>
+          </div>
+
+        </main>
+      </body>
+      </html>
+    `);
+
     win.document.close();
   });
+
 
   /* ---------------- FIFO ---------------- */
 
   function allocateFIFO(lots, productId, quantity, productStock) {
     const productLots = lots
-      .filter(l => String(l.productId) === String(productId) && num(l.remainingQty) > 0)
+      .filter(lot =>
+        String(lot.productId) === String(productId) &&
+        num(lot.remainingQty) > 0
+      )
       .sort((a, b) =>
         String(a.date || a.purchaseDate || "").localeCompare(
           String(b.date || b.purchaseDate || "")
         )
       );
 
-    const lotTotal = productLots.reduce((s, l) => s + num(l.remainingQty), 0);
+    const lotTotal = productLots.reduce(
+      (sum, lot) => sum + num(lot.remainingQty), 0
+    );
 
     if (Math.abs(lotTotal - num(productStock)) > 0.000001) {
       throw new Error(
@@ -1074,20 +1553,27 @@ ${storeEmail ? `<span>Email: ${esc(storeEmail)}</span>` : ""}
     }
 
     if (remaining > 0.000001) {
-      throw new Error("FIFO Lot मा पर्याप्त स्टक छैन। बिक्री सुरक्षित गरिएको छैन।");
+      throw new Error(
+        "FIFO Lot मा पर्याप्त स्टक छैन। बिक्री सुरक्षित गरिएको छैन।"
+      );
     }
 
-    const updatedLots = lots.map(l => ({ ...l }));
+    const updatedLots = lots.map(lot => ({ ...lot }));
 
-    allocations.forEach(a => {
-      const lot = updatedLots.find(x => String(x.id) === String(a.lotId));
+    for (const allocation of allocations) {
+      const lot = updatedLots.find(
+        item => String(item.id) === String(allocation.lotId)
+      );
 
-      if (!lot || num(lot.remainingQty) < a.qty) {
+      if (!lot || num(lot.remainingQty) < allocation.qty) {
         throw new Error("FIFO Lot परिवर्तन भएको छ। फेरि प्रयास गर्नुहोस्।");
       }
 
-      lot.remainingQty = Math.max(0, num(lot.remainingQty) - a.qty);
-    });
+      lot.remainingQty = Math.max(
+        0,
+        num(lot.remainingQty) - allocation.qty
+      );
+    }
 
     return { allocations, fifoCost, updatedLots };
   }
@@ -1097,7 +1583,9 @@ ${storeEmail ? `<span>Email: ${esc(storeEmail)}</span>` : ""}
     if (counterUpdate?.key) keys.push(counterUpdate.key);
 
     const oldValues = {};
-    keys.forEach(k => { oldValues[k] = localStorage.getItem(k); });
+    keys.forEach(key => {
+      oldValues[key] = localStorage.getItem(key);
+    });
 
     try {
       write(LOT_KEY, updatedLots);
@@ -1108,16 +1596,21 @@ ${storeEmail ? `<span>Email: ${esc(storeEmail)}</span>` : ""}
         localStorage.setItem(counterUpdate.key, String(counterUpdate.value));
       }
     } catch (error) {
-      keys.forEach(k => {
+      keys.forEach(key => {
         try {
-          if (oldValues[k] === null) localStorage.removeItem(k);
-          else localStorage.setItem(k, oldValues[k]);
+          if (oldValues[key] === null) {
+            localStorage.removeItem(key);
+          } else {
+            localStorage.setItem(key, oldValues[key]);
+          }
         } catch (rollbackError) {
-          console.error("Rollback error:", k, rollbackError);
+          console.error("Rollback error:", key, rollbackError);
         }
       });
 
-      throw new Error("Storage मा Sale सुरक्षित गर्न सकिएन। पुरानो Data फर्काउने प्रयास गरियो।");
+      throw new Error(
+        "Storage मा Sale सुरक्षित गर्न सकिएन। पुरानो Data फर्काउने प्रयास गरियो।"
+      );
     }
   }
 
@@ -1128,130 +1621,148 @@ ${storeEmail ? `<span>Email: ${esc(storeEmail)}</span>` : ""}
       event.preventDefault();
 
       try {
-        let itemsToSave = billItems.map(i => ({ ...i }));
+        const product = selectedProduct();
 
-        // सामान सूचीमा केही नथपिएको भए पुरानो एकल-सामान बिक्री पनि चल्छ।
-        if (!itemsToSave.length) itemsToSave = [currentEntry()];
-
-        const dateValue = $("saleDate")?.value;
-        if (!dateValue) throw new Error("Sale Date राख्नुहोस्।");
-
-        const allProducts = getProducts();
-        const updatedProducts = allProducts.map(p => ({ ...p }));
-        let workingLots = readArray(LOT_KEY).map(l => ({ ...l }));
-        const updatedSales = readArray(SALE_KEY);
-
-        const totals = itemsToSave.reduce((a, i) => {
-          a.total += num(i.total);
-          a.subtotal += num(i.itemAmount);
-          a.discount += num(i.discount);
-          return a;
-        }, { total: 0, subtotal: 0, discount: 0 });
-
-        const paid = num($("paidAmount")?.value);
-
-        if (paid < 0 || paid > totals.total) {
-          throw new Error("Paid Amount Grand Total भन्दा बढी वा शून्यभन्दा कम हुन मिल्दैन।");
+        if (!product) {
+          toast("कृपया Product छान्नुहोस्।", "error");
+          return;
         }
 
-        // सबै सामानको संयुक्त Quantity पहिले जाँच्ने।
-        const quantities = new Map();
+        const calc = calculateSale();
 
-        itemsToSave.forEach(i => {
-          const id = String(i.productId);
-          quantities.set(id, (quantities.get(id) || 0) + num(i.qty));
-        });
+        if (!$("saleDate")?.value) {
+          toast("Sale Date राख्नुहोस्।", "error");
+          return;
+        }
 
-        quantities.forEach((qty, id) => {
-          const p = updatedProducts.find(x => String(x.id) === id);
+        if (calc.qty <= 0) {
+          toast("Quantity शून्यभन्दा बढी हुनुपर्छ।", "error");
+          return;
+        }
 
-          if (!p || !isActive(p)) {
-            throw new Error("बिलमा भएको Product Active छैन वा भेटिएन।");
-          }
+        if (calc.rate <= 0) {
+          toast("Sale Rate शून्यभन्दा बढी हुनुपर्छ।", "error");
+          return;
+        }
 
-          if (qty > num(p.stock)) {
-            throw new Error(`पर्याप्त Stock छैन। ${p.name}: उपलब्ध ${num(p.stock)}।`);
-          }
-        });
+        if (calc.discount < 0 || calc.discount > calc.itemAmount) {
+          toast("Discount मिलाउनुहोस्।", "error");
+          return;
+        }
 
-        const billInfo = billNumberDetails(dateValue);
+        if (calc.paid < 0 || calc.paid > calc.total) {
+          toast("Paid Amount मिलाउनुहोस्।", "error");
+          return;
+        }
+
+        const allProducts = getProducts();
+        const productIndex = allProducts.findIndex(
+          p => String(p.id) === String(product.id)
+        );
+
+        if (productIndex < 0) {
+          toast("Product record भेटिएन।", "error");
+          return;
+        }
+
+        const currentProduct = allProducts[productIndex];
+
+        if (!isActive(currentProduct)) {
+          toast("यो Product Active छैन।", "error");
+          return;
+        }
+
+        if (calc.qty > num(currentProduct.stock)) {
+          toast(
+            `पर्याप्त Stock छैन। उपलब्ध: ${num(currentProduct.stock)}`,
+            "error"
+          );
+          return;
+        }
+
+        const allLots = readArray(LOT_KEY);
+        const fifo = allocateFIFO(
+          allLots,
+          currentProduct.id,
+          calc.qty,
+          currentProduct.stock
+        );
+
+        // सफल बिक्रीमा मात्र दैनिक क्रम संख्या सुरक्षित हुन्छ।
+        const billInfo = billNumberDetails($("saleDate").value);
         const billNumber = billInfo.billNumber;
+
         if ($("billNumber")) $("billNumber").value = billNumber;
 
-        const commonId = newId("BILL");
-        const customerName = $("customerName")?.value.trim() || "";
-        const paymentMethod = $("paymentMethod")?.value || "CASH";
-        const note = $("saleNote")?.value.trim() || "";
+        const barcode = String(currentProduct.barcode || "").trim();
 
-        itemsToSave.forEach(item => {
-          const product = updatedProducts.find(
-            p => String(p.id) === String(item.productId)
-          );
+        const sale = {
+          id: newId("SALE"),
+          date: $("saleDate").value,
+          billNumber,
+          customerName: $("customerName")?.value.trim() || "",
+          productId: currentProduct.id,
+          productName: currentProduct.name || "",
+          barcode,
+          unit: currentProduct.unit || "",
+          qty: calc.qty,
+          rate: calc.rate,
+          discount: calc.discount,
+          itemAmount: calc.itemAmount,
+          total: calc.total,
+          paidAmount: calc.paid,
+          balance: calc.balance,
+          paymentMethod: $("paymentMethod")?.value || "CASH",
+          note: $("saleNote")?.value.trim() || "",
+          fifoAllocations: fifo.allocations,
+          fifoCost: fifo.fifoCost,
+          profit: calc.total - fifo.fifoCost,
+          createdAt: new Date().toISOString()
+        };
 
-          const fifo = allocateFIFO(
-            workingLots, product.id, num(item.qty), product.stock
-          );
+        const updatedProducts = allProducts.map(p => ({ ...p }));
 
-          workingLots = fifo.updatedLots;
+        updatedProducts[productIndex].stock = Math.max(
+          0,
+          num(updatedProducts[productIndex].stock) - calc.qty
+        );
 
-          product.stock = Math.max(0, num(product.stock) - num(item.qty));
-          product.salePrice = num(item.rate);
+        updatedProducts[productIndex].salePrice = calc.rate;
 
-          updatedSales.push({
-            id: newId("SALE"),
-            billId: commonId,
-            date: dateValue,
-            billNumber,
-            customerName,
-            productId: product.id,
-            productName: item.productName || product.name || "",
-            barcode: item.barcode || product.barcode || "",
-            unit: item.unit || product.unit || "",
-            qty: num(item.qty),
-            rate: num(item.rate),
-            discount: num(item.discount),
-            itemAmount: num(item.itemAmount),
-            total: num(item.total),
-            paidAmount: paid,
-            balance: Math.max(0, totals.total - paid),
-            paymentMethod,
-            note,
-            fifoAllocations: fifo.allocations,
-            fifoCost: fifo.fifoCost,
-            profit: num(item.total) - fifo.fifoCost,
-            createdAt: new Date().toISOString()
-          });
-        });
+        const updatedSales = readArray(SALE_KEY);
+        updatedSales.push(sale);
 
         saveSaleTransaction(
-          workingLots,
+          fifo.updatedLots,
           updatedProducts,
           updatedSales,
           { key: billInfo.counterKey, value: billInfo.counter }
         );
 
-        toast(`Sale सफल भयो। ${itemsToSave.length} प्रकारका सामान | Bill: ${billNumber}`);
+        toast("Sale सफलतापूर्वक सुरक्षित भयो।");
 
-        billItems = [];
         form.reset();
 
         if ($("saleDate")) $("saleDate").value = today();
         if ($("billNumber")) $("billNumber").value = newBillNumber($("saleDate")?.value);
-        if ($("saleQty")) $("saleQty").value = "1";
+        if ($("saleQty")) $("saleQty").value = "";
         if ($("saleRate")) $("saleRate").value = "";
         if ($("saleDiscount")) $("saleDiscount").value = "0";
         if ($("paidAmount")) $("paidAmount").value = "0";
 
+        lookupBarcode._lastProductId = null;
+
         loadProducts();
         applySaleDefaults();
-        renderBillItems();
         calculateSale();
         renderSales();
         closeSaleModal();
-
       } catch (error) {
         console.error("Sale save error:", error);
-        toast(error.message || "Sale सुरक्षित गर्न सकिएन।", "error");
+        toast(
+          error.message || "Sale सुरक्षित गर्न सकिएन।",
+          "error"
+        );
       }
     });
   }
@@ -1265,12 +1776,15 @@ ${storeEmail ? `<span>Email: ${esc(storeEmail)}</span>` : ""}
       if ($("saleDate")) $("saleDate").value = today();
       if ($("billNumber")) $("billNumber").value = newBillNumber();
 
+      lookupBarcode._lastProductId = null;
+
       loadProducts();
       applySaleDefaults();
-      renderBillItems();
       calculateSale();
 
-      if ($("saleBarcodeStatus")) $("saleBarcodeStatus").textContent = "";
+      if ($("saleBarcodeStatus")) {
+        $("saleBarcodeStatus").textContent = "";
+      }
     }, 0);
   });
 
@@ -1278,7 +1792,6 @@ ${storeEmail ? `<span>Email: ${esc(storeEmail)}</span>` : ""}
 
   function initialize() {
     createScannerUI();
-    ensureMultiProductUI();
 
     if ($("saleDate")) $("saleDate").value = today();
 
@@ -1288,13 +1801,16 @@ ${storeEmail ? `<span>Email: ${esc(storeEmail)}</span>` : ""}
       $("billNumber").value = newBillNumber($("saleDate")?.value);
     }
 
-    if ($("saleQty") && !$("saleQty").value) $("saleQty").value = "1";
-    if ($("saleDiscount") && $("saleDiscount").value === "") $("saleDiscount").value = "0";
-    if ($("paidAmount") && $("paidAmount").value === "") $("paidAmount").value = "0";
+    if ($("saleDiscount") && $("saleDiscount").value === "") {
+      $("saleDiscount").value = "0";
+    }
+
+    if ($("paidAmount") && $("paidAmount").value === "") {
+      $("paidAmount").value = "0";
+    }
 
     loadProducts();
     applySaleDefaults();
-    renderBillItems();
     renderSales();
     calculateSale();
     closeSaleModal();
