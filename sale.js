@@ -792,112 +792,6 @@
 
   /* ---------------- View / Print A4 Invoice ---------------- */
 
-  
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding-bottom: 16px;
-            border-bottom: 3px solid #166534;
-          }
-          .store-photo {
-            width: 76px;
-            height: 76px;
-            object-fit: contain;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 4px;
-          }
-          .brand-info { flex: 1; min-width: 0; }
-          .brand h1 {
-            margin: 0 0 6px;
-            color: #166534;
-            font-size: 25px;
-            overflow-wrap: anywhere;
-          }
-          .brand p { margin: 3px 0; color: #4b5563; overflow-wrap: anywhere; }
-          .invoice-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            margin: 18px 0;
-          }
-          .invoice-title h2 { margin: 0; font-size: 21px; letter-spacing: 1px; }
-          .invoice-title span { color: #166534; font-weight: 700; }
-          .meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px 18px;
-            padding: 13px;
-            background: #f3f7f4;
-            border: 1px solid #dbe7dd;
-            border-radius: 8px;
-            margin-bottom: 18px;
-          }
-          .meta p { margin: 0; line-height: 1.6; overflow-wrap: anywhere; }
-          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-          th { background: #166534; color: white; font-weight: 700; }
-          td, th { border: 1px solid #d1d5db; padding: 10px 8px; text-align: left; }
-          .num { text-align: right; white-space: nowrap; }
-          .totals { width: 78%; max-width: 105mm; margin: 16px 0 0 auto; }
-          .totals div {
-            display: flex;
-            justify-content: space-between;
-            gap: 18px;
-            padding: 7px 0;
-            border-bottom: 1px solid #e5e7eb;
-          }
-          .totals .grand {
-            font-size: 16px;
-            font-weight: 700;
-            color: #166534;
-            border-bottom: 2px solid #166534;
-          }
-          .notes {
-            margin-top: 18px;
-            padding: 10px 12px;
-            border-left: 3px solid #166534;
-            background: #f8faf8;
-            overflow-wrap: anywhere;
-          }
-          .footer {
-            margin-top: 28px;
-            padding-top: 12px;
-            text-align: center;
-            border-top: 1px solid #d1d5db;
-            color: #4b5563;
-            line-height: 1.7;
-          }
-          .actions { display: flex; justify-content: center; gap: 10px; margin: 20px auto; }
-          button {
-            padding: 10px 18px;
-            border: 0;
-            border-radius: 7px;
-            background: #166534;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-          }
-          @media print {
-            .actions { display: none; }
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          }
-          @media screen {
-            body { background: #e5e7eb; padding: 18px; }
-            .invoice {
-              background: white;
-              min-height: 260mm;
-              padding: 16mm;
-              box-shadow: 0 3px 18px #0002;
-            }
-          }
-        </style>
-      </head>
-      <body>
-
-
-  /* ---------------- View / Print A4 Invoice ---------------- */
-
   $("salesHistoryBody")?.addEventListener("click", event => {
     const button = event.target.closest("[data-view-sale]");
     if (!button) return;
@@ -1454,7 +1348,6 @@
     win.document.close();
   });
 
-
   /* ---------------- FIFO ---------------- */
 
   function allocateFIFO(lots, productId, quantity, productStock) {
@@ -1639,7 +1532,6 @@
           currentProduct.stock
         );
 
-        // सफल बिक्रीमा मात्र दैनिक क्रम संख्या सुरक्षित हुन्छ।
         const billInfo = billNumberDetails($("saleDate").value);
         const billNumber = billInfo.billNumber;
 
