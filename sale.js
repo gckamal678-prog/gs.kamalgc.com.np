@@ -324,6 +324,113 @@
     calculateSale();
   }
 
+  /* ---------------- Multi-product Bill Draft ---------------- */
+
+  let billItems = [];
+
+  function renderBillItems() {
+    const tbody = $("billItemsBody");
+    if (!tbody) return;
+
+    if (billItems.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="sale-empty">
+            सामान थप्नुहोस्।
+          </td>
+        </tr>
+      `;
+    } else {
+      tbody.innerHTML = billItems.map((item, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${esc(item.name)}</td>
+          <td>${item.qty}</td>
+          <td>${money(item.rate)}</td>
+          <td>${money(item.qty * item.rate)}</td>
+          <td>
+            <button
+              type="button"
+              class="sale-btn danger"
+              data-remove-bill-item="${index}"
+            >हटाउनुहोस्</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    const subtotal = billItems.reduce(
+      (sum, item) => sum + item.qty * item.rate,
+      0
+    );
+
+    if ($("billSubtotal")) {
+      $("billSubtotal").textContent = money(subtotal);
+    }
+  }
+
+  function addCurrentItemToBill() {
+    const product = selectedProduct();
+    const qty = num($("saleQty")?.value);
+    const rate = num($("saleRate")?.value);
+
+    if (!product) {
+      toast("पहिले सामान छान्नुहोस्।", "error");
+      return;
+    }
+
+    if (qty <= 0 || rate <= 0) {
+      toast("मात्रा र बिक्री दर सही राख्नुहोस्।", "error");
+      return;
+    }
+
+    if (qty > num(product.stock)) {
+      toast("उपलब्ध स्टकभन्दा बढी मात्रा राख्न मिल्दैन।", "error");
+      return;
+    }
+
+    billItems.push({
+      productId: product.id,
+      name: product.name || "Product",
+      barcode: String(product.barcode || ""),
+      unit: product.unit || "",
+      qty,
+      rate
+    });
+
+    renderBillItems();
+
+    if ($("saleProduct")) $("saleProduct").value = "";
+    if ($("saleQty")) $("saleQty").value = "";
+    if ($("saleRate")) $("saleRate").value = "";
+
+    lookupBarcode._lastProductId = null;
+    updateProductInfo();
+
+    toast("सामान बिलको सूचीमा थपियो।");
+  }
+
+  $("addSaleItemBtn")?.addEventListener(
+    "click",
+    addCurrentItemToBill
+  );
+
+  $("billItemsBody")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-remove-bill-item]");
+    if (!button) return;
+
+    const index = Number(button.dataset.removeBillItem);
+
+    if (!Number.isInteger(index) || index < 0 ||
+        index >= billItems.length) {
+      return;
+    }
+
+    billItems.splice(index, 1);
+    renderBillItems();
+    toast("सामान सूचीबाट हटाइयो।", "info");
+  });
+
   /* ---------------- Barcode Scanner UI ---------------- */
 
   function createScannerUI() {
