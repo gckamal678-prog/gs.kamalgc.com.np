@@ -923,289 +923,437 @@
 
   /* -------------------- PDF / PRINT -------------------- */
 
-  function printReport(panel) {
-    const profile = storeProfile();
-    const makeReport = findReportFunction(panel);
 
-    if (!makeReport) {
-      showToast("यो रिपोर्टको प्रकार पहिचान भएन।", true);
-      return;
-    }
+function printReport(panel) {
+  const profile = storeProfile();
+  const makeReport = findReportFunction(panel);
 
-    const report = makeReport();
-    const title = panelTitle(panel, report.title);
-    const dateRange = startDate || endDate
-      ? `${startDate ? formatDate(startDate) : "Beginning"} — ${endDate ? formatDate(endDate) : "Today"}`
-      : "All available records";
+  if (!makeReport) {
+    showToast("यो रिपोर्टको प्रकार पहिचान भएन।", true);
+    return;
+  }
 
-    const now = new Date().toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+  const report = makeReport();
+  const title = panelTitle(panel, report.title);
 
-    const logoHTML = profile.photo
-      ? `<img class="store-logo" src="${escapeHTML(profile.photo)}" alt="Store Logo" onerror="this.style.display='none';">`
-      : `<div class="store-logo-placeholder">GS</div>`;
+  const dateRange = startDate || endDate
+    ? `${startDate ? formatDate(startDate) : "Beginning"} — ${
+        endDate ? formatDate(endDate) : "Today"
+      }`
+    : "All available records";
 
-    const documentHTML = `<!DOCTYPE html>
+  const now = new Date().toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  /*
+   * Store name, owner, address, contact and logo
+   * are read dynamically from Store Profile.
+   * No particular store identity is hard-coded here.
+   */
+  const logoHTML = profile.photo
+    ? `<img
+         class="store-logo"
+         src="${escapeHTML(profile.photo)}"
+         alt="Store Logo"
+         onerror="this.style.display='none';"
+       >`
+    : `<div class="store-logo-placeholder">Logo</div>`;
+
+  const contactLines = [
+    profile.owner
+      ? `<div><strong>Owner:</strong> ${escapeHTML(profile.owner)}</div>`
+      : "",
+    profile.address
+      ? `<div>${escapeHTML(profile.address)}</div>`
+      : "",
+    profile.phone
+      ? `<div><strong>Phone:</strong> ${escapeHTML(profile.phone)}</div>`
+      : "",
+    profile.email
+      ? `<div><strong>Email:</strong> ${escapeHTML(profile.email)}</div>`
+      : ""
+  ].filter(Boolean).join("");
+
+  const documentHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHTML(title)} - ${escapeHTML(profile.name)}</title>
+
 <style>
-  @page { size:A4 portrait; margin:12mm; }
-
-  * { box-sizing:border-box; }
-
-  body {
-    margin:0;
-    font-family:Arial,Helvetica,sans-serif;
-    color:#111827;
-    font-size:11px;
-    background:#fff;
+  @page {
+    size: A4 portrait;
+    margin: 11mm 10mm 12mm;
   }
 
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: #fff;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    color: #1f2937;
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    line-height: 1.45;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Print controls are visible in the preview only. */
   .print-toolbar {
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    margin:0 0 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    padding: 12px;
+    background: #f3f4f6;
+    border-radius: 8px;
   }
 
   .print-toolbar button {
-    padding:10px 18px;
-    border:0;
-    border-radius:7px;
-    background:#166534;
-    color:white;
-    font-size:14px;
-    font-weight:bold;
-    cursor:pointer;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 6px;
+    background: #166534;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
   }
 
-  .print-toolbar .close-button { background:#374151; }
+  .print-toolbar .close-button {
+    background: #374151;
+  }
 
+  /* Store header */
   .store-header {
-    display:flex;
-    align-items:center;
-    gap:15px;
-    padding:0 0 13px;
-    border-bottom:2px solid #166534;
-    margin-bottom:18px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 0 0 12px;
+    margin: 0 0 15px;
+    border-bottom: 2px solid #198044;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .store-logo,
   .store-logo-placeholder {
-    width:76px;
-    height:76px;
-    flex:0 0 76px;
-    object-fit:contain;
-    border:1px solid #d1d5db;
-    border-radius:9px;
+    display: block;
+    width: 65px;
+    height: 65px;
+    flex: 0 0 65px;
+    object-fit: contain;
+    border: 1px solid #e5e7eb;
+    border-radius: 5px;
   }
 
   .store-logo-placeholder {
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#166534;
-    color:#fff;
-    font-size:25px;
-    font-weight:bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #166534;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
   }
 
-  .store-details { flex:1; min-width:0; }
+  .store-details {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 
   .store-name {
-    margin:0 0 5px;
-    font-size:23px;
-    color:#14532d;
-    font-weight:800;
-    overflow-wrap:anywhere;
+    margin: 0 0 5px;
+    color: #14532d;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
   }
 
   .store-contact {
-    line-height:1.65;
-    color:#374151;
-    overflow-wrap:anywhere;
+    color: #374151;
+    font-size: 9px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
   }
 
+  .store-contact strong {
+    color: #111827;
+  }
+
+  /* Report heading */
   .report-heading {
-    text-align:center;
-    margin:18px 0 15px;
+    margin: 15px 0 13px;
+    text-align: center;
+    break-after: avoid;
+    page-break-after: avoid;
   }
 
   .report-heading h2 {
-    font-size:18px;
-    margin:0 0 6px;
-    text-transform:uppercase;
+    margin: 0 0 5px;
+    color: #111827;
+    font-size: 17px;
+    line-height: 1.3;
+    font-weight: 800;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
   }
 
   .report-heading p {
-    color:#4b5563;
-    margin:4px 0;
+    margin: 3px 0;
+    color: #4b5563;
+    font-size: 9px;
   }
 
-  .summary {
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin:12px 0 18px;
-  }
-
-  .summary-card {
-    border:1px solid #d1d5db;
-    border-radius:6px;
-    padding:9px;
-    min-width:100px;
-    flex:1;
-  }
-
-  .summary-label {
-    color:#6b7280;
-    font-size:10px;
-    margin-bottom:6px;
-  }
-
-  .summary-value {
-    color:#111827;
-    font-size:13px;
-    font-weight:bold;
-    overflow-wrap:anywhere;
-  }
-
+  /* Summary cards */
   .gs-report-stats {
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin:12px 0 18px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 7px;
+    margin: 12px 0 15px;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .gs-report-stat {
-    border:1px solid #d1d5db;
-    border-radius:6px;
-    padding:9px;
-    min-width:100px;
-    flex:1;
+    flex: 1 1 105px;
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-top: 2px solid #198044;
+    border-radius: 4px;
+    background: #fff;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .gs-report-stat-label {
-    color:#6b7280;
-    font-size:10px;
-    margin-bottom:6px;
+    margin-bottom: 5px;
+    color: #6b7280;
+    font-size: 9px;
+    line-height: 1.35;
   }
 
   .gs-report-stat-value {
-    color:#111827;
-    font-size:13px;
-    font-weight:bold;
-    overflow-wrap:anywhere;
+    color: #111827;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
-  .gs-report-table-wrap { width:100%; }
+  /* Table layout */
+  .gs-report-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin: 10px 0 14px;
+    overflow: visible;
+  }
 
+  .gs-report-table,
   table {
-    width:100%;
-    border-collapse:collapse;
-    margin:10px 0 18px;
-    font-size:10px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    table-layout: auto;
+    font-size: 9px;
   }
 
-  th, td {
-    border:1px solid #d1d5db;
-    padding:7px 6px;
-    text-align:left;
-    vertical-align:top;
-    overflow-wrap:anywhere;
+  .gs-report-table thead,
+  table thead {
+    display: table-header-group;
   }
 
-  th {
-    background:#f3f4f6;
-    font-weight:bold;
-    color:#111827;
+  .gs-report-table tfoot,
+  table tfoot {
+    display: table-footer-group;
   }
 
-  tr { page-break-inside:avoid; }
+  .gs-report-table tr,
+  table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 
+  .gs-report-table th,
+  .gs-report-table td,
+  th,
+  td {
+    padding: 6px 5px;
+    border: 1px solid #d1d5db;
+    text-align: left;
+    vertical-align: top;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .gs-report-table th,
+  table th {
+    background: #e8f3eb;
+    color: #14532d;
+    font-weight: 700;
+    border-color: #b9d6c1;
+  }
+
+  .gs-report-table td,
+  table td {
+    color: #1f2937;
+  }
+
+  .gs-report-table tbody tr:nth-child(even) td {
+    background: #fafcfb;
+  }
+
+  /* Empty-report message */
   .gs-report-empty {
-    border:1px dashed #d1d5db;
-    padding:20px;
-    text-align:center;
-    color:#6b7280;
+    margin: 12px 0;
+    padding: 18px 10px;
+    border: 1px dashed #9ca3af;
+    color: #6b7280;
+    text-align: center;
+    border-radius: 4px;
   }
 
+  /* Signatures */
   .signature-area {
-    display:flex;
-    justify-content:space-between;
-    gap:22px;
-    margin-top:42px;
-    page-break-inside:avoid;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin: 38px 0 0;
+    padding-top: 8px;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .signature {
-    flex:1;
-    min-width:0;
-    border-top:1px solid #374151;
-    padding-top:7px;
-    text-align:center;
-    font-size:10px;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 27px;
+    padding-top: 6px;
+    border-top: 1px solid #374151;
+    color: #374151;
+    text-align: center;
+    font-size: 9px;
+  }
+
+  /* Footer follows content naturally to reduce blank pages. */
+  .report-footer {
+    margin-top: 23px;
+    padding-top: 10px;
+    border-top: 1px solid #d1d5db;
+    text-align: center;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .thank-you {
-    margin-top:28px;
-    padding-top:12px;
-    border-top:1px solid #d1d5db;
-    text-align:center;
-    color:#166534;
-    font-size:13px;
-    font-weight:bold;
+    margin: 0;
+    color: #166534;
+    font-size: 12px;
+    font-weight: 700;
   }
 
   .print-note {
-    margin-top:8px;
-    text-align:center;
-    color:#6b7280;
-    font-size:9px;
-    line-height:1.6;
-  }
-
-  @media print {
-    .print-toolbar { display:none !important; }
-    body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    margin-top: 6px;
+    color: #6b7280;
+    font-size: 8px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
   }
 
   @media screen {
-    body { max-width:190mm; margin:20px auto; padding:16px; }
+    body {
+      width: calc(100% - 32px);
+      max-width: 190mm;
+      margin: 20px auto;
+    }
+  }
+
+  @media print {
+    html,
+    body {
+      width: auto !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #fff !important;
+    }
+
+    .print-toolbar {
+      display: none !important;
+    }
+
+    .store-header,
+    .report-heading,
+    .gs-report-stat,
+    .signature-area,
+    .report-footer {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .gs-report-table-wrap {
+      overflow: visible !important;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
   }
 </style>
 </head>
+
 <body>
   <div class="print-toolbar">
-    <button onclick="window.print()">Print / Save PDF</button>
-    <button class="close-button" onclick="window.close()">Close</button>
+    <button type="button" onclick="window.print()">
+      Print / Save PDF
+    </button>
+    <button
+      type="button"
+      class="close-button"
+      onclick="window.close()"
+    >
+      Close
+    </button>
   </div>
 
   <header class="store-header">
     ${logoHTML}
+
     <div class="store-details">
       <h1 class="store-name">${escapeHTML(profile.name)}</h1>
       <div class="store-contact">
-        ${profile.address ? `<div>${escapeHTML(profile.address)}</div>` : ""}
-        ${profile.phone ? `<div>Phone: ${escapeHTML(profile.phone)}</div>` : ""}
-        ${profile.email ? `<div>Email: ${escapeHTML(profile.email)}</div>` : ""}
-        ${profile.owner ? `<div>Owner: ${escapeHTML(profile.owner)}</div>` : ""}
+        ${contactLines}
       </div>
     </div>
   </header>
 
   <section class="report-heading">
     <h2>${escapeHTML(title)}</h2>
-    <p>Date Range: ${escapeHTML(dateRange)}</p>
-    <p>Generated: ${escapeHTML(now)}</p>
+    <p><strong>Date Range:</strong> ${escapeHTML(dateRange)}</p>
+    <p><strong>Generated:</strong> ${escapeHTML(now)}</p>
   </section>
 
   ${report.summary}
@@ -1217,30 +1365,41 @@
     <div class="signature">Authorized Signature</div>
   </section>
 
-  <footer>
-    <div class="thank-you">Thank you for your business. Visit again! 🙏</div>
+  <footer class="report-footer">
+    <p class="thank-you">Thank you for your business. Visit again!</p>
+
     <div class="print-note">
       This is a computer-generated report.
-      ${profile.phone ? `<br>Phone: ${escapeHTML(profile.phone)}` : ""}
-      ${profile.email ? `<br>Email: ${escapeHTML(profile.email)}` : ""}
+      ${profile.phone
+        ? `<div>Phone: ${escapeHTML(profile.phone)}</div>`
+        : ""}
+      ${profile.email
+        ? `<div>Email: ${escapeHTML(profile.email)}</div>`
+        : ""}
     </div>
   </footer>
 </body>
 </html>`;
 
-    const popup = window.open("", "_blank");
+  const popup = window.open("", "_blank");
 
-    if (!popup) {
-      showToast("PDF खोल्न popup अनुमति दिनुहोस्।", true);
-      return;
-    }
+  if (!popup) {
+    showToast("PDF खोल्न popup अनुमति दिनुहोस्।", true);
+    return;
+  }
 
+  try {
     popup.document.open();
     popup.document.write(documentHTML);
     popup.document.close();
     popup.focus();
+  } catch (error) {
+    console.error("GS Reports PDF error:", error);
+    showToast("PDF खोल्न समस्या भयो। फेरि प्रयास गर्नुहोस्।", true);
   }
+}
 
+    
   /* -------------------- ONE PRINT BUTTON PER PANEL -------------------- */
 
   function ensurePrintButtons() {
