@@ -1,13 +1,14 @@
-
 /* =========================================================
    GS GENERAL STORE — REPORT MANAGEMENT SYSTEM
-   Full replacement: report.js
+   FULL REPLACEMENT: report.js
+
    Features:
    - Sales, Purchase, Stock, Customer, Supplier, Profit reports
-   - Date filtering and Refresh
-   - One Print / Save PDF button per report
-   - A4 print layout
-   - Store details, logo/avatar and professional footer
+   - Date filters and Refresh
+   - One Print / Save PDF button per report panel
+   - A4 PDF design matching the supplied sample
+   - Store logo/photo, name, owner and address
+   - Authorized Signature and professional footer
    - LocalStorage based
 ========================================================= */
 
@@ -38,10 +39,10 @@
 
   function read(key, fallback = []) {
     try {
-      const value = localStorage.getItem(key);
-      if (value === null) return fallback;
+      const raw = localStorage.getItem(key);
+      if (raw === null) return fallback;
 
-      const parsed = JSON.parse(value);
+      const parsed = JSON.parse(raw);
       return parsed ?? fallback;
     } catch (error) {
       console.warn("GS Reports: Could not read", key, error);
@@ -51,6 +52,7 @@
 
   function readArray(key) {
     const value = read(key, []);
+
     if (Array.isArray(value)) return value;
 
     if (value && typeof value === "object") {
@@ -64,7 +66,10 @@
 
   function settings() {
     const value = read(STORAGE.settings, {});
-    return value && typeof value === "object" && !Array.isArray(value)
+
+    return value &&
+      typeof value === "object" &&
+      !Array.isArray(value)
       ? value
       : {};
   }
@@ -73,7 +78,11 @@
     for (const key of keys) {
       const value = object?.[key];
 
-      if (value !== undefined && value !== null && String(value).trim() !== "") {
+      if (
+        value !== undefined &&
+        value !== null &&
+        String(value).trim() !== ""
+      ) {
         return value;
       }
     }
@@ -87,8 +96,12 @@
     }
 
     if (typeof value === "string") {
-      const cleaned = value.replace(/,/g, "").replace(/[^\d.-]/g, "");
+      const cleaned = value
+        .replace(/,/g, "")
+        .replace(/[^\d.-]/g, "");
+
       const parsed = Number(cleaned);
+
       return Number.isFinite(parsed) ? parsed : 0;
     }
 
@@ -97,11 +110,12 @@
 
   function money(value) {
     const s = settings();
+
     const currency = String(
       firstValue(s, ["currency", "currencyCode"], "NPR")
     ).toUpperCase();
 
-    const symbolMap = {
+    const symbols = {
       NPR: "Rs. ",
       RS: "Rs. ",
       INR: "₹",
@@ -110,7 +124,7 @@
       EUR: "€"
     };
 
-    const symbol = symbolMap[currency] || (currency + " ");
+    const symbol = symbols[currency] || `${currency} `;
 
     return symbol + number(value).toLocaleString("en-IN", {
       minimumFractionDigits: 2,
@@ -132,6 +146,7 @@
     if (!value) return "—";
 
     const date = parseDate(value);
+
     if (!date) return escapeHTML(value);
 
     return date.toLocaleDateString("en-GB", {
@@ -149,36 +164,44 @@
     }
 
     if (typeof value === "number") {
-      const d = new Date(value);
-      return Number.isNaN(d.getTime()) ? null : d;
+      const date = new Date(value);
+
+      return Number.isNaN(date.getTime()) ? null : date;
     }
 
     const text = String(value).trim();
 
-    // ISO date: YYYY-MM-DD
+    // YYYY-MM-DD
     const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
     if (iso) {
-      const d = new Date(
+      const date = new Date(
         Number(iso[1]),
         Number(iso[2]) - 1,
         Number(iso[3])
       );
-      return Number.isNaN(d.getTime()) ? null : d;
+
+      return Number.isNaN(date.getTime()) ? null : date;
     }
 
     // DD/MM/YYYY or DD-MM-YYYY
-    const local = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    const local = text.match(
+      /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/
+    );
+
     if (local) {
-      const d = new Date(
+      const date = new Date(
         Number(local[3]),
         Number(local[2]) - 1,
         Number(local[1])
       );
-      return Number.isNaN(d.getTime()) ? null : d;
+
+      return Number.isNaN(date.getTime()) ? null : date;
     }
 
-    const d = new Date(text);
-    return Number.isNaN(d.getTime()) ? null : d;
+    const date = new Date(text);
+
+    return Number.isNaN(date.getTime()) ? null : date;
   }
 
   function recordDate(record) {
@@ -196,10 +219,8 @@
   }
 
   function inDateRange(record) {
-    const value = recordDate(record);
-    const date = parseDate(value);
+    const date = parseDate(recordDate(record));
 
-    // If no date can be identified, don't accidentally hide the record.
     if (!date) return !startDate && !endDate;
 
     const day = [
@@ -224,33 +245,65 @@
     const s = settings();
 
     const name = firstValue(s, [
-      "storeName", "shopName", "businessName", "companyName", "name"
+      "storeName",
+      "shopName",
+      "businessName",
+      "companyName",
+      "name"
     ], "GS General Store");
 
     const address = firstValue(s, [
-      "storeAddress", "shopAddress", "businessAddress", "address"
+      "storeAddress",
+      "shopAddress",
+      "businessAddress",
+      "address"
     ], "");
 
     const phone = firstValue(s, [
-      "storePhone", "shopPhone", "businessPhone", "phone", "mobile",
-      "phoneNumber", "contactNumber"
+      "storePhone",
+      "shopPhone",
+      "businessPhone",
+      "phone",
+      "mobile",
+      "phoneNumber",
+      "contactNumber"
     ], "");
 
     const email = firstValue(s, [
-      "storeEmail", "shopEmail", "businessEmail", "email"
+      "storeEmail",
+      "shopEmail",
+      "businessEmail",
+      "email"
     ], "");
 
     const owner = firstValue(s, [
-      "ownerName", "storeOwner", "shopOwner", "proprietor", "preparedBy"
+      "ownerName",
+      "storeOwner",
+      "shopOwner",
+      "proprietor",
+      "preparedBy"
     ], "");
 
-    // Support common logo/avatar/photo field names.
     const photo = firstValue(s, [
-      "storeAvatar", "storeAvatarUrl", "shopAvatar", "shopAvatarUrl",
-      "storePhoto", "shopPhoto", "businessPhoto",
-      "avatar", "avatarUrl", "photo", "photoUrl",
-      "logo", "logoUrl", "shopLogo", "storeLogo",
-      "profileImage", "profilePhoto", "image", "imageUrl"
+      "storeAvatar",
+      "storeAvatarUrl",
+      "shopAvatar",
+      "shopAvatarUrl",
+      "storePhoto",
+      "shopPhoto",
+      "businessPhoto",
+      "avatar",
+      "avatarUrl",
+      "photo",
+      "photoUrl",
+      "logo",
+      "logoUrl",
+      "shopLogo",
+      "storeLogo",
+      "profileImage",
+      "profilePhoto",
+      "image",
+      "imageUrl"
     ], "");
 
     return {
@@ -267,71 +320,139 @@
 
   function amountOf(record) {
     return number(firstValue(record, [
-      "grandTotal", "totalAmount", "total", "netTotal",
-      "billTotal", "amount", "finalAmount", "payable"
+      "grandTotal",
+      "totalAmount",
+      "total",
+      "netTotal",
+      "billTotal",
+      "amount",
+      "finalAmount",
+      "payable"
     ], 0));
   }
 
   function paidOf(record) {
     return number(firstValue(record, [
-      "paidAmount", "paid", "amountPaid", "received",
-      "receivedAmount", "payment", "advance"
+      "paidAmount",
+      "paid",
+      "amountPaid",
+      "received",
+      "receivedAmount",
+      "payment",
+      "advance"
     ], 0));
   }
 
   function balanceOf(record) {
     const explicit = firstValue(record, [
-      "balance", "due", "dueAmount", "remaining",
-      "remainingAmount", "balanceAmount"
+      "balance",
+      "due",
+      "dueAmount",
+      "remaining",
+      "remainingAmount",
+      "balanceAmount"
     ], null);
 
-    if (explicit !== null) return Math.max(0, number(explicit));
+    if (explicit !== null) {
+      return Math.max(0, number(explicit));
+    }
 
     return Math.max(0, amountOf(record) - paidOf(record));
   }
 
   function recordName(record, type = "customer") {
     const keys = type === "supplier"
-      ? ["supplierName", "supplier", "name", "partyName", "companyName"]
-      : ["customerName", "customer", "name", "partyName", "buyerName"];
+      ? [
+          "supplierName",
+          "supplier",
+          "name",
+          "partyName",
+          "companyName"
+        ]
+      : [
+          "customerName",
+          "customer",
+          "name",
+          "partyName",
+          "buyerName"
+        ];
 
     const value = firstValue(record, keys, "");
+
     if (typeof value === "object" && value !== null) {
-      return firstValue(value, ["name", "customerName", "supplierName"], "Walk-in");
+      return String(firstValue(
+        value,
+        ["name", "customerName", "supplierName"],
+        "Walk-in"
+      ));
     }
 
-    return String(value || (type === "customer" ? "Walk-in Customer" : "Unknown Supplier"));
+    return String(
+      value ||
+      (type === "customer" ? "Walk-in Customer" : "Unknown Supplier")
+    );
   }
 
   function itemsOf(record) {
     const items = firstValue(record, [
-      "items", "products", "cart", "saleItems", "purchaseItems", "details"
+      "items",
+      "products",
+      "cart",
+      "saleItems",
+      "purchaseItems",
+      "details"
     ], []);
 
     return Array.isArray(items) ? items : [];
   }
 
   function itemName(item) {
-    return String(firstValue(item, [
-      "productName", "name", "title", "itemName", "product"
-    ], "Item"));
+    const value = firstValue(item, [
+      "productName",
+      "name",
+      "title",
+      "itemName",
+      "product"
+    ], "Item");
+
+    if (value && typeof value === "object") {
+      return String(firstValue(
+        value,
+        ["name", "productName", "title"],
+        "Item"
+      ));
+    }
+
+    return String(value);
   }
 
   function itemQuantity(item) {
     return number(firstValue(item, [
-      "quantity", "qty", "soldQty", "purchaseQty", "count"
+      "quantity",
+      "qty",
+      "soldQty",
+      "purchaseQty",
+      "count"
     ], 0));
   }
 
   function itemRate(item) {
     return number(firstValue(item, [
-      "rate", "price", "sellingPrice", "purchasePrice", "unitPrice"
+      "rate",
+      "price",
+      "sellingPrice",
+      "purchasePrice",
+      "unitPrice"
     ], 0));
   }
 
   function itemAmount(item) {
     const explicit = firstValue(item, [
-      "amount", "total", "lineTotal", "subtotal", "netAmount"
+      "amount",
+      "total",
+      "lineTotal",
+      "subtotal",
+      "netAmount"
     ], null);
 
     return explicit === null
@@ -344,8 +465,12 @@
   function statCard(label, value) {
     return `
       <div class="gs-report-stat">
-        <div class="gs-report-stat-label">${escapeHTML(label)}</div>
-        <div class="gs-report-stat-value">${escapeHTML(value)}</div>
+        <div class="gs-report-stat-label">
+          ${escapeHTML(label)}
+        </div>
+        <div class="gs-report-stat-value">
+          ${escapeHTML(value)}
+        </div>
       </div>
     `;
   }
@@ -363,12 +488,18 @@
       <div class="gs-report-table-wrap">
         <table class="gs-report-table">
           <thead>
-            <tr>${headers.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>
+            <tr>
+              ${headers.map(header =>
+                `<th>${escapeHTML(header)}</th>`
+              ).join("")}
+            </tr>
           </thead>
           <tbody>
             ${rows.map(row => `
               <tr>
-                ${row.map(cell => `<td>${cell === null || cell === undefined ? "" : cell}</td>`).join("")}
+                ${row.map(cell =>
+                  `<td>${cell == null ? "" : cell}</td>`
+                ).join("")}
               </tr>
             `).join("")}
           </tbody>
@@ -381,163 +512,261 @@
     return `<div class="gs-report-stats">${cards.join("")}</div>`;
   }
 
+  /* -------------------- SALES REPORT -------------------- */
+
   function saleReport() {
     const records = filtered(STORAGE.sales);
-    const total = records.reduce((sum, r) => sum + amountOf(r), 0);
-    const paid = records.reduce((sum, r) => sum + paidOf(r), 0);
-    const due = records.reduce((sum, r) => sum + balanceOf(r), 0);
 
-    const rows = records.map(r => {
-      const bill = firstValue(r, [
-        "invoiceNumber", "billNumber", "invoiceNo", "billNo", "id"
+    const total = records.reduce(
+      (sum, record) => sum + amountOf(record), 0
+    );
+
+    const paid = records.reduce(
+      (sum, record) => sum + paidOf(record), 0
+    );
+
+    const due = records.reduce(
+      (sum, record) => sum + balanceOf(record), 0
+    );
+
+    const rows = records.map(record => {
+      const bill = firstValue(record, [
+        "invoiceNumber",
+        "billNumber",
+        "invoiceNo",
+        "billNo",
+        "id"
       ], "—");
 
-      const itemNames = itemsOf(r).map(itemName).join(", ") || "—";
+      const names = itemsOf(record)
+        .map(itemName)
+        .join(", ") || "—";
 
       return [
         escapeHTML(bill),
-        escapeHTML(formatDate(recordDate(r))),
-        escapeHTML(recordName(r, "customer")),
-        escapeHTML(itemNames),
-        escapeHTML(money(amountOf(r))),
-        escapeHTML(money(paidOf(r))),
-        escapeHTML(money(balanceOf(r)))
+        escapeHTML(formatDate(recordDate(record))),
+        escapeHTML(recordName(record, "customer")),
+        escapeHTML(names),
+        escapeHTML(money(amountOf(record))),
+        escapeHTML(money(paidOf(record))),
+        escapeHTML(money(balanceOf(record)))
       ];
     });
 
     return {
       title: "Sales Report",
+
       summary: statsHTML([
         statCard("Total Bills", String(records.length)),
         statCard("Total Sales", money(total)),
         statCard("Paid Amount", money(paid)),
         statCard("Balance Due", money(due))
       ]),
-      table: table(
-        ["Bill No.", "Date", "Customer", "Items", "Total", "Paid", "Balance"],
-        rows
-      )
+
+      table: table([
+        "Bill No.",
+        "Date",
+        "Customer",
+        "Items",
+        "Total",
+        "Paid",
+        "Balance"
+      ], rows)
     };
   }
 
+  /* -------------------- PURCHASE REPORT -------------------- */
+
   function purchaseReport() {
     const records = filtered(STORAGE.purchases);
-    const total = records.reduce((sum, r) => sum + amountOf(r), 0);
-    const paid = records.reduce((sum, r) => sum + paidOf(r), 0);
-    const due = records.reduce((sum, r) => sum + balanceOf(r), 0);
 
-    const rows = records.map(r => {
-      const bill = firstValue(r, [
-        "purchaseNumber", "purchaseNo", "billNumber", "invoiceNumber",
-        "invoiceNo", "billNo", "id"
+    const total = records.reduce(
+      (sum, record) => sum + amountOf(record), 0
+    );
+
+    const paid = records.reduce(
+      (sum, record) => sum + paidOf(record), 0
+    );
+
+    const due = records.reduce(
+      (sum, record) => sum + balanceOf(record), 0
+    );
+
+    const rows = records.map(record => {
+      const bill = firstValue(record, [
+        "purchaseNumber",
+        "purchaseNo",
+        "billNumber",
+        "invoiceNumber",
+        "invoiceNo",
+        "billNo",
+        "id"
       ], "—");
 
-      const itemNames = itemsOf(r).map(itemName).join(", ") || "—";
+      const names = itemsOf(record)
+        .map(itemName)
+        .join(", ") || "—";
 
       return [
         escapeHTML(bill),
-        escapeHTML(formatDate(recordDate(r))),
-        escapeHTML(recordName(r, "supplier")),
-        escapeHTML(itemNames),
-        escapeHTML(money(amountOf(r))),
-        escapeHTML(money(paidOf(r))),
-        escapeHTML(money(balanceOf(r)))
+        escapeHTML(formatDate(recordDate(record))),
+        escapeHTML(recordName(record, "supplier")),
+        escapeHTML(names),
+        escapeHTML(money(amountOf(record))),
+        escapeHTML(money(paidOf(record))),
+        escapeHTML(money(balanceOf(record)))
       ];
     });
 
     return {
       title: "Purchase Report",
+
       summary: statsHTML([
         statCard("Total Bills", String(records.length)),
         statCard("Total Purchases", money(total)),
         statCard("Paid Amount", money(paid)),
         statCard("Balance Due", money(due))
       ]),
-      table: table(
-        ["Bill No.", "Date", "Supplier", "Items", "Total", "Paid", "Balance"],
-        rows
-      )
+
+      table: table([
+        "Bill No.",
+        "Date",
+        "Supplier",
+        "Items",
+        "Total",
+        "Paid",
+        "Balance"
+      ], rows)
     };
   }
+
+  /* -------------------- STOCK REPORT -------------------- */
 
   function stockReport() {
     const products = readArray(STORAGE.products);
 
-    const rows = products.map(p => {
-      const name = firstValue(p, ["name", "productName", "title"], "Unnamed Product");
-      const barcode = firstValue(p, ["barcode", "barCode", "sku", "code"], "—");
-      const quantity = number(firstValue(p, [
-        "stock", "quantity", "qty", "stockQty", "currentStock", "available"
-      ], 0));
-      const cost = number(firstValue(p, [
-        "purchasePrice", "costPrice", "cost", "buyPrice"
-      ], 0));
-      const rate = number(firstValue(p, [
-        "sellingPrice", "salePrice", "price", "rate"
-      ], 0));
+    const stockOf = product => number(firstValue(product, [
+      "stock",
+      "quantity",
+      "qty",
+      "stockQty",
+      "currentStock",
+      "available"
+    ], 0));
 
-      return [
-        escapeHTML(name),
-        escapeHTML(barcode),
-        escapeHTML(quantity.toLocaleString("en-IN")),
-        escapeHTML(money(cost)),
-        escapeHTML(money(rate)),
-        escapeHTML(money(quantity * cost))
-      ];
-    });
+    const costOf = product => number(firstValue(product, [
+      "purchasePrice",
+      "costPrice",
+      "cost",
+      "buyPrice"
+    ], 0));
 
-    const quantityTotal = products.reduce((sum, p) =>
-      sum + number(firstValue(p, [
-        "stock", "quantity", "qty", "stockQty", "currentStock", "available"
-      ], 0)), 0);
+    const rateOf = product => number(firstValue(product, [
+      "sellingPrice",
+      "salePrice",
+      "price",
+      "rate"
+    ], 0));
 
-    const stockValue = products.reduce((sum, p) => {
-      const qty = number(firstValue(p, [
-        "stock", "quantity", "qty", "stockQty", "currentStock", "available"
-      ], 0));
-      const cost = number(firstValue(p, [
-        "purchasePrice", "costPrice", "cost", "buyPrice"
-      ], 0));
-      return sum + qty * cost;
-    }, 0);
+    const rows = products.map(product => [
+      escapeHTML(firstValue(
+        product,
+        ["name", "productName", "title"],
+        "Unnamed Product"
+      )),
+
+      escapeHTML(firstValue(
+        product,
+        ["barcode", "barCode", "sku", "code"],
+        "—"
+      )),
+
+      escapeHTML(stockOf(product).toLocaleString("en-IN")),
+      escapeHTML(money(costOf(product))),
+      escapeHTML(money(rateOf(product))),
+      escapeHTML(money(stockOf(product) * costOf(product)))
+    ]);
+
+    const quantityTotal = products.reduce(
+      (sum, product) => sum + stockOf(product), 0
+    );
+
+    const stockValue = products.reduce(
+      (sum, product) =>
+        sum + stockOf(product) * costOf(product),
+      0
+    );
 
     return {
       title: "Stock Report",
+
       summary: statsHTML([
         statCard("Total Products", String(products.length)),
-        statCard("Total Stock Quantity", quantityTotal.toLocaleString("en-IN")),
+        statCard(
+          "Total Stock Quantity",
+          quantityTotal.toLocaleString("en-IN")
+        ),
         statCard("Stock Cost Value", money(stockValue))
       ]),
-      table: table(
-        ["Product", "Barcode", "Quantity", "Cost Rate", "Selling Rate", "Stock Value"],
-        rows
-      )
+
+      table: table([
+        "Product",
+        "Barcode",
+        "Quantity",
+        "Cost Rate",
+        "Selling Rate",
+        "Stock Value"
+      ], rows)
     };
   }
+
+  /* -------------------- CUSTOMER REPORT -------------------- */
 
   function customerReport() {
     const customers = readArray(STORAGE.customers);
     const sales = readArray(STORAGE.sales);
 
-    const rows = customers.map(c => {
-      const id = firstValue(c, ["id", "customerId", "phone", "mobile"], "");
-      const name = firstValue(c, ["name", "customerName", "fullName"], "Unnamed Customer");
-      const phone = firstValue(c, ["phone", "mobile", "phoneNumber", "contact"], "—");
+    const rows = customers.map(customer => {
+      const id = firstValue(
+        customer,
+        ["id", "customerId", "phone", "mobile"],
+        ""
+      );
 
-      const customerSales = sales.filter(s => {
-        const saleName = recordName(s, "customer");
-        const saleId = firstValue(s, ["customerId"], "");
-        return (id && saleId && String(id) === String(saleId)) ||
-          saleName.toLowerCase() === String(name).toLowerCase();
+      const name = firstValue(
+        customer,
+        ["name", "customerName", "fullName"],
+        "Unnamed Customer"
+      );
+
+      const phone = firstValue(
+        customer,
+        ["phone", "mobile", "phoneNumber", "contact"],
+        "—"
+      );
+
+      const matches = sales.filter(sale => {
+        const saleName = recordName(sale, "customer");
+        const saleId = firstValue(sale, ["customerId"], "");
+
+        return (
+          (id && saleId && String(id) === String(saleId)) ||
+          saleName.toLowerCase() === String(name).toLowerCase()
+        );
       });
 
-      const total = customerSales.reduce((sum, s) => sum + amountOf(s), 0);
-      const due = customerSales.reduce((sum, s) => sum + balanceOf(s), 0);
+      const total = matches.reduce(
+        (sum, sale) => sum + amountOf(sale), 0
+      );
+
+      const due = matches.reduce(
+        (sum, sale) => sum + balanceOf(sale), 0
+      );
 
       return [
         escapeHTML(name),
         escapeHTML(phone),
-        String(customerSales.length),
+        String(matches.length),
         escapeHTML(money(total)),
         escapeHTML(money(due))
       ];
@@ -545,40 +774,72 @@
 
     return {
       title: "Customer Report",
+
       summary: statsHTML([
         statCard("Total Customers", String(customers.length)),
-        statCard("Sales Records", String(sales.filter(inDateRange).length))
+        statCard(
+          "Sales Records",
+          String(sales.filter(inDateRange).length)
+        )
       ]),
-      table: table(
-        ["Customer Name", "Phone", "Bills", "Total Sales", "Balance Due"],
-        rows
-      )
+
+      table: table([
+        "Customer Name",
+        "Phone",
+        "Bills",
+        "Total Sales",
+        "Balance Due"
+      ], rows)
     };
   }
+
+  /* -------------------- SUPPLIER REPORT -------------------- */
 
   function supplierReport() {
     const suppliers = readArray(STORAGE.suppliers);
     const purchases = readArray(STORAGE.purchases);
 
-    const rows = suppliers.map(s => {
-      const id = firstValue(s, ["id", "supplierId", "phone", "mobile"], "");
-      const name = firstValue(s, ["name", "supplierName", "fullName", "companyName"], "Unnamed Supplier");
-      const phone = firstValue(s, ["phone", "mobile", "phoneNumber", "contact"], "—");
+    const rows = suppliers.map(supplier => {
+      const id = firstValue(
+        supplier,
+        ["id", "supplierId", "phone", "mobile"],
+        ""
+      );
 
-      const supplierPurchases = purchases.filter(p => {
-        const purchaseName = recordName(p, "supplier");
-        const purchaseId = firstValue(p, ["supplierId"], "");
-        return (id && purchaseId && String(id) === String(purchaseId)) ||
-          purchaseName.toLowerCase() === String(name).toLowerCase();
+      const name = firstValue(
+        supplier,
+        ["name", "supplierName", "fullName", "companyName"],
+        "Unnamed Supplier"
+      );
+
+      const phone = firstValue(
+        supplier,
+        ["phone", "mobile", "phoneNumber", "contact"],
+        "—"
+      );
+
+      const matches = purchases.filter(purchase => {
+        const purchaseName = recordName(purchase, "supplier");
+        const purchaseId = firstValue(purchase, ["supplierId"], "");
+
+        return (
+          (id && purchaseId && String(id) === String(purchaseId)) ||
+          purchaseName.toLowerCase() === String(name).toLowerCase()
+        );
       });
 
-      const total = supplierPurchases.reduce((sum, p) => sum + amountOf(p), 0);
-      const due = supplierPurchases.reduce((sum, p) => sum + balanceOf(p), 0);
+      const total = matches.reduce(
+        (sum, purchase) => sum + amountOf(purchase), 0
+      );
+
+      const due = matches.reduce(
+        (sum, purchase) => sum + balanceOf(purchase), 0
+      );
 
       return [
         escapeHTML(name),
         escapeHTML(phone),
-        String(supplierPurchases.length),
+        String(matches.length),
         escapeHTML(money(total)),
         escapeHTML(money(due))
       ];
@@ -586,57 +847,107 @@
 
     return {
       title: "Supplier Report",
+
       summary: statsHTML([
         statCard("Total Suppliers", String(suppliers.length)),
-        statCard("Purchase Records", String(purchases.filter(inDateRange).length))
+        statCard(
+          "Purchase Records",
+          String(purchases.filter(inDateRange).length)
+        )
       ]),
-      table: table(
-        ["Supplier Name", "Phone", "Bills", "Total Purchases", "Balance Due"],
-        rows
-      )
+
+      table: table([
+        "Supplier Name",
+        "Phone",
+        "Bills",
+        "Total Purchases",
+        "Balance Due"
+      ], rows)
     };
   }
+
+  /* -------------------- PROFIT / FINANCE REPORT -------------------- */
 
   function profitReport() {
     const sales = filtered(STORAGE.sales);
     const purchases = filtered(STORAGE.purchases);
-
-    const salesTotal = sales.reduce((sum, s) => sum + amountOf(s), 0);
-    const purchaseTotal = purchases.reduce((sum, p) => sum + amountOf(p), 0);
-
     const finance = filtered(STORAGE.finance);
-    const income = finance.reduce((sum, f) => {
-      const type = String(firstValue(f, ["type", "category", "transactionType"], "")).toLowerCase();
-      const amount = number(firstValue(f, ["amount", "total", "value"], 0));
-      return sum + (type.includes("income") || type.includes("in") ? amount : 0);
+
+    const salesTotal = sales.reduce(
+      (sum, sale) => sum + amountOf(sale), 0
+    );
+
+    const purchaseTotal = purchases.reduce(
+      (sum, purchase) => sum + amountOf(purchase), 0
+    );
+
+    const income = finance.reduce((sum, item) => {
+      const type = String(firstValue(
+        item,
+        ["type", "category", "transactionType"],
+        ""
+      )).toLowerCase();
+
+      const amount = number(firstValue(
+        item,
+        ["amount", "total", "value"],
+        0
+      ));
+
+      return sum + (
+        type.includes("income") ||
+        type === "in" ||
+        type === "income"
+          ? amount
+          : 0
+      );
     }, 0);
 
-    const expense = finance.reduce((sum, f) => {
-      const type = String(firstValue(f, ["type", "category", "transactionType"], "")).toLowerCase();
-      const amount = number(firstValue(f, ["amount", "total", "value"], 0));
-      return sum + (type.includes("expense") || type.includes("out") ? amount : 0);
+    const expense = finance.reduce((sum, item) => {
+      const type = String(firstValue(
+        item,
+        ["type", "category", "transactionType"],
+        ""
+      )).toLowerCase();
+
+      const amount = number(firstValue(
+        item,
+        ["amount", "total", "value"],
+        0
+      ));
+
+      return sum + (
+        type.includes("expense") || type === "out"
+          ? amount
+          : 0
+      );
     }, 0);
 
-    // This is a simple sales-minus-purchases estimate, not audited net profit.
-    const estimatedDifference = salesTotal - purchaseTotal;
+    // This is an estimate, not audited net profit.
+    const difference = salesTotal - purchaseTotal;
 
     const rows = [
       ["Total Sales", escapeHTML(money(salesTotal))],
       ["Total Purchases", escapeHTML(money(purchaseTotal))],
-      ["Other Income (matched records)", escapeHTML(money(income))],
-      ["Expenses (matched records)", escapeHTML(money(expense))],
-      ["Estimated Sales - Purchases", escapeHTML(money(estimatedDifference))]
+      ["Other Income", escapeHTML(money(income))],
+      ["Expenses", escapeHTML(money(expense))],
+      [
+        "Estimated Sales - Purchases",
+        escapeHTML(money(difference))
+      ]
     ];
 
     return {
       title: "Profit & Finance Report",
+
       summary: statsHTML([
         statCard("Total Sales", money(salesTotal)),
         statCard("Total Purchases", money(purchaseTotal)),
         statCard("Other Income", money(income)),
         statCard("Expenses", money(expense)),
-        statCard("Estimated Difference", money(estimatedDifference))
+        statCard("Estimated Difference", money(difference))
       ]),
+
       table: table(["Description", "Amount"], rows)
     };
   }
@@ -656,7 +967,7 @@
     finance: profitReport
   };
 
-  /* -------------------- SHARED STYLES -------------------- */
+  /* -------------------- SCREEN STYLES -------------------- */
 
   function addReportStyles() {
     if ($("#gsReportStyles")) return;
@@ -666,132 +977,146 @@
 
     style.textContent = `
       .gs-report-controls {
-        display:flex;
-        flex-wrap:wrap;
-        align-items:center;
-        gap:10px;
-        margin:12px 0 18px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin: 12px 0 18px;
       }
 
       .gs-report-controls label {
-        display:flex;
-        flex-direction:column;
-        gap:5px;
-        font-size:13px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 13px;
       }
 
       .gs-report-controls input {
-        min-height:38px;
-        padding:7px 10px;
-        border:1px solid #d1d5db;
-        border-radius:8px;
-        font:inherit;
-        background:#fff;
-        color:#111827;
+        min-height: 38px;
+        padding: 7px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font: inherit;
+        background: #fff;
+        color: #111827;
       }
 
       .gs-report-action {
-        min-height:38px;
-        padding:8px 14px;
-        border:0;
-        border-radius:8px;
-        cursor:pointer;
-        font:inherit;
-        font-weight:600;
-        background:#166534;
-        color:#fff;
+        min-height: 38px;
+        padding: 8px 14px;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 600;
+        background: #166534;
+        color: #fff;
       }
 
-      .gs-report-action:hover { filter:brightness(.94); }
+      .gs-report-action:hover {
+        filter: brightness(.94);
+      }
 
       .gs-report-action.secondary {
-        background:#374151;
+        background: #374151;
       }
 
       .gs-report-stats {
-        display:grid;
-        grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
-        gap:12px;
-        margin:14px 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+        gap: 12px;
+        margin: 14px 0;
       }
 
       .gs-report-stat {
-        padding:14px;
-        border:1px solid #e5e7eb;
-        border-radius:10px;
-        background:#fff;
-        min-width:0;
+        padding: 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff;
+        min-width: 0;
       }
 
       .gs-report-stat-label {
-        color:#6b7280;
-        font-size:12px;
-        margin-bottom:8px;
+        color: #6b7280;
+        font-size: 12px;
+        margin-bottom: 8px;
       }
 
       .gs-report-stat-value {
-        color:#111827;
-        font-size:18px;
-        font-weight:700;
-        overflow-wrap:anywhere;
+        color: #111827;
+        font-size: 18px;
+        font-weight: 700;
+        overflow-wrap: anywhere;
       }
 
       .gs-report-table-wrap {
-        width:100%;
-        overflow-x:auto;
-        margin:12px 0;
+        width: 100%;
+        overflow-x: auto;
+        margin: 12px 0;
       }
 
       .gs-report-table {
-        width:100%;
-        border-collapse:collapse;
-        background:#fff;
-        font-size:13px;
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        font-size: 13px;
       }
 
       .gs-report-table th,
       .gs-report-table td {
-        padding:10px 9px;
-        border:1px solid #e5e7eb;
-        text-align:left;
-        vertical-align:top;
+        padding: 10px 9px;
+        border: 1px solid #e5e7eb;
+        text-align: left;
+        vertical-align: top;
       }
 
       .gs-report-table th {
-        background:#f3f4f6;
-        color:#111827;
-        font-weight:700;
+        background: #f3f4f6;
+        color: #111827;
+        font-weight: 700;
       }
 
       .gs-report-empty {
-        padding:22px;
-        text-align:center;
-        color:#6b7280;
-        border:1px dashed #d1d5db;
-        border-radius:8px;
-        margin:12px 0;
+        padding: 22px;
+        text-align: center;
+        color: #6b7280;
+        border: 1px dashed #d1d5db;
+        border-radius: 8px;
+        margin: 12px 0;
       }
 
       .gs-report-panel-heading {
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:10px;
-        flex-wrap:wrap;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
       }
 
-      @media(max-width:600px) {
-        .gs-report-stat-value { font-size:16px; }
-        .gs-report-table { font-size:12px; }
+      .gs-report-print-button {
+        white-space: nowrap;
+      }
+
+      @media (max-width: 600px) {
+        .gs-report-stat-value {
+          font-size: 16px;
+        }
+
+        .gs-report-table {
+          font-size: 12px;
+        }
+
         .gs-report-table th,
-        .gs-report-table td { padding:7px 6px; }
+        .gs-report-table td {
+          padding: 7px 6px;
+        }
       }
     `;
 
     document.head.appendChild(style);
   }
 
-  /* -------------------- REPORT PANEL HELPERS -------------------- */
+  /* -------------------- PANEL DETECTION -------------------- */
 
   function reportType(panel) {
     return String(
@@ -805,16 +1130,36 @@
   function findReportFunction(panel) {
     const type = reportType(panel);
 
-    for (const key of Object.keys(REPORTS)) {
-      if (type === key || type.includes(key)) return REPORTS[key];
+    // Match longer names first.
+    const keys = Object.keys(REPORTS).sort(
+      (a, b) => b.length - a.length
+    );
+
+    for (const key of keys) {
+      if (type === key || type.includes(key)) {
+        return REPORTS[key];
+      }
     }
 
     return null;
   }
 
   function panelTitle(panel, fallback) {
-    const heading = $("h1, h2, h3, .report-title, .panel-title", panel);
+    const heading = $(
+      "h1, h2, h3, .report-title, .panel-title",
+      panel
+    );
+
     return heading ? heading.textContent.trim() : fallback;
+  }
+
+  function reportPanels() {
+    return [...new Set($$(
+      ".report-panel[data-report], " +
+      ".report-panel[data-type], " +
+      ".report-card[data-report], " +
+      "[data-report].report-panel"
+    ))];
   }
 
   function renderPanel(panel) {
@@ -822,53 +1167,74 @@
     if (!makeReport) return;
 
     const report = makeReport();
-    const oldContent = $(".gs-report-generated-content", panel);
 
-    const content = document.createElement("div");
-    content.className = "gs-report-generated-content";
+    let content = $(".gs-report-generated-content", panel);
+
+    if (!content) {
+      content = document.createElement("div");
+      content.className = "gs-report-generated-content";
+      panel.appendChild(content);
+    }
+
     content.innerHTML = `
       ${report.summary}
       ${report.table}
     `;
 
-    if (oldContent) {
-      oldContent.replaceWith(content);
-    } else {
-      panel.appendChild(content);
-    }
-
     panel.dataset.gsReportReady = "true";
   }
 
   function renderAllReports() {
-    $$(".report-panel[data-report], [data-report].report-panel, [data-report].report-card")
-      .forEach(renderPanel);
+    reportPanels().forEach(panel => {
+      try {
+        renderPanel(panel);
+      } catch (error) {
+        console.error(
+          "GS Reports: Could not render panel",
+          panel,
+          error
+        );
+      }
+    });
   }
 
-  /* -------------------- DATE FILTERS / REFRESH -------------------- */
+  /* -------------------- DATE FILTERS -------------------- */
 
   function dateInputValue(selectors) {
     for (const selector of selectors) {
       const element = $(selector);
-      if (element && element.value) return element.value;
+
+      if (element && element.value) {
+        return element.value;
+      }
     }
+
     return "";
   }
 
   function loadDateFilters() {
     startDate = dateInputValue([
-      "#startDate", "#fromDate", "#reportStartDate",
-      "#dateFrom", "[name='startDate']", "[name='fromDate']"
+      "#startDate",
+      "#fromDate",
+      "#reportStartDate",
+      "#dateFrom",
+      "[name='startDate']",
+      "[name='fromDate']"
     ]);
 
     endDate = dateInputValue([
-      "#endDate", "#toDate", "#reportEndDate",
-      "#dateTo", "[name='endDate']", "[name='toDate']"
+      "#endDate",
+      "#toDate",
+      "#reportEndDate",
+      "#dateTo",
+      "[name='endDate']",
+      "[name='toDate']"
     ]);
   }
 
   function refreshReports() {
     if (refreshInProgress) return;
+
     refreshInProgress = true;
 
     try {
@@ -877,7 +1243,11 @@
       showToast("Reports refreshed successfully.");
     } catch (error) {
       console.error("GS Reports refresh error:", error);
-      showToast("Reports refresh गर्न समस्या भयो। Console जाँच गर्नुहोस्।", true);
+
+      showToast(
+        "Reports refresh गर्न समस्या भयो।",
+        true
+      );
     } finally {
       refreshInProgress = false;
     }
@@ -910,109 +1280,107 @@
       document.body.appendChild(toast);
     }
 
-    toast.style.background = isError ? "#b91c1c" : "#166534";
+    toast.style.background = isError
+      ? "#b91c1c"
+      : "#166534";
+
     toast.textContent = message;
     toast.style.display = "block";
 
-    if (toast._hideTimer) clearTimeout(toast._hideTimer);
+    if (toast._hideTimer) {
+      clearTimeout(toast._hideTimer);
+    }
 
     toast._hideTimer = setTimeout(() => {
       toast.style.display = "none";
     }, 2800);
   }
 
-  /* -------------------- PDF / PRINT -------------------- */
+  /* -------------------- PRINT / SAVE PDF -------------------- */
 
+  function printReport(panel) {
+    const makeReport = findReportFunction(panel);
 
-function printReport(panel) {
-  const profile = storeProfile();
-  const makeReport = findReportFunction(panel);
+    if (!makeReport) {
+      showToast("यो रिपोर्टको प्रकार पहिचान भएन।", true);
+      return;
+    }
 
-  if (!makeReport) {
-    showToast("यो रिपोर्टको प्रकार पहिचान भएन।", true);
-    return;
-  }
+    const profile = storeProfile();
+    const report = makeReport();
+    const title = panelTitle(panel, report.title);
 
-  const report = makeReport();
-  const title = panelTitle(panel, report.title);
+    const dateRange = startDate || endDate
+      ? `${startDate ? formatDate(startDate) : "Beginning"} — ${
+          endDate ? formatDate(endDate) : "Today"
+        }`
+      : "All available records";
 
-  const dateRange = startDate || endDate
-    ? `${startDate ? formatDate(startDate) : "Beginning"} — ${
-        endDate ? formatDate(endDate) : "Today"
-      }`
-    : "All available records";
+    const now = new Date().toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
 
-  const now = new Date().toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+    const photo = profile.photo.trim();
 
-  /*
-   * Store name, owner, address, contact and logo
-   * are read dynamically from Store Profile.
-   * No particular store identity is hard-coded here.
-   */
-  const logoHTML = profile.photo
-    ? `<img
-         class="store-logo"
-         src="${escapeHTML(profile.photo)}"
-         alt="Store Logo"
-         onerror="this.style.display='none';"
-       >`
-    : `<div class="store-logo-placeholder">Logo</div>`;
+    const logoHTML = photo
+      ? `<img class="store-logo"
+              src="${escapeHTML(photo)}"
+              alt="Store Logo">`
+      : `<div class="store-logo-placeholder">${
+          escapeHTML(profile.name.slice(0, 1) || "GS")
+        }</div>`;
 
-  const contactLines = [
-    profile.owner
-      ? `<div><strong>Owner:</strong> ${escapeHTML(profile.owner)}</div>`
-      : "",
-    profile.address
-      ? `<div>${escapeHTML(profile.address)}</div>`
-      : "",
-    profile.phone
-      ? `<div><strong>Phone:</strong> ${escapeHTML(profile.phone)}</div>`
-      : "",
-    profile.email
-      ? `<div><strong>Email:</strong> ${escapeHTML(profile.email)}</div>`
-      : ""
-  ].filter(Boolean).join("");
+    const ownerHTML = profile.owner
+      ? `<div class="owner-line">
+           <strong>Owner:</strong>
+           ${escapeHTML(profile.owner)}
+         </div>`
+      : "";
 
-  const documentHTML = `<!DOCTYPE html>
+    const addressHTML = profile.address
+      ? `<div class="owner-address">
+           ${escapeHTML(profile.address)}
+         </div>`
+      : "";
+
+    const documentHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>${escapeHTML(title)} - ${escapeHTML(profile.name)}</title>
 
 <style>
   @page {
     size: A4 portrait;
-    margin: 11mm 10mm 12mm;
+    margin: 13mm 12mm 14mm;
   }
 
   * {
     box-sizing: border-box;
   }
 
-  html {
-    background: #fff;
-  }
-
+  html,
   body {
     margin: 0;
     padding: 0;
-    color: #1f2937;
     background: #fff;
+    color: #27313a;
     font-family: Arial, Helvetica, sans-serif;
+  }
+
+  body {
     font-size: 10px;
     line-height: 1.45;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* Print controls are visible in the preview only. */
   .print-toolbar {
     display: flex;
     justify-content: center;
@@ -1039,76 +1407,87 @@ function printReport(panel) {
     background: #374151;
   }
 
-  /* Store header */
+  /* Header: matches the supplied sample. */
+
   .store-header {
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: 14px;
     padding: 0 0 12px;
-    margin: 0 0 15px;
-    border-bottom: 2px solid #198044;
+    margin: 0 0 20px;
+    border-bottom: 2px solid #26734d;
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
   .store-logo,
   .store-logo-placeholder {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 65px;
     height: 65px;
     flex: 0 0 65px;
     object-fit: contain;
     border: 1px solid #e5e7eb;
-    border-radius: 5px;
+    border-radius: 8px;
+    background: #fff;
   }
 
   .store-logo-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #166534;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
+    background: #f7faf8;
+    color: #166534;
+    font-size: 20px;
+    font-weight: 800;
   }
 
   .store-details {
-    flex: 1 1 auto;
+    flex: 1;
     min-width: 0;
   }
 
   .store-name {
-    margin: 0 0 5px;
-    color: #14532d;
-    font-size: 22px;
+    margin: 0;
+    color: #216b46;
+    font-size: 21px;
     font-weight: 800;
-    line-height: 1.2;
+    line-height: 1.25;
     overflow-wrap: anywhere;
   }
 
-  .store-contact {
-    color: #374151;
-    font-size: 9px;
-    line-height: 1.55;
+  .store-right {
+    flex: 0 0 auto;
+    max-width: 42%;
+    margin-left: auto;
+    text-align: left;
+    font-size: 10px;
+    line-height: 1.6;
     overflow-wrap: anywhere;
   }
 
-  .store-contact strong {
-    color: #111827;
+  .owner-line {
+    color: #27313a;
+    font-size: 11px;
+  }
+
+  .owner-address {
+    color: #6b7280;
+    font-size: 11px;
   }
 
   /* Report heading */
+
   .report-heading {
-    margin: 15px 0 13px;
     text-align: center;
+    margin: 18px 0 14px;
     break-after: avoid;
     page-break-after: avoid;
   }
 
   .report-heading h2 {
-    margin: 0 0 5px;
-    color: #111827;
-    font-size: 17px;
+    margin: 0 0 6px;
+    color: #14532d;
+    font-size: 16px;
     line-height: 1.3;
     font-weight: 800;
     text-transform: uppercase;
@@ -1117,17 +1496,18 @@ function printReport(panel) {
 
   .report-heading p {
     margin: 3px 0;
-    color: #4b5563;
+    color: #6b7280;
     font-size: 9px;
   }
 
   /* Summary cards */
+
   .gs-report-stats {
     display: flex;
     flex-wrap: wrap;
     align-items: stretch;
     gap: 7px;
-    margin: 12px 0 15px;
+    margin: 13px 0 16px;
     break-inside: avoid;
     page-break-inside: avoid;
   }
@@ -1136,8 +1516,8 @@ function printReport(panel) {
     flex: 1 1 105px;
     min-width: 0;
     padding: 8px;
-    border: 1px solid #d1d5db;
-    border-top: 2px solid #198044;
+    border: 1px solid #d7e2da;
+    border-top: 2px solid #26734d;
     border-radius: 4px;
     background: #fff;
     break-inside: avoid;
@@ -1152,7 +1532,7 @@ function printReport(panel) {
   }
 
   .gs-report-stat-value {
-    color: #111827;
+    color: #1f2937;
     font-size: 11px;
     font-weight: 700;
     line-height: 1.35;
@@ -1160,7 +1540,8 @@ function printReport(panel) {
     word-break: break-word;
   }
 
-  /* Table layout */
+  /* Report table */
+
   .gs-report-table-wrap {
     width: 100%;
     max-width: 100%;
@@ -1199,32 +1580,30 @@ function printReport(panel) {
   th,
   td {
     padding: 6px 5px;
-    border: 1px solid #d1d5db;
+    border: 1px solid #d7ded9;
     text-align: left;
     vertical-align: top;
     line-height: 1.4;
     overflow-wrap: anywhere;
-    word-break: normal;
   }
 
   .gs-report-table th,
   table th {
-    background: #e8f3eb;
+    background: #eaf3ed;
     color: #14532d;
     font-weight: 700;
-    border-color: #b9d6c1;
+    border-color: #c4d8ca;
   }
 
   .gs-report-table td,
   table td {
-    color: #1f2937;
+    color: #27313a;
   }
 
   .gs-report-table tbody tr:nth-child(even) td {
-    background: #fafcfb;
+    background: #fbfdfb;
   }
 
-  /* Empty-report message */
   .gs-report-empty {
     margin: 12px 0;
     padding: 18px 10px;
@@ -1234,11 +1613,11 @@ function printReport(panel) {
     border-radius: 4px;
   }
 
-  /* Signatures */
+  /* Signature at bottom right */
+
   .signature-area {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 18px;
     margin: 38px 0 0;
     padding-top: 8px;
@@ -1247,21 +1626,21 @@ function printReport(panel) {
   }
 
   .signature {
-    flex: 1 1 0;
-    min-width: 0;
-    min-height: 27px;
+    width: 190px;
+    min-height: 28px;
     padding-top: 6px;
-    border-top: 1px solid #374151;
-    color: #374151;
+    border-top: 1px solid #9ca3af;
+    color: #6b7280;
     text-align: center;
     font-size: 9px;
   }
 
-  /* Footer follows content naturally to reduce blank pages. */
+  /* Footer */
+
   .report-footer {
-    margin-top: 23px;
+    margin-top: 22px;
     padding-top: 10px;
-    border-top: 1px solid #d1d5db;
+    border-top: 1px solid #e5e7eb;
     text-align: center;
     break-inside: avoid;
     page-break-inside: avoid;
@@ -1269,17 +1648,23 @@ function printReport(panel) {
 
   .thank-you {
     margin: 0;
-    color: #166534;
-    font-size: 12px;
-    font-weight: 700;
+    color: #216b46;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .footer-contact {
+    margin-top: 7px;
+    color: #6b7280;
+    font-size: 9px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
   }
 
   .print-note {
-    margin-top: 6px;
+    margin-top: 2px;
     color: #6b7280;
     font-size: 8px;
-    line-height: 1.55;
-    overflow-wrap: anywhere;
   }
 
   @media screen {
@@ -1322,14 +1707,38 @@ function printReport(panel) {
       text-decoration: none;
     }
   }
+
+  @media screen and (max-width: 520px) {
+    .store-header {
+      gap: 8px;
+    }
+
+    .store-logo,
+    .store-logo-placeholder {
+      width: 52px;
+      height: 52px;
+      flex-basis: 52px;
+    }
+
+    .store-name {
+      font-size: 17px;
+    }
+
+    .store-right {
+      font-size: 9px;
+      max-width: 42%;
+    }
+  }
 </style>
 </head>
 
 <body>
+
   <div class="print-toolbar">
     <button type="button" onclick="window.print()">
       Print / Save PDF
     </button>
+
     <button
       type="button"
       class="close-button"
@@ -1340,100 +1749,163 @@ function printReport(panel) {
   </div>
 
   <header class="store-header">
+
     ${logoHTML}
 
     <div class="store-details">
-      <h1 class="store-name">${escapeHTML(profile.name)}</h1>
-      <div class="store-contact">
-        ${contactLines}
-      </div>
+      <h1 class="store-name">
+        ${escapeHTML(profile.name)}
+      </h1>
     </div>
+
+    <div class="store-right">
+      ${ownerHTML}
+      ${addressHTML}
+    </div>
+
   </header>
 
   <section class="report-heading">
     <h2>${escapeHTML(title)}</h2>
-    <p><strong>Date Range:</strong> ${escapeHTML(dateRange)}</p>
-    <p><strong>Generated:</strong> ${escapeHTML(now)}</p>
+
+    <p>
+      <strong>Date Range:</strong>
+      ${escapeHTML(dateRange)}
+    </p>
+
+    <p>
+      <strong>Generated:</strong>
+      ${escapeHTML(now)}
+    </p>
   </section>
 
   ${report.summary}
+
   ${report.table}
 
   <section class="signature-area">
-    <div class="signature">Prepared By</div>
-    <div class="signature">Checked By</div>
-    <div class="signature">Authorized Signature</div>
+    <div class="signature">
+      Authorized Signature
+    </div>
   </section>
 
   <footer class="report-footer">
-    <p class="thank-you">Thank you for your business. Visit again!</p>
+
+    <p class="thank-you">
+      Thank you, visit again
+    </p>
+
+    <div class="footer-contact">
+      ${profile.phone
+        ? `Phone: ${escapeHTML(profile.phone)}`
+        : ""}
+
+      ${profile.phone && profile.email
+        ? "&nbsp;&nbsp;&nbsp;"
+        : ""}
+
+      ${profile.email
+        ? `Email: ${escapeHTML(profile.email)}`
+        : ""}
+    </div>
 
     <div class="print-note">
       This is a computer-generated report.
-      ${profile.phone
-        ? `<div>Phone: ${escapeHTML(profile.phone)}</div>`
-        : ""}
-      ${profile.email
-        ? `<div>Email: ${escapeHTML(profile.email)}</div>`
-        : ""}
     </div>
+
   </footer>
+
+  <script>
+    (function () {
+      var image = document.querySelector(".store-logo");
+
+      if (image) {
+        image.addEventListener("error", function () {
+          var placeholder = document.createElement("div");
+
+          placeholder.className = "store-logo-placeholder";
+          placeholder.textContent =
+            ${JSON.stringify(profile.name.slice(0, 1) || "GS")};
+
+          image.replaceWith(placeholder);
+        }, { once: true });
+      }
+    })();
+  <\/script>
+
 </body>
 </html>`;
 
-  const popup = window.open("", "_blank");
+    let popup;
 
-  if (!popup) {
-    showToast("PDF खोल्न popup अनुमति दिनुहोस्।", true);
-    return;
+    try {
+      // Open synchronously from the button click to avoid popup blocking.
+      popup = window.open("", "_blank");
+    } catch (error) {
+      console.error("GS Reports popup error:", error);
+    }
+
+    if (!popup) {
+      showToast(
+        "PDF खोल्न popup अनुमति दिनुहोस्।",
+        true
+      );
+      return;
+    }
+
+    try {
+      popup.document.open();
+      popup.document.write(documentHTML);
+      popup.document.close();
+      popup.focus();
+    } catch (error) {
+      console.error("GS Reports PDF error:", error);
+
+      showToast(
+        "PDF खोल्न समस्या भयो। फेरि प्रयास गर्नुहोस्।",
+        true
+      );
+    }
   }
 
-  try {
-    popup.document.open();
-    popup.document.write(documentHTML);
-    popup.document.close();
-    popup.focus();
-  } catch (error) {
-    console.error("GS Reports PDF error:", error);
-    showToast("PDF खोल्न समस्या भयो। फेरि प्रयास गर्नुहोस्।", true);
-  }
-}
-
-    
   /* -------------------- ONE PRINT BUTTON PER PANEL -------------------- */
 
   function ensurePrintButtons() {
-    const panels = $$(".report-panel[data-report], [data-report].report-panel, [data-report].report-card");
-
-    panels.forEach(panel => {
+    reportPanels().forEach(panel => {
       if (!findReportFunction(panel)) return;
 
-      // Remove duplicate buttons created by this script.
-      const existing = $$(".gs-report-print-button", panel);
-      existing.slice(1).forEach(button => button.remove());
+      // Remove duplicate buttons generated by this script.
+      const buttons = $$(".gs-report-print-button", panel);
+
+      buttons.slice(1).forEach(button => button.remove());
 
       let button = $(".gs-report-print-button", panel);
 
       if (!button) {
         button = document.createElement("button");
         button.type = "button";
-        button.className = "gs-report-action gs-report-print-button";
+        button.className =
+          "gs-report-action gs-report-print-button";
         button.textContent = "Print / Save PDF";
-        button.addEventListener("click", () => printReport(panel));
 
-        const heading = $(".gs-report-panel-heading", panel) ||
-          $("h1, h2, h3, .report-title, .panel-title", panel);
+        button.addEventListener("click", () => {
+          printReport(panel);
+        });
+      }
 
-        if (heading && heading.parentElement) {
-          heading.parentElement.appendChild(button);
-        } else {
-          panel.insertBefore(button, panel.firstChild);
+      const heading = $(".gs-report-panel-heading", panel);
+
+      if (heading) {
+        if (button.parentElement !== heading) {
+          heading.appendChild(button);
         }
+      } else if (!button.isConnected) {
+        panel.insertBefore(button, panel.firstChild);
       }
     });
   }
 
-  /* -------------------- REFRESH BUTTON WIRING -------------------- */
+  /* -------------------- REFRESH BUTTON -------------------- */
 
   function setupRefreshButton() {
     const selectors = [
@@ -1446,20 +1918,21 @@ function printReport(panel) {
       "[data-refresh-reports]"
     ];
 
-    let buttons = [];
+    const found = selectors.flatMap(selector => $$(selector));
 
-    selectors.forEach(selector => {
-      buttons = buttons.concat($$(selector));
-    });
+    // Also detect buttons with visible text "Refresh".
+    $$("button, input[type='button'], input[type='submit']")
+      .forEach(button => {
+        const text = String(
+          button.textContent || button.value || ""
+        ).trim();
 
-    // Also find buttons whose visible text says Refresh.
-    $$("button").forEach(button => {
-      if (/^refresh(?:\s+reports?)?$/i.test(button.textContent.trim())) {
-        buttons.push(button);
-      }
-    });
+        if (/^refresh(?:\s+reports?)?$/i.test(text)) {
+          found.push(button);
+        }
+      });
 
-    [...new Set(buttons)].forEach(button => {
+    [...new Set(found)].forEach(button => {
       if (button.dataset.gsRefreshBound === "true") return;
 
       button.dataset.gsRefreshBound = "true";
@@ -1471,17 +1944,29 @@ function printReport(panel) {
     });
   }
 
-  /* -------------------- DATE FILTER WIRING -------------------- */
+  /* -------------------- DATE FILTER EVENTS -------------------- */
 
   function setupDateFilters() {
     const selectors = [
-      "#startDate", "#fromDate", "#reportStartDate", "#dateFrom",
-      "#endDate", "#toDate", "#reportEndDate", "#dateTo",
-      "[name='startDate']", "[name='fromDate']",
-      "[name='endDate']", "[name='toDate']"
+      "#startDate",
+      "#fromDate",
+      "#reportStartDate",
+      "#dateFrom",
+      "#endDate",
+      "#toDate",
+      "#reportEndDate",
+      "#dateTo",
+      "[name='startDate']",
+      "[name='fromDate']",
+      "[name='endDate']",
+      "[name='toDate']"
     ];
 
-    const inputs = [...new Set(selectors.flatMap(selector => $$(selector)))];
+    const inputs = [
+      ...new Set(
+        selectors.flatMap(selector => $$(selector))
+      )
+    ];
 
     inputs.forEach(input => {
       if (input.dataset.gsDateBound === "true") return;
@@ -1495,23 +1980,31 @@ function printReport(panel) {
     });
   }
 
-  /* -------------------- TABS -------------------- */
+  /* -------------------- REPORT TABS -------------------- */
 
   function setupTabs() {
     $$("[data-report-tab]").forEach(tab => {
       if (tab.dataset.gsTabBound === "true") return;
+
       tab.dataset.gsTabBound = "true";
 
       tab.addEventListener("click", () => {
         const target = tab.dataset.reportTab;
 
         $$("[data-report-tab]").forEach(other => {
-          other.classList.toggle("active", other === tab);
-          other.setAttribute("aria-selected", other === tab ? "true" : "false");
+          const active = other === tab;
+
+          other.classList.toggle("active", active);
+
+          other.setAttribute(
+            "aria-selected",
+            active ? "true" : "false"
+          );
         });
 
         $$("[data-report-section]").forEach(section => {
-          section.hidden = section.dataset.reportSection !== target;
+          section.hidden =
+            section.dataset.reportSection !== target;
         });
       });
     });
@@ -1530,12 +2023,17 @@ function printReport(panel) {
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initReports, { once: true });
+    document.addEventListener(
+      "DOMContentLoaded",
+      initReports,
+      { once: true }
+    );
   } else {
     initReports();
   }
 
-  // Expose safe methods for optional use by report.html.
+  /* -------------------- PUBLIC METHODS -------------------- */
+
   window.GSReports = {
     refresh: refreshReports,
     render: renderAllReports,
@@ -1543,4 +2041,5 @@ function printReport(panel) {
     money,
     formatDate
   };
+
 })();
