@@ -1,4 +1,3 @@
-
 /* =========================================================
    GS GENERAL STORE MANAGEMENT SYSTEM
    SALE MODULE — A4 INVOICE + DAILY INVOICE PREFIX
@@ -793,63 +792,7 @@
 
   /* ---------------- View / Print A4 Invoice ---------------- */
 
-  $("salesHistoryBody")?.addEventListener("click", event => {
-    const button = event.target.closest("[data-view-sale]");
-    if (!button) return;
-
-    const sale = readArray(SALE_KEY).find(
-      s => String(s.id) === button.dataset.viewSale
-    );
-
-    if (!sale) {
-      toast("Sale record भेटिएन।", "error");
-      return;
-    }
-
-    const product = getProducts().find(
-      p => String(p.id) === String(sale.productId)
-    );
-
-    const config = readSettings();
-    const barcode = sale.barcode || product?.barcode || "-";
-    const win = window.open("", "_blank");
-
-    if (!win) {
-      toast("Bill खोल्न Browser मा Popup अनुमति दिनुहोस्।", "error");
-      return;
-    }
-
-    const storeName = config.storeName || "General Store";
-    const storeAddress = config.storeAddress || "";
-    const storePhone = config.storePhone || "";
-    const storeEmail = config.storeEmail || "";
-    const ownerName = config.ownerName || "";
-    const taxNumber = config.taxNumber || "";
-    const invoiceFooter =
-      config.invoiceFooter || "हाम्रो पसलमा आउनुभएकोमा धन्यवाद!";
-
-    const photo = config.operatorPhoto
-      ? `<img class="store-photo" src="${esc(config.operatorPhoto)}" alt="Store photo">`
-      : "";
-
-    win.document.write(`
-      <!doctype html>
-      <html lang="ne">
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Invoice ${esc(sale.billNumber || "")}</title>
-        <style>
-          @page { size: A4 portrait; margin: 14mm; }
-          * { box-sizing: border-box; }
-          body {
-            margin: 0;
-            color: #17211b;
-            font-family: Arial, "Noto Sans Devanagari", sans-serif;
-            font-size: 12px;
-          }
-          .invoice { width: 100%; max-width: 182mm; margin: 0 auto; }
-          .brand {
+  
             display: flex;
             align-items: center;
             gap: 16px;
@@ -1028,7 +971,7 @@
             flex-direction: column;
           }
 
-          /* Header: shop left, owner and address right */
+          /* Header */
 
           .brand {
             display: flex;
@@ -1054,15 +997,9 @@
           }
 
           .brand h1 {
-            margin: 0 0 5px;
+            margin: 0;
             color: #17683a;
             font-size: 21px;
-            overflow-wrap: anywhere;
-          }
-
-          .brand p {
-            margin: 3px 0;
-            color: #626b73;
             overflow-wrap: anywhere;
           }
 
@@ -1085,7 +1022,7 @@
           }
 
           .tax-number {
-            margin-top: 5px !important;
+            margin-top: 5px;
             font-size: 10px;
           }
 
@@ -1132,12 +1069,12 @@
             overflow-wrap: anywhere;
           }
 
-          /* Products table */
+          /* Product table */
 
           table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto;
+            table-layout: fixed;
             margin: 8px 0 0;
           }
 
@@ -1162,22 +1099,35 @@
             white-space: nowrap;
           }
 
-          /* Large blank area; totals move towards page bottom */
+          /* Notes */
+
+          .notes {
+            margin-top: 8px;
+            padding: 8px 10px;
+            border-left: 3px solid #17683a;
+            background: #f8faf8;
+            overflow-wrap: anywhere;
+          }
+
+          /* Totals: directly below table, aligned right */
 
           .totals {
-            width: 100%;
-            max-width: none;
-            margin: auto 0 0;
-            padding-top: 8px;
+            width: 50%;
+            max-width: 105mm;
+            min-width: 76mm;
+            margin: 12px 0 0 auto;
+            padding-top: 0;
+            align-self: flex-end;
+            flex-shrink: 0;
           }
 
           .totals div {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             min-height: 29px;
-            padding: 5px 0;
+            padding: 5px 8px;
             border-bottom: 1px solid #e0e4e2;
           }
 
@@ -1188,7 +1138,7 @@
 
           .totals .grand {
             min-height: 36px;
-            padding: 7px 0;
+            padding: 7px 8px;
             font-size: 16px;
             font-weight: 700;
             color: #17683a;
@@ -1197,23 +1147,17 @@
             border-bottom: 2px solid #17683a;
           }
 
-          .notes {
-            margin-top: 8px;
-            padding: 8px 10px;
-            border-left: 3px solid #17683a;
-            background: #f8faf8;
-            overflow-wrap: anywhere;
-          }
-
-          /* Signatures */
+          /* Signatures: retain space below totals */
 
           .signatures {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
             gap: 25px;
-            margin-top: 25px;
+            margin-top: auto;
+            padding-top: 25px;
             padding-bottom: 12px;
+            break-inside: avoid;
           }
 
           .signature {
@@ -1235,6 +1179,7 @@
           /* Footer */
 
           .footer {
+            flex-shrink: 0;
             margin-top: 0;
             padding-top: 10px;
             text-align: center;
@@ -1291,10 +1236,7 @@
               min-height: 273mm;
             }
 
-            .totals {
-              break-inside: avoid;
-            }
-
+            .totals,
             .signatures,
             .footer {
               break-inside: avoid;
@@ -1357,11 +1299,24 @@
             }
 
             .totals {
-              margin-top: 30px;
+              width: 62%;
+              min-width: 0;
+              margin-top: 12px;
+              font-size: 10px;
+            }
+
+            .totals div {
+              gap: 6px;
+              padding: 5px;
+            }
+
+            .totals .grand {
+              font-size: 13px;
             }
 
             .signatures {
-              margin-top: 25px;
+              margin-top: 35px;
+              gap: 12px;
             }
           }
         </style>
@@ -1474,13 +1429,9 @@
             <strong>${esc(invoiceFooter)}</strong>
 
             <div class="contact">
-              ${storePhone
-                ? `Phone: ${esc(storePhone)}`
-                : ""}
+              ${storePhone ? `Phone: ${esc(storePhone)}` : ""}
               ${storePhone && storeEmail ? "&nbsp;&nbsp;&nbsp;" : ""}
-              ${storeEmail
-                ? `Email: ${esc(storeEmail)}`
-                : ""}
+              ${storeEmail ? `Email: ${esc(storeEmail)}` : ""}
             </div>
 
             <div>This is a computer-generated invoice.</div>
