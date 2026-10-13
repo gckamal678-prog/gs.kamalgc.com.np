@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -334,9 +333,6 @@
     .profit-item strong { font-size: 20px; }
     .profit-item.net { border-color: var(--r-accent); }
 
-    /* Store profile: screen पर लुकेको, PDF मा प्रयोग हुने */
-    .print-store-profile { display: none; }
-
     @media (max-width: 950px) {
       .report-summary-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -363,354 +359,6 @@
       .stat-label, .stat-note { font-size: 11px; }
       .stat-value { font-size: 18px; }
     }
-
-    /* A4 print layout */
-    @page {
-      size: A4 portrait;
-      margin: 29mm 14mm 27mm 14mm;
-    }
-
-    @media print {
-      html, body {
-        display: block !important;
-        width: auto !important;
-        height: auto !important;
-        min-height: 0 !important;
-        overflow: visible !important;
-        background: #fff !important;
-        color: #111827 !important;
-        font-family: Arial, sans-serif !important;
-        font-size: 9pt !important;
-      }
-
-      .report-wrap {
-        width: 100% !important;
-        max-width: none !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-
-      .no-print,
-      .report-header,
-      .report-tabs,
-      .report-filter-grid,
-      #reportPeriodNote,
-      #reportError,
-      body > .no-print {
-        display: none !important;
-      }
-
-      /*
-       * Fixed header/footer are repeated by print engines on pages.
-       * Page margins above reserve space for them.
-       */
-      .print-store-profile {
-        display: block !important;
-        position: fixed;
-        top: -24mm;
-        left: 0;
-        right: 0;
-        height: 21mm;
-        margin: 0;
-        padding: 0 0 3mm;
-        background: #fff !important;
-        border: 0 !important;
-        z-index: 999;
-      }
-
-      .print-profile-head {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: 8mm;
-        min-height: 15mm;
-      }
-
-      .print-profile-left {
-        display: flex;
-        align-items: center;
-        gap: 4mm;
-        min-width: 0;
-      }
-
-      .print-store-logo {
-        display: none;
-        width: 17mm;
-        height: 17mm;
-        object-fit: contain;
-        border: 1px solid #e5e7eb;
-        border-radius: 3mm;
-        padding: 1mm;
-      }
-
-      .print-store-logo.visible { display: block; }
-
-      .print-profile-name {
-        margin: 0;
-        color: #166534 !important;
-        font-size: 17pt;
-        font-weight: 800;
-        line-height: 1.25;
-      }
-
-      .print-profile-details {
-        margin: 1mm 0;
-        color: #4b5563 !important;
-        font-size: 8.5pt;
-        line-height: 1.35;
-        overflow-wrap: anywhere;
-      }
-
-      .print-profile-right {
-        max-width: 45%;
-        text-align: right;
-      }
-
-      .print-profile-right .owner-name {
-        color: #263238 !important;
-        font-weight: 700;
-        font-size: 9.5pt;
-      }
-
-      .print-header-line {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 0;
-        border-top: 2px solid #166534;
-      }
-
-      .print-report-title {
-        display: none !important;
-      }
-
-      .report-card {
-        margin: 0 0 5mm !important;
-        padding: 0 !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-        background: #fff !important;
-        color: #111827 !important;
-        box-shadow: none !important;
-      }
-
-      .report-panel[hidden] {
-        display: block !important;
-      }
-
-      .report-panel-header {
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        margin: 0 0 3mm !important;
-        padding: 0 0 2mm !important;
-        border-bottom: 1px solid #d1d5db !important;
-      }
-
-      .report-panel-header h2 {
-        margin: 0 !important;
-        color: #166534 !important;
-        font-size: 13pt !important;
-      }
-
-      .report-count {
-        color: #4b5563 !important;
-        font-size: 8pt !important;
-      }
-
-      .report-table-wrap {
-        width: 100% !important;
-        max-width: none !important;
-        overflow: visible !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-      }
-
-      .report-table {
-        width: 100% !important;
-        min-width: 0 !important;
-        border-collapse: collapse !important;
-        table-layout: auto !important;
-        font-size: 7.2pt !important;
-        white-space: normal !important;
-      }
-
-      .report-table thead {
-        display: table-header-group !important;
-      }
-
-      .report-table tfoot {
-        display: table-footer-group !important;
-      }
-
-      .report-table tr {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-      }
-
-      .report-table th {
-        padding: 2mm 1.2mm !important;
-        background: #166534 !important;
-        color: #fff !important;
-        border: 1px solid #cbd5d1 !important;
-        font-size: 6.5pt !important;
-        overflow-wrap: anywhere !important;
-      }
-
-      .report-table td {
-        padding: 1.7mm 1.2mm !important;
-        background: #fff !important;
-        color: #111827 !important;
-        border: 1px solid #d1d5db !important;
-        font-size: 7pt !important;
-        overflow-wrap: anywhere !important;
-        word-break: normal !important;
-      }
-
-      .report-table tbody tr:nth-child(even) td {
-        background: #f3f8f4 !important;
-      }
-
-      .report-summary-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 3mm !important;
-        margin-bottom: 5mm !important;
-      }
-
-      .report-stat {
-        padding: 3mm !important;
-        border: 1px solid #d1d5db !important;
-        border-left: 3px solid var(--stat-color, #166534) !important;
-        border-radius: 2mm !important;
-        background: #fff !important;
-        break-inside: avoid !important;
-      }
-
-      .stat-label { font-size: 8pt !important; margin-bottom: 1mm !important; }
-      .stat-value { font-size: 13pt !important; }
-      .stat-note { font-size: 7pt !important; }
-
-      .profit-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 3mm !important;
-      }
-
-      .profit-item {
-        padding: 3mm !important;
-        background: #fff !important;
-        border: 1px solid #d1d5db !important;
-        break-inside: avoid !important;
-      }
-
-      .profit-item span { font-size: 8pt !important; }
-      .profit-item strong { font-size: 12pt !important; }
-
-      .report-warning {
-        background: #fff !important;
-        color: #111827 !important;
-      }
-
-      .report-help,
-      .screen-only { display: none !important; }
-
-      /*
-       * Footer is repeated on printed pages.
-       * Signature / thank-you are placed on the final page by a
-       * separate block after the report content.
-       */
-      .print-page-footer {
-        display: block !important;
-        position: fixed;
-        bottom: -22mm;
-        left: 0;
-        right: 0;
-        height: 19mm;
-        padding-top: 2mm;
-        border-top: 1px solid #d1d5db;
-        background: #fff !important;
-        text-align: center;
-      }
-
-      .print-footer-contact {
-        margin: 1mm 0;
-        color: #4b5563 !important;
-        font-size: 8pt;
-      }
-
-      .print-footer-note {
-        margin: 1mm 0;
-        color: #6b7280 !important;
-        font-size: 7pt;
-      }
-
-      .print-thank-you {
-        margin: 0 0 1mm;
-        color: #166534 !important;
-        font-size: 10pt;
-        font-weight: 800;
-      }
-
-      .print-signature-block {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 8mm;
-        margin: 8mm 0 4mm;
-        break-inside: avoid;
-        page-break-inside: avoid;
-      }
-
-      .signature-item {
-        padding-top: 7mm;
-        border-top: 1px solid #9ca3af;
-        color: #4b5563;
-        text-align: center;
-        font-size: 8pt;
-      }
-
-      .print-final-note {
-        margin: 3mm 0;
-        text-align: center;
-        color: #166534 !important;
-        font-weight: 800;
-      }
-
-      .report-status {
-        padding: 1mm 2mm !important;
-        border: 1px solid #d1d5db !important;
-        background: #fff !important;
-        color: #111827 !important;
-      }
-
-      .report-orange, .report-green, .report-red {
-        color: #111827 !important;
-      }
-
-      .report-card,
-      .report-stat,
-      .profit-item {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-
-      * {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-    }
-
-    .print-page-footer,
-    .print-signature-block,
-    .print-final-note {
-      display: none;
-    }
-
-    @media (max-width: 600px) {
-      .report-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
   </style>
 </head>
 
@@ -722,28 +370,13 @@
       <h1>📊 Business Reports</h1>
       <p>Sales, purchases, inventory, customers, suppliers and profit analysis.</p>
     </div>
+
     <div class="report-actions no-print">
-      <button class="report-btn" id="refreshReportsBtn" type="button">↻ Refresh</button>
-      <button class="report-btn primary" id="printReportsBtn" type="button">🖨️ Print / Save PDF</button>
+      <button class="report-btn" id="refreshReportsBtn" type="button">
+        ↻ Refresh
+      </button>
     </div>
   </header>
-
-  <!-- PRINT HEADER: store profile data is filled from gs_settings -->
-  <section class="print-store-profile" id="printStoreProfile">
-    <div class="print-profile-head">
-      <div class="print-profile-left">
-        <img class="print-store-logo" id="printStoreLogo" alt="Store Logo">
-        <div>
-          <h1 class="print-profile-name" id="printStoreName">General Store</h1>
-        </div>
-      </div>
-      <div class="print-profile-right">
-        <p class="print-profile-details owner-name" id="printOwnerName"></p>
-        <p class="print-profile-details" id="printStoreAddress"></p>
-      </div>
-    </div>
-    <div class="print-header-line"></div>
-  </section>
 
   <div id="reportError" role="alert"></div>
 
@@ -753,14 +386,24 @@
         <label for="reportFromDate">From Date</label>
         <input type="date" id="reportFromDate">
       </div>
+
       <div class="report-field">
         <label for="reportToDate">To Date</label>
         <input type="date" id="reportToDate">
       </div>
-      <button class="report-btn primary" id="applyReportFilterBtn" type="button">Apply Filter</button>
-      <button class="report-btn" id="clearReportFilterBtn" type="button">All Dates</button>
+
+      <button class="report-btn primary" id="applyReportFilterBtn" type="button">
+        Apply Filter
+      </button>
+
+      <button class="report-btn" id="clearReportFilterBtn" type="button">
+        All Dates
+      </button>
     </div>
-    <p class="report-period" id="reportPeriodNote">Choose a date range to filter reports.</p>
+
+    <p class="report-period" id="reportPeriodNote">
+      Choose a date range to filter reports.
+    </p>
   </section>
 
   <section class="report-summary-grid">
@@ -769,16 +412,19 @@
       <p class="stat-value" id="reportSales">Rs. 0.00</p>
       <p class="stat-note">Selected period</p>
     </article>
+
     <article class="report-stat" style="--stat-color:#2563eb">
       <p class="stat-label">📥 Total Purchases</p>
       <p class="stat-value" id="reportPurchases">Rs. 0.00</p>
       <p class="stat-note">Selected period</p>
     </article>
+
     <article class="report-stat" style="--stat-color:#ea580c">
       <p class="stat-label">💸 Total Expenses</p>
       <p class="stat-value" id="reportExpenses">Rs. 0.00</p>
       <p class="stat-note">Selected period</p>
     </article>
+
     <article class="report-stat" style="--stat-color:#9333ea">
       <p class="stat-label">📈 Gross Profit</p>
       <p class="stat-value" id="reportGrossProfit">Rs. 0.00</p>
@@ -787,12 +433,23 @@
   </section>
 
   <nav class="report-tabs no-print" aria-label="Report categories">
-    <button class="report-tab active" data-report-tab="sales" aria-selected="true" type="button">🧾 Sales</button>
-    <button class="report-tab" data-report-tab="purchases" aria-selected="false" type="button">📥 Purchases</button>
-    <button class="report-tab" data-report-tab="stock" aria-selected="false" type="button">📦 Stock</button>
-    <button class="report-tab" data-report-tab="customers" aria-selected="false" type="button">👥 Customers</button>
-    <button class="report-tab" data-report-tab="suppliers" aria-selected="false" type="button">🚚 Suppliers</button>
-    <button class="report-tab" data-report-tab="profit" aria-selected="false" type="button">💰 Profit & Loss</button>
+    <button class="report-tab active" data-report-tab="sales"
+      aria-selected="true" type="button">🧾 Sales</button>
+
+    <button class="report-tab" data-report-tab="purchases"
+      aria-selected="false" type="button">📥 Purchases</button>
+
+    <button class="report-tab" data-report-tab="stock"
+      aria-selected="false" type="button">📦 Stock</button>
+
+    <button class="report-tab" data-report-tab="customers"
+      aria-selected="false" type="button">👥 Customers</button>
+
+    <button class="report-tab" data-report-tab="suppliers"
+      aria-selected="false" type="button">🚚 Suppliers</button>
+
+    <button class="report-tab" data-report-tab="profit"
+      aria-selected="false" type="button">💰 Profit & Loss</button>
   </nav>
 
   <section class="report-card report-panel" data-report="sales">
@@ -800,12 +457,16 @@
       <h2>🧾 Sales Report</h2>
       <span class="report-count" id="salesReportCount">0 items</span>
     </div>
+
     <div class="report-table-wrap">
       <table class="report-table">
-        <thead><tr>
-          <th>Date</th><th>Invoice</th><th>Customer</th><th>Product</th>
-          <th>Barcode</th><th>Quantity</th><th>Total</th><th>Paid</th><th>Due</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Date</th><th>Invoice</th><th>Customer</th>
+            <th>Product</th><th>Barcode</th><th>Quantity</th>
+            <th>Total</th><th>Paid</th><th>Due</th>
+          </tr>
+        </thead>
         <tbody id="salesReportBody">
           <tr><td class="report-empty" colspan="9">Loading sales report...</td></tr>
         </tbody>
@@ -818,12 +479,15 @@
       <h2>📥 Purchase Report</h2>
       <span class="report-count" id="purchaseReportCount">0 items</span>
     </div>
+
     <div class="report-table-wrap">
       <table class="report-table">
-        <thead><tr>
-          <th>Date</th><th>Bill</th><th>Supplier</th><th>Product</th>
-          <th>Quantity</th><th>Rate</th><th>Total</th><th>Paid</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Date</th><th>Bill</th><th>Supplier</th><th>Product</th>
+            <th>Quantity</th><th>Rate</th><th>Total</th><th>Paid</th>
+          </tr>
+        </thead>
         <tbody id="purchaseReportBody">
           <tr><td class="report-empty" colspan="8">Loading purchase report...</td></tr>
         </tbody>
@@ -836,13 +500,16 @@
       <h2>📦 Inventory / Stock Report</h2>
       <span class="report-count" id="stockReportCount">0 products</span>
     </div>
+
     <div class="report-table-wrap">
       <table class="report-table">
-        <thead><tr>
-          <th>Product</th><th>Barcode</th><th>Category</th><th>Unit</th>
-          <th>Stock</th><th>Purchase Price</th><th>Selling Price</th>
-          <th>Stock Value</th><th>Status</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Product</th><th>Barcode</th><th>Category</th><th>Unit</th>
+            <th>Stock</th><th>Purchase Price</th><th>Selling Price</th>
+            <th>Stock Value</th><th>Status</th>
+          </tr>
+        </thead>
         <tbody id="stockReportBody">
           <tr><td class="report-empty" colspan="9">Loading stock report...</td></tr>
         </tbody>
@@ -855,12 +522,15 @@
       <h2>👥 Customer Report</h2>
       <span class="report-count" id="customerReportCount">0 customers</span>
     </div>
+
     <div class="report-table-wrap">
       <table class="report-table">
-        <thead><tr>
-          <th>Customer</th><th>Phone</th><th>Opening Balance</th>
-          <th>Credit Sales</th><th>Payments</th><th>Current Due</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Customer</th><th>Phone</th><th>Opening Balance</th>
+            <th>Credit Sales</th><th>Payments</th><th>Current Due</th>
+          </tr>
+        </thead>
         <tbody id="customerReportBody">
           <tr><td class="report-empty" colspan="6">Loading customer report...</td></tr>
         </tbody>
@@ -873,12 +543,15 @@
       <h2>🚚 Supplier Report</h2>
       <span class="report-count" id="supplierReportCount">0 suppliers</span>
     </div>
+
     <div class="report-table-wrap">
       <table class="report-table">
-        <thead><tr>
-          <th>Supplier</th><th>Phone</th><th>Opening Balance</th>
-          <th>Purchases</th><th>Payments</th><th>Current Balance</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Supplier</th><th>Phone</th><th>Opening Balance</th>
+            <th>Purchases</th><th>Payments</th><th>Current Balance</th>
+          </tr>
+        </thead>
         <tbody id="supplierReportBody">
           <tr><td class="report-empty" colspan="6">Loading supplier report...</td></tr>
         </tbody>
@@ -890,37 +563,46 @@
     <div class="report-panel-header">
       <h2>💰 Profit & Loss Report</h2>
     </div>
+
     <div class="report-warning" id="profitWarning"></div>
+
     <div class="profit-grid">
-      <div class="profit-item"><span>Sales Revenue</span><strong id="profitSales">Rs. 0.00</strong></div>
-      <div class="profit-item"><span>Cost of Goods Sold</span><strong id="profitCost">Rs. 0.00</strong></div>
-      <div class="profit-item"><span>Gross Profit</span><strong id="profitGross">Rs. 0.00</strong></div>
-      <div class="profit-item"><span>Total Expenses</span><strong id="profitExpense">Rs. 0.00</strong></div>
-      <div class="profit-item net"><span>Net Profit</span><strong id="profitNet">Rs. 0.00</strong></div>
+      <div class="profit-item">
+        <span>Sales Revenue</span>
+        <strong id="profitSales">Rs. 0.00</strong>
+      </div>
+
+      <div class="profit-item">
+        <span>Cost of Goods Sold</span>
+        <strong id="profitCost">Rs. 0.00</strong>
+      </div>
+
+      <div class="profit-item">
+        <span>Gross Profit</span>
+        <strong id="profitGross">Rs. 0.00</strong>
+      </div>
+
+      <div class="profit-item">
+        <span>Total Expenses</span>
+        <strong id="profitExpense">Rs. 0.00</strong>
+      </div>
+
+      <div class="profit-item net">
+        <span>Net Profit</span>
+        <strong id="profitNet">Rs. 0.00</strong>
+      </div>
     </div>
+
     <p class="report-help">
       Profit calculations depend on the product cost information saved with sales and products.
       Check the warning above if cost information is incomplete.
     </p>
   </section>
 
-  <!-- Print signature section: placed after report content -->
-  <section class="print-signature-block">
-    <div class="signature-item">Prepared By</div>
-    <div class="signature-item">Checked By</div>
-    <div class="signature-item">Authorized Signature</div>
-  </section>
+  <p class="report-help">
+    Reports are generated from the business data stored in this browser.
+  </p>
 
-  <p class="print-final-note">Thank you, visit again 🙏</p>
-
-  <footer class="print-page-footer">
-    <p class="print-thank-you">Thank you, visit again 🙏</p>
-    <p class="print-footer-contact" id="printStoreContact"></p>
-    <p class="print-footer-note" id="printInvoiceFooter"></p>
-    <p class="print-footer-note">This is a computer-generated report.</p>
-  </footer>
-
-  <p class="report-help">Reports are generated from the business data stored in this browser.</p>
 </main>
 
 <script src="reports.js"></script>
@@ -929,110 +611,46 @@
 (function () {
   "use strict";
 
-  const $ = id => document.getElementById(id);
+  const refreshButton = document.getElementById("refreshReportsBtn");
 
-  function readStoreSettings() {
+  if (!refreshButton) return;
+
+  let refreshing = false;
+
+  refreshButton.addEventListener("click", async function () {
+    if (refreshing) return;
+
+    refreshing = true;
+    refreshButton.disabled = true;
+    refreshButton.textContent = "↻ Refreshing...";
+
     try {
-      const value = JSON.parse(localStorage.getItem("gs_settings") || "{}");
-      return value && typeof value === "object" && !Array.isArray(value)
-        ? value : {};
+      if (typeof window.loadReports === "function") {
+        await window.loadReports();
+      } else if (typeof window.refreshReports === "function") {
+        await window.refreshReports();
+      } else {
+        window.location.reload();
+        return;
+      }
     } catch (error) {
-      return {};
-    }
-  }
+      console.error("Report refresh failed:", error);
 
-  /*
-   * Different apps use different logo field names.
-   * Add your exact Store Profile field here if it uses another name.
-   */
-  function getStoreLogo(settings) {
-    const candidates = [
-      settings.storeLogo,
-      settings.storeLogoUrl,
-      settings.logo,
-      settings.logoUrl,
-      settings.logoData,
-      settings.logoBase64,
-      settings.storeLogoData
-    ];
+      const errorBox = document.getElementById("reportError");
 
-    return candidates.find(value =>
-      typeof value === "string" &&
-      /^(data:image\/|https?:\/\/|blob:)/i.test(value.trim())
-    ) || "";
-  }
-
-  function updatePrintProfile() {
-    const s = readStoreSettings();
-
-    $("printStoreName").textContent = s.storeName || "General Store";
-
-    $("printOwnerName").textContent =
-      s.ownerName ? "Owner: " + s.ownerName : "";
-
-    $("printStoreAddress").textContent = s.storeAddress || "";
-
-    $("printStoreContact").textContent = [
-      s.storePhone ? "Phone: " + s.storePhone : "",
-      s.storeEmail ? "Email: " + s.storeEmail : ""
-    ].filter(Boolean).join("    ");
-
-    $("printInvoiceFooter").textContent = s.invoiceFooter || "";
-
-    const logo = $("printStoreLogo");
-    const logoSrc = getStoreLogo(s);
-
-    if (logoSrc) {
-      logo.onload = function () {
-        logo.classList.add("visible");
-      };
-      logo.onerror = function () {
-        logo.classList.remove("visible");
-      };
-      logo.src = logoSrc;
-    } else {
-      logo.removeAttribute("src");
-      logo.classList.remove("visible");
-    }
-  }
-
-  $("printReportsBtn").addEventListener("click", function () {
-    updatePrintProfile();
-
-    // Wait for logo loading before opening the print dialog.
-    const logo = $("printStoreLogo");
-
-    if (logo.src && !logo.complete) {
-      logo.onload = function () {
-        logo.classList.add("visible");
-        window.print();
-      };
-      logo.onerror = function () {
-        window.print();
-      };
-    } else {
-      window.print();
+      if (errorBox) {
+        errorBox.textContent =
+          "Reports could not be refreshed. Please reload the page and try again.";
+        errorBox.classList.add("show");
+      }
+    } finally {
+      refreshing = false;
+      refreshButton.disabled = false;
+      refreshButton.textContent = "↻ Refresh";
     }
   });
-
-  $("refreshReportsBtn").addEventListener("click", function () {
-    updatePrintProfile();
-    // Existing report refresh logic remains in reports.js.
-    if (typeof window.loadReports === "function") {
-      window.loadReports();
-    } else if (typeof window.refreshReports === "function") {
-      window.refreshReports();
-    }
-  });
-
-  window.addEventListener("storage", function (event) {
-    if (event.key === "gs_settings" || event.key === null) {
-      updatePrintProfile();
-    }
-  });
-
-  updatePrintProfile();
 })();
 </script>
+
 </body>
 </html>
