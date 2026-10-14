@@ -780,103 +780,283 @@
     printInvoice(sale);
   });
 
-  /* ---------------- Invoice / Print ---------------- */
+/* ---------------- Invoice / Print ---------------- */
 
-  function printInvoice(sale) {
-    const win = window.open("", "_blank");
+function printInvoice(sale) {
+  const win = window.open("", "_blank");
 
-    if (!win) {
-      toast("Invoice खोल्न Browser popup अनुमति दिनुहोस्।", "error");
-      return;
-    }
+  if (!win) {
+    toast("Invoice खोल्न Browser popup अनुमति दिनुहोस्।", "error");
+    return;
+  }
 
-    const store = settings();
-    const items = getSaleItems(sale);
+  const store = settings();
+  const items = getSaleItems(sale);
 
-    const rows = items.map((item, index) => `
-      <tr>
-        <td>${index + 1}</td>
-        <td>${esc(item.productName || "Product")}</td>
-        <td>${esc(item.barcode || "-")}</td>
-        <td class="right">${num(item.qty)} ${esc(item.unit || "")}</td>
-        <td class="right">${money(item.rate)}</td>
-        <td class="right">${money(item.itemAmount ?? num(item.qty) * num(item.rate))}</td>
-      </tr>
-    `).join("");
+  // User/Owner Photo चयन (First available photo URL)
+  const userPhoto = [
+    store.ownerPhoto,
+    store.ownerPhotoUrl,
+    store.operatorPhoto,
+    store.userPhoto,
+    store.photoUrl
+  ].find(photo => photo && photo.trim() !== "") || "";
 
-    win.document.write(`<!DOCTYPE html>
-<html lang="en">
+  const rows = items.map((item, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${esc(item.productName || "Product")}</td>
+      <td>${esc(item.barcode || "-")}</td>
+      <td class="right">${num(item.qty)} ${esc(item.unit || "")}</td>
+      <td class="right">${money(item.rate)}</td>
+      <td class="right">${money(item.itemAmount ?? num(item.qty) * num(item.rate))}</td>
+    </tr>
+  `).join("");
+
+  win.document.write(`<!DOCTYPE html>
+<html lang="ne">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Invoice ${esc(sale.billNumber || "")}</title>
 <style>
-  *{box-sizing:border-box}
-  body{font-family:Arial,sans-serif;color:#222;margin:0;padding:22px}
-  .invoice{max-width:800px;margin:auto}
-  header{border-bottom:2px solid #17683a;padding-bottom:12px}
-  h1{margin:0 0 8px;color:#17683a;font-size:25px}
-  .meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}
-  table{width:100%;border-collapse:collapse;margin-top:12px}
-  th,td{border:1px solid #ccc;padding:8px;text-align:left}
-  th{background:#17683a;color:#fff}
-  .right{text-align:right}
-  .totals{width:330px;max-width:100%;margin:15px 0 0 auto}
-  .totals div{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #ddd}
-  .grand{font-size:18px;font-weight:bold;color:#17683a}
-  footer{text-align:center;border-top:1px solid #ccc;margin-top:35px;padding-top:12px}
-  .actions{text-align:center;margin:20px}
-  button{padding:10px 18px;margin:4px;cursor:pointer}
-  @media print{.actions{display:none}body{padding:0}}
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    color: #222;
+    background: #fff;
+  }
+  /* एउटै A4 पेजमा अट्ने र तल्लो भागमा Footer अडिने बनाउन Flex Layout */
+  .page-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    max-width: 800px;
+    margin: auto;
+  }
+  .content-wrap {
+    flex: 1 0 auto;
+  }
+  
+  /* Header Setup */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #17683a;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .user-photo {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ccc;
+  }
+  .store-info h1 {
+    margin: 0 0 4px 0;
+    color: #17683a;
+    font-size: 22px;
+  }
+  .store-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+  }
+  .header-right {
+    text-align: right;
+  }
+  .header-right .owner-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #222;
+    margin: 0 0 4px 0;
+  }
+  .header-right .address {
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+  }
+
+  /* Invoice Title & Meta Information */
+  .invoice-title {
+    text-align: center;
+    margin: 10px 0;
+    color: #17683a;
+    font-size: 18px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 12px 0 18px 0;
+    font-size: 14px;
+  }
+
+  /* Table Design */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+    font-size: 13px;
+  }
+  th {
+    background: #17683a;
+    color: #fff;
+  }
+  .right {
+    text-align: right;
+  }
+
+  /* Totals Section */
+  .totals {
+    width: 320px;
+    max-width: 100%;
+    margin: 15px 0 0 auto;
+    font-size: 14px;
+  }
+  .totals div {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  .grand {
+    font-size: 16px;
+    font-weight: bold;
+    color: #17683a;
+  }
+
+  /* Footer Design (सिधै तल्ल फेदमा रहने) */
+  footer {
+    flex-shrink: 0;
+    border-top: 2px solid #17683a;
+    padding-top: 10px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #444;
+  }
+
+  /* Action Buttons */
+  .actions {
+    text-align: center;
+    margin: 20px;
+  }
+  button {
+    padding: 8px 18px;
+    margin: 4px;
+    cursor: pointer;
+    background-color: #17683a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  @media print {
+    .actions { display: none; }
+    body, .page-container { min-height: 100vh; }
+  }
 </style>
 </head>
 <body>
-<main class="invoice">
-<header>
-  <h1>${esc(store.storeName || store.businessName || "General Store")}</h1>
-  ${store.address ? `<p>${esc(store.address)}</p>` : ""}
-  ${store.phone ? `<p>Phone: ${esc(store.phone)}</p>` : ""}
-  ${store.panNumber ? `<p>PAN/VAT: ${esc(store.panNumber)}</p>` : ""}
-</header>
 
-<h2>SALES INVOICE</h2>
-<section class="meta">
-  <div><strong>Bill No.:</strong> ${esc(sale.billNumber || "-")}</div>
-  <div><strong>Date:</strong> ${esc(sale.date || "-")}</div>
-  <div><strong>Customer:</strong> ${esc(sale.customerName || "Cash Customer")}</div>
-  <div><strong>Payment:</strong> ${esc(sale.paymentMethod || "-")}</div>
-</section>
+<div class="page-container">
+  <div class="content-wrap">
+    <header>
+      <!-- बायाँ साइड: User Photo + पसलको नाम + VAT -->
+      <div class="header-left">
+        ${userPhoto ? `<img src="${esc(userPhoto)}" alt="User Photo" class="user-photo" />` : ''}
+        <div class="store-info">
+          <h1>${esc(store.storeName || store.businessName || "General Store")}</h1>
+          <p><strong>VAT / PAN:</strong> ${esc(store.panNumber || store.vatNumber || "-")}</p>
+        </div>
+      </div>
 
-<table>
-<thead><tr>
-  <th>SN</th><th>Product</th><th>Barcode</th>
-  <th class="right">Qty</th><th class="right">Rate</th><th class="right">Amount</th>
-</tr></thead>
-<tbody>${rows}</tbody>
-</table>
+      <!-- दायाँ साइड: मालिक नाम + ठेगाना -->
+      <div class="header-right">
+        <div class="owner-name">${esc(store.ownerName || store.owner || "मालिक नाम")}</div>
+        <div class="address">${esc(store.address || "ठेगाना")}</div>
+      </div>
+    </header>
 
-<section class="totals">
-  <div><span>Subtotal</span><strong>${money(sale.itemAmount)}</strong></div>
-  <div><span>Discount</span><strong>${money(sale.discount)}</strong></div>
-  <div class="grand"><span>Total</span><strong>${money(sale.total)}</strong></div>
-  <div><span>Paid Amount</span><strong>${money(sale.paidAmount)}</strong></div>
-  <div><span>Balance Due</span><strong>${money(sale.balance)}</strong></div>
-</section>
+    <div class="invoice-title">Sales Invoice</div>
 
-<footer>
-  <strong>Thank you, visit again!</strong>
-  <p>This is a computer-generated invoice.</p>
-</footer>
-</main>
+    <section class="meta">
+      <div><strong>Bill No.:</strong> ${esc(sale.billNumber || "-")}</div>
+      <div><strong>Date:</strong> ${esc(sale.date || "-")}</div>
+      <div><strong>Customer:</strong> ${esc(sale.customerName || "Cash Customer")}</div>
+      <div><strong>Payment:</strong> ${esc(sale.paymentMethod || "-")}</div>
+    </section>
+
+    <table>
+      <thead>
+        <tr>
+          <th>SN</th>
+          <th>Product</th>
+          <th>Barcode</th>
+          <th class="right">Qty</th>
+          <th class="right">Rate</th>
+          <th class="right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+
+    <section class="totals">
+      <div><span>Subtotal</span><strong>${money(sale.itemAmount)}</strong></div>
+      <div><span>Discount</span><strong>${money(sale.discount)}</strong></div>
+      <div class="grand"><span>Total</span><strong>${money(sale.total)}</strong></div>
+      <div><span>Paid Amount</span><strong>${money(sale.paidAmount)}</strong></div>
+      <div><span>Balance Due</span><strong>${money(sale.balance)}</strong></div>
+    </section>
+  </div>
+
+  <!-- Footer (सबैभन्दा तल नम्बर र ईमेल) -->
+  <footer>
+    <div><strong>Phone:</strong> ${esc(store.phone || store.mobile || "-")}</div>
+    <div><strong>Email:</strong> ${esc(store.email || "-")}</div>
+  </footer>
+</div>
+
 <div class="actions">
   <button onclick="window.print()">Print / Save PDF</button>
   <button onclick="window.close()">Close</button>
 </div>
+
 </body>
 </html>`);
 
-    win.document.close();
-  }
+  win.document.close();
+}
 
   /* ---------------- Reset / Initialize ---------------- */
 
