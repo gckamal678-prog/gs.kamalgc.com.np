@@ -780,220 +780,429 @@
     printInvoice(sale);
   });
 
-   /* ---------------- Invoice / Print ---------------- */
 
-  function printInvoice(sale) {
-    const win = window.open("", "_blank");
+/* ---------------- Invoice / Print - A4 PDF ---------------- */
 
-    if (!win) {
-      toast("Invoice खोल्न Browser popup अनुमति दिनुहोस्।", "error");
-      return;
-    }
+function printInvoice(sale) {
+  const win = window.open("", "_blank");
 
-    const store = settings();
-    const items = getSaleItems(sale);
+  if (!win) {
+    toast("Invoice खोल्न Browser popup अनुमति दिनुहोस्।", "error");
+    return;
+  }
 
-    const rows = items.map((item, index) => `
-      <tr>
-        <td>${index + 1}</td>
-        <td>${esc(item.productName || "Product")}</td>
-        <td>${esc(item.barcode || "-")}</td>
-        <td class="right">${num(item.qty)} ${esc(item.unit || "")}</td>
-        <td class="right">${money(item.rate)}</td>
-        <td class="right">${money(item.itemAmount ?? num(item.qty) * num(item.rate))}</td>
-      </tr>
-    `).join("");
+  const store = settings() || {};
+  const items = getSaleItems(sale) || [];
 
-    win.document.write(`<!DOCTYPE html>
+  // Read Store Profile fields without changing saved settings.
+  const storeName = store.storeName || store.businessName || "General Store";
+  const ownerName = store.ownerName || "";
+  const storeAddress = store.storeAddress || "";
+  const storePhone = store.storePhone || "";
+  const storeEmail = store.storeEmail || "";
+  const taxType = store.taxType || "VAT";
+  const taxNumber = store.taxNumber || "";
+  const ownerPhoto =
+    store.operatorPhoto ||
+    store.ownerPhoto ||
+    store.ownerPhotoUrl ||
+    "";
+
+  const invoiceFooter =
+    store.invoiceFooter || "Thank you, visit again!";
+
+  const safe = (value) => esc(String(value ?? ""));
+
+  const photoHtml = ownerPhoto
+    ? `<img class="owner-photo" src="${safe(ownerPhoto)}"
+         alt="Store owner"
+         onerror="this.style.display='none'">`
+    : `<div class="photo-placeholder">👤</div>`;
+
+  const rows = items.map((item, index) => `
+    <tr>
+      <td class="sn">${index + 1}</td>
+      <td class="product">${safe(item.productName || "Product")}</td>
+      <td>${safe(item.barcode || "-")}</td>
+      <td class="right">${num(item.qty)} ${safe(item.unit || "")}</td>
+      <td class="right">${money(item.rate)}</td>
+      <td class="right">
+        ${money(item.itemAmount ?? num(item.qty) * num(item.rate))}
+      </td>
+    </tr>
+  `).join("");
+
+  const subtotal = sale.itemAmount ??
+    items.reduce(
+      (sum, item) =>
+        sum + num(item.itemAmount ?? num(item.qty) * num(item.rate)),
+      0
+    );
+
+  const discount = num(sale.discount);
+  const total = sale.total ?? subtotal - discount;
+  const paid = num(sale.paidAmount);
+  const balance = sale.balance ?? Math.max(0, num(total) - paid);
+
+  win.document.open();
+
+  win.document.write(`<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Invoice ${esc(sale.billNumber || "")}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invoice ${safe(sale.billNumber || "")}</title>
+
 <style>
   @page {
-    size: A4;
-    margin: 10mm;
+    size: A4 portrait;
+    margin: 34mm 10mm 20mm;
   }
-  * { box-sizing: border-box; }
-  body {
-    font-family: Arial, sans-serif;
-    color: #222;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
     margin: 0;
     padding: 0;
-    font-size: 13px;
-    background: #fff;
-  }
-  .invoice {
-    width: 100%;
-    max-width: 210mm;
-    margin: auto;
-  }
-
-  /* Header Layout */
-  .print-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    border-bottom: 2px solid #17683a;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-  }
-  .header-left {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .store-logo {
-    width: 55px;
-    height: 55px;
-    object-fit: cover;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
-  .store-info h1 {
-    margin: 0 0 2px;
-    color: #17683a;
-    font-size: 20px;
-  }
-  .store-info p {
-    margin: 0;
-    font-size: 13px;
-    color: #555;
-  }
-  .header-right {
-    text-align: right;
-  }
-  .header-right h3 {
-    margin: 0 0 2px;
-    font-size: 16px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
     color: #222;
-  }
-  .header-right p {
-    margin: 0;
-    font-size: 13px;
-    color: #555;
-  }
-
-  /* Meta Details */
-  .meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-bottom: 12px;
-    font-size: 13px;
-  }
-
-  /* Table styling */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 5px;
-  }
-  th, td {
-    border: 1px solid #ccc;
-    padding: 6px 8px;
-    text-align: left;
-    font-size: 12px;
-  }
-  th {
-    background: #17683a !important;
-    color: #fff !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .right { text-align: right; }
 
-  /* Totals section */
-  .totals {
-    width: 280px;
-    max-width: 100%;
-    margin: 12px 0 0 auto;
-    font-size: 13px;
-  }
-  .totals div {
-    display: flex;
-    justify-content: space-between;
-    padding: 5px 8px;
-    border-bottom: 1px solid #ddd;
-  }
-  .grand {
-    font-size: 15px;
-    font-weight: bold;
-    color: #17683a;
+  .invoice {
+    width: 100%;
+    margin: 0 auto;
   }
 
-  /* Footer styling */
-  footer {
+  /* Repeats at the top of each printed page. */
+  .page-header {
     position: fixed;
-    bottom: 0;
+    top: -29mm;
     left: 0;
     right: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    border-top: 1px solid #ccc;
-    padding-top: 6px;
-    font-size: 12px;
-    color: #555;
-    background: #fff;
+    height: 27mm;
+    background: white;
+    border-bottom: 1.5px solid #17683a;
+    padding: 0 0 3mm;
   }
 
-  /* Print specific rules */
-  @media print {
-    .actions { display: none; }
-    body { padding: 0; }
-    thead { display: table-header-group; }
-    tr { page-break-inside: avoid; }
+  .brand-row {
+    display: grid;
+    grid-template-columns: 20mm 1fr 1fr;
+    gap: 4mm;
+    align-items: center;
+    height: 24mm;
+  }
+
+  .photo-box {
+    width: 19mm;
+    height: 19mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .owner-photo {
+    width: 19mm;
+    height: 19mm;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+  }
+
+  .photo-placeholder {
+    width: 19mm;
+    height: 19mm;
+    border-radius: 50%;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+  }
+
+  .brand-info {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    line-height: 1.45;
+  }
+
+  .brand-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #17683a;
+    margin-bottom: 2px;
+  }
+
+  .owner-name {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+
+  .invoice-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 12px;
+    padding: 3mm 0;
+    border-bottom: 1px solid #bbb;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .invoice-title {
+    text-align: center;
+    font-size: 14px;
+    margin: 3mm 0;
+    letter-spacing: 1px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: 0;
+  }
+
+  col.sn-col { width: 7%; }
+  col.product-col { width: 27%; }
+  col.barcode-col { width: 19%; }
+  col.qty-col { width: 14%; }
+  col.rate-col { width: 15%; }
+  col.amount-col { width: 18%; }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 4px;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  th {
+    background: #17683a;
+    color: #fff;
+    font-size: 9px;
+  }
+
+  td {
+    line-height: 1.35;
+  }
+
+  .right {
+    text-align: right;
+  }
+
+  .sn {
+    text-align: center;
+  }
+
+  .product {
+    font-weight: 500;
+  }
+
+  /* Totals remain after the last item, on the final page. */
+  .totals-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 5mm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .totals {
+    width: 75mm;
+    max-width: 100%;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 5px 3px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .grand {
+    color: #17683a;
+    font-size: 12px;
+    font-weight: bold;
+    border-top: 1.5px solid #17683a;
+  }
+
+  /* Repeats at the bottom of every printed page. */
+  .page-footer {
+    position: fixed;
+    bottom: -16mm;
+    left: 0;
+    right: 0;
+    height: 13mm;
+    padding-top: 3mm;
+    border-top: 1px solid #999;
+    background: white;
+    text-align: center;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .footer-contact {
+    display: flex;
+    justify-content: center;
+    gap: 8mm;
+    flex-wrap: wrap;
+  }
+
+  .footer-contact span {
+    overflow-wrap: anywhere;
+  }
+
+  .thank-you {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 5mm;
   }
 
   .actions {
     text-align: center;
-    margin: 20px;
+    margin: 18px auto;
   }
-  button {
+
+  .actions button {
+    border: 0;
+    border-radius: 4px;
+    background: #17683a;
+    color: white;
     padding: 10px 18px;
     margin: 4px;
     cursor: pointer;
-    background: #17683a;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
   }
-  button:hover { background: #124e2c; }
+
+  .actions .close-btn {
+    background: #555;
+  }
+
+  @media screen {
+    body {
+      padding: 12px;
+      background: #eee;
+    }
+
+    .invoice {
+      max-width: 190mm;
+      min-height: 240mm;
+      padding: 12px;
+      background: white;
+    }
+
+    .page-header,
+    .page-footer {
+      position: static;
+      height: auto;
+    }
+
+    .page-header {
+      margin-bottom: 8px;
+    }
+
+    .page-footer {
+      margin-top: 20px;
+    }
+  }
+
+  @media print {
+    html, body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      background: white;
+    }
+
+    .actions {
+      display: none !important;
+    }
+
+    .invoice {
+      width: 100%;
+      max-width: none;
+      min-height: 0;
+      padding: 0;
+      background: white;
+    }
+
+    .page-header,
+    .page-footer {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    table {
+      page-break-inside: auto;
+    }
+
+    .totals-wrap,
+    .thank-you {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+  }
 </style>
 </head>
-<body>
 
+<body>
 <main class="invoice">
-  <!-- Repeating Header for multi-page via table or structure -->
-  <div class="print-header">
-    <div class="header-left">
-      ${store.operatorPhoto ? `<img src="${esc(store.operatorPhoto)}" alt="Photo" class="store-logo">` : `<div class="store-logo" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:20px;">👤</div>`}
-      <div class="store-info">
-        <h1>${esc(store.storeName || store.businessName || "General Store")}</h1>
-        <p><strong>VAT/PAN:</strong> ${esc(store.taxNumber || store.panNumber || "-")}</p>
+
+  <header class="page-header">
+    <div class="brand-row">
+      <div class="photo-box">${photoHtml}</div>
+
+      <div class="brand-info">
+        <div class="brand-name">${safe(storeName)}</div>
+        <div>${safe(taxType)}: ${safe(taxNumber || "-")}</div>
+      </div>
+
+      <div class="brand-info">
+        <div class="owner-name">${safe(ownerName || "-")}</div>
+        <div>${safe(storeAddress || "-")}</div>
       </div>
     </div>
-    <div class="header-right">
-      <h3>${esc(store.ownerName || "-")}</h3>
-      <p>${esc(store.storeAddress || store.address || "-")}</p>
-    </div>
-  </div>
+  </header>
 
-  <h3 style="margin: 5px 0 10px; font-size: 15px; color: #17683a;">SALES INVOICE</h3>
-  
-  <section class="meta">
-    <div><strong>Bill No.:</strong> ${esc(sale.billNumber || "-")}</div>
-    <div><strong>Date:</strong> ${esc(sale.date || "-")}</div>
-    <div><strong>Customer:</strong> ${esc(sale.customerName || "Cash Customer")}</div>
-    <div><strong>Payment:</strong> ${esc(sale.paymentMethod || "-")}</div>
+  <section class="invoice-meta">
+    <div><strong>Bill No.:</strong> ${safe(sale.billNumber || "-")}</div>
+    <div><strong>Date:</strong> ${safe(sale.date || "-")}</div>
+    <div><strong>Customer:</strong> ${safe(sale.customerName || "Cash Customer")}</div>
+    <div><strong>Payment:</strong> ${safe(sale.paymentMethod || "-")}</div>
   </section>
 
+  <h2 class="invoice-title">SALES INVOICE</h2>
+
   <table>
+    <colgroup>
+      <col class="sn-col">
+      <col class="product-col">
+      <col class="barcode-col">
+      <col class="qty-col">
+      <col class="rate-col">
+      <col class="amount-col">
+    </colgroup>
+
     <thead>
       <tr>
-        <th>SN</th>
+        <th>S.N.</th>
         <th>Product</th>
         <th>Barcode</th>
         <th class="right">Qty</th>
@@ -1001,35 +1210,59 @@
         <th class="right">Amount</th>
       </tr>
     </thead>
+
     <tbody>
-      ${rows}
+      ${rows || `<tr><td colspan="6" style="text-align:center">No items</td></tr>`}
     </tbody>
   </table>
 
-  <section class="totals">
-    <div><span>Subtotal</span><strong>${money(sale.itemAmount)}</strong></div>
-    <div><span>Discount</span><strong>${money(sale.discount)}</strong></div>
-    <div class="grand"><span>Total</span><strong>${money(sale.total)}</strong></div>
-    <div><span>Paid Amount</span><strong>${money(sale.paidAmount)}</strong></div>
-    <div><span>Balance Due</span><strong>${money(sale.balance)}</strong></div>
+  <section class="totals-wrap">
+    <div class="totals">
+      <div class="total-row">
+        <span>Subtotal</span>
+        <strong>${money(subtotal)}</strong>
+      </div>
+      <div class="total-row">
+        <span>Discount</span>
+        <strong>${money(discount)}</strong>
+      </div>
+      <div class="total-row grand">
+        <span>Total</span>
+        <strong>${money(total)}</strong>
+      </div>
+      <div class="total-row">
+        <span>Paid Amount</span>
+        <strong>${money(paid)}</strong>
+      </div>
+      <div class="total-row">
+        <span>Balance</span>
+        <strong>${money(balance)}</strong>
+      </div>
+    </div>
   </section>
-</main>
 
-<footer>
-  <div><strong>Phone/Number:</strong> ${esc(store.storePhone || store.phone || "-")}</div>
-  <div><strong>Email:</strong> ${esc(store.storeEmail || "-")}</div>
-</footer>
+  <div class="thank-you">${safe(invoiceFooter)}</div>
+
+  <footer class="page-footer">
+    <div class="footer-contact">
+      <span>Phone: ${safe(storePhone || "-")}</span>
+      <span>Email: ${safe(storeEmail || "-")}</span>
+    </div>
+  </footer>
+
+</main>
 
 <div class="actions">
   <button onclick="window.print()">Print / Save PDF</button>
-  <button onclick="window.close()">Close</button>
+  <button class="close-btn" onclick="window.close()">Close</button>
 </div>
 
 </body>
 </html>`);
 
-    win.document.close();
-  }
+  win.document.close();
+}
+
   /* ---------------- Reset / Initialize ---------------- */
 
   form?.addEventListener("reset", () => {
