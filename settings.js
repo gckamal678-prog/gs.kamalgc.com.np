@@ -7,13 +7,17 @@
   const FEEDBACK_KEY = "gs_feedback";
   const LAST_BACKUP_KEY = "gs_last_backup";
 
+  // Keep all existing business data keys.
+  // Do not rename these keys: existing browser data depends on them.
   const STORE_DATA_KEYS = [
     "gs_products",
     "gs_purchases",
     "gs_sales",
     "gs_customers",
     "gs_suppliers",
-    "gs_finance"
+    "gs_finance",
+    "gs_stock_lots",
+    "gs_sales_returns"
   ];
 
   const DEFAULT_SETTINGS = {
@@ -42,12 +46,17 @@
 
   const $ = id => document.getElementById(id);
 
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
   function readJSON(key, fallback = null) {
     try {
       const raw = localStorage.getItem(key);
-      return raw === null ? fallback : JSON.parse(raw);
+      if (raw === null) return fallback;
+      return JSON.parse(raw);
     } catch (error) {
-      console.error("Could not read", key, error);
+      console.error("Could not read local data:", key, error);
       return fallback;
     }
   }
@@ -56,19 +65,25 @@
     localStorage.setItem(key, JSON.stringify(value));
   }
 
+  function isPlainObject(value) {
+    return value !== null &&
+      typeof value === "object" &&
+      !Array.isArray(value);
+  }
+
   function getSettings() {
     const saved = readJSON(SETTINGS_KEY, {});
 
-    if (!saved || typeof saved !== "object" || Array.isArray(saved)) {
-      return structuredClone(DEFAULT_SETTINGS);
+    if (!isPlainObject(saved)) {
+      return clone(DEFAULT_SETTINGS);
     }
 
     return {
-      ...structuredClone(DEFAULT_SETTINGS),
+      ...clone(DEFAULT_SETTINGS),
       ...saved,
       appearance: {
         ...DEFAULT_SETTINGS.appearance,
-        ...(saved.appearance || {})
+        ...(isPlainObject(saved.appearance) ? saved.appearance : {})
       }
     };
   }
@@ -76,7 +91,8 @@
   function showStatus(id, message, type = "success") {
     const element = $(id);
     if (!element) return;
-    element.textContent = message;
+
+    element.textContent = String(message);
     element.className = "status " + type;
   }
 
@@ -85,36 +101,43 @@
   }
 
   function applyAppearance(settings = getSettings()) {
+    const appearance = settings.appearance || {};
+
     if (window.GSAppearance?.apply) {
       window.GSAppearance.apply();
       return;
     }
 
-    const appearance = settings.appearance || {};
+    const root = document.documentElement;
+    const theme = appearance.theme === "dark" ? "dark" : "light";
+    const accent = /^#[0-9a-f]{6}$/i.test(
+      String(appearance.accentColor || "")
+    ) ? appearance.accentColor : "#166534";
 
-    document.documentElement.style.setProperty(
-      "--font-family",
+    const fontSize = ["13", "15", "17", "19"].includes(
+      String(appearance.fontSize)
+    ) ? String(appearance.fontSize) : "15";
+
+    const fontFamily = String(
       appearance.fontFamily || "Arial, sans-serif"
     );
 
-    document.documentElement.style.setProperty(
-      "--font-size",
-      (appearance.fontSize || "15") + "px"
-    );
+    root.dataset.theme = theme;
+    root.style.colorScheme = theme;
+    root.style.setProperty("--font-family", fontFamily);
+    root.style.setProperty("--font-size", fontSize + "px");
+    root.style.setProperty("--accent-color", accent);
+    root.style.setProperty("--primary", accent);
 
-    document.documentElement.style.setProperty(
-      "--accent-color",
-      appearance.accentColor || "#166534"
-    );
-
-    document.body.classList.toggle(
-      "dark-theme",
-      appearance.theme === "dark"
-    );
+    document.body?.classList.toggle("dark-theme", theme === "dark");
   }
 
-  /* Load system and appearance settings only.
-     Store Profile is managed in store-profile.html. */
+  function setValue(id, value) {
+    const element = $(id);
+    if (element && value !== undefined && value !== null) {
+      element.value = String(value);
+    }
+  }
 
   function loadSettings() {
     const settings = getSettings();
@@ -127,49 +150,154 @@
       "defaultPayment",
       "autoLockMinutes"
     ].forEach(id => {
-      const element = $(id);
-      if (element) {
-        element.value = String(settings[id] ?? DEFAULT_SETTINGS[id] ?? "");
-      }
+      setValue(id, settings[id] ?? DEFAULT_SETTINGS[id]);
     });
 
-    const theme = $("theme");
-    if (theme) theme.value = settings.appearance.theme || "light";
+    setValue("theme", settings.appearance.theme);
+    setValue("accentColor", settings.appearance.accentColor);
+    setValue("fontFamily", settings.appearance.fontFamily);
+    setValue("fontSize", settings.appearance.fontSize);
 
-    const accentColor = $("accentColor");
-    if (accentColor) {
-      accentColor.value = /^#[0-9a-f]{6}$/i.test(
-        settings.appearance.accentColor
-      )
-        ? settings.appearance.accentColor
-        : "#166534";
-    }
-
-    const fontFamily = $("fontFamily");
-    if (fontFamily) {
-      fontFamily.value =
-        settings.appearance.fontFamily || "Arial, sans-serif";
-    }
-
-    const fontSize = $("fontSize");
-    if (fontSize) {
-      fontSize.value = String(settings.appearance.fontSize || "15");
-    }
+    // These fields will be added in the next settings.html replacement.
+    // Optional selectors allow this file to work with the current HTML too.
+    [
+      "storeName",
+      "ownerName",
+      "operatorPhoto",
+      "storePhone",
+      "storeEmail",
+      "storeAddress",
+      "taxType",
+      "taxNumber",
+      "invoiceFooter"
+    ].forEach(id => setValue(id, settings[id]));
 
     applyAppearance(settings);
     updateMpinStatus();
     updateLastBackup();
   }
 
+  function safePrefix(value, fallback) {
+    const prefix = String(value || "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\p{L}\p{N_-]/gu, "")
+      .slice(0, 12);
+
+    return prefix || fallback;
+  }
+
+  function saveSystemSettings(event) {
+    event.preventDefault();
+
+    const settings = getSettings();
+
+    settings.currency = $("currency")?.value || "NPR";
+    settings.dateFormat = $("dateFormat")?.value || "YYYY-MM-DD";
+    settings.invoicePrefix = safePrefix(
+      $("invoicePrefix")?.value,
+      "INV"
+    );
+    settings.purchasePrefix = safePrefix(
+      $("purchasePrefix")?.value,
+      "PUR"
+    );
+    settings.defaultPayment = $("defaultPayment")?.value || "Cash";
+
+    try {
+      writeJSON(SETTINGS_KEY, settings);
+      showStatus("systemStatus", "System Settings सुरक्षित भयो।");
+    } catch (error) {
+      console.error(error);
+      showStatus(
+        "systemStatus",
+        "System Settings सुरक्षित गर्न सकिएन। Browser storage खाली छ कि छैन जाँच गर्नुहोस्।",
+        "error"
+      );
+    }
+  }
+
+  function saveAppearance() {
+    const settings = getSettings();
+
+    settings.appearance = {
+      theme: $("theme")?.value === "dark" ? "dark" : "light",
+      accentColor: /^#[0-9a-f]{6}$/i.test(
+        $("accentColor")?.value || ""
+      ) ? $("accentColor").value : "#166534",
+      fontFamily: $("fontFamily")?.value || "Arial, sans-serif",
+      fontSize: ["13", "15", "17", "19"].includes(
+        $("fontSize")?.value
+      ) ? $("fontSize").value : "15"
+    };
+
+    try {
+      writeJSON(SETTINGS_KEY, settings);
+      applyAppearance(settings);
+      showStatus(
+        "appearanceStatus",
+        "Appearance सुरक्षित भयो। अन्य पेजमा पनि saved settings लागू हुनेछ।"
+      );
+    } catch (error) {
+      console.error(error);
+      showStatus(
+        "appearanceStatus",
+        "Appearance सुरक्षित गर्न सकिएन।",
+        "error"
+      );
+    }
+  }
+
+  function resetAppearance() {
+    if (!confirmAction(
+      "Theme, Accent Color र Font लाई Default मा फर्काउने?"
+    )) return;
+
+    const settings = getSettings();
+    settings.appearance = clone(DEFAULT_SETTINGS.appearance);
+
+    try {
+      writeJSON(SETTINGS_KEY, settings);
+      loadSettings();
+      showStatus("appearanceStatus", "Default Appearance लागू भयो।");
+    } catch (error) {
+      console.error(error);
+      showStatus(
+        "appearanceStatus",
+        "Appearance reset गर्न सकिएन।",
+        "error"
+      );
+    }
+  }
+
+  function saveAutoLock() {
+    const settings = getSettings();
+    settings.autoLockMinutes = $("autoLockMinutes")?.value || "5";
+
+    try {
+      writeJSON(SETTINGS_KEY, settings);
+      window.GSAuth?.startTimer?.();
+      showStatus("securityStatus", "Auto Lock सेटिङ सुरक्षित भयो।");
+    } catch (error) {
+      showStatus(
+        "securityStatus",
+        "Auto Lock सुरक्षित गर्न सकिएन।",
+        "error"
+      );
+    }
+  }
+
+  // ---------------- MPIN ----------------
+
   async function hashPin(pin, salt) {
     if (!window.crypto?.subtle) {
       throw new Error(
-        "Secure Crypto उपलब्ध छैन। localhost वा HTTPS प्रयोग गर्नुहोस्।"
+        "Secure Crypto उपलब्ध छैन। HTTPS वा localhost प्रयोग गर्नुहोस्।"
       );
     }
 
-    const data = new TextEncoder().encode(`${salt}:${pin}`);
-    const digest = await window.crypto.subtle.digest("SHA-256", data);
+    const bytes = new TextEncoder().encode(`${salt}:${pin}`);
+    const digest = await window.crypto.subtle.digest("SHA-256", bytes);
 
     return Array.from(new Uint8Array(digest))
       .map(byte => byte.toString(16).padStart(2, "0"))
@@ -190,15 +318,12 @@
   }
 
   function validPin(pin) {
-    return /^[0-9]{4,8}$/.test(pin);
+    return /^[0-9]{4,8}$/.test(String(pin || ""));
   }
 
   function getMpinConfig() {
     const config = readJSON(MPIN_KEY, { enabled: false });
-
-    return config && typeof config === "object"
-      ? config
-      : { enabled: false };
+    return isPlainObject(config) ? config : { enabled: false };
   }
 
   async function verifyPin(pin) {
@@ -223,16 +348,16 @@
     const config = getMpinConfig();
     if (!config.enabled) return true;
 
-    const pin = prompt("आफ्नो हालको MPIN राख्नुहोस्:");
+    const pin = window.prompt("आफ्नो हालको MPIN राख्नुहोस्:");
     if (pin === null) return false;
 
     if (!validPin(pin)) {
-      alert("MPIN ४ देखि ८ अंकको हुनुपर्छ।");
+      window.alert("MPIN ४ देखि ८ अंकको हुनुपर्छ।");
       return false;
     }
 
     if (!(await verifyPin(pin))) {
-      alert("हालको MPIN गलत छ।");
+      window.alert("हालको MPIN गलत छ।");
       return false;
     }
 
@@ -240,19 +365,19 @@
   }
 
   async function askNewPin() {
-    const pin = prompt("नयाँ MPIN राख्नुहोस् (४–८ अंक):");
+    const pin = window.prompt("नयाँ MPIN राख्नुहोस् (४–८ अंक):");
     if (pin === null) return null;
 
     if (!validPin(pin)) {
-      alert("MPIN मा ४ देखि ८ वटा अंक मात्र राख्नुहोस्।");
+      window.alert("MPIN मा ४ देखि ८ वटा अंक मात्र राख्नुहोस्।");
       return null;
     }
 
-    const confirmation = prompt("नयाँ MPIN फेरि राख्नुहोस्:");
+    const confirmation = window.prompt("नयाँ MPIN फेरि राख्नुहोस्:");
     if (confirmation === null) return null;
 
     if (pin !== confirmation) {
-      alert("दुवै MPIN मिलेनन्।");
+      window.alert("दुवै MPIN मिलेनन्।");
       return null;
     }
 
@@ -280,12 +405,16 @@
       });
 
       updateMpinStatus();
-      showStatus("securityStatus", "MPIN सक्रिय भयो। एप लक हुँदैछ।");
+      showStatus("securityStatus", "MPIN सक्रिय भयो।");
 
       if (window.GSAuth?.lock) {
         window.GSAuth.lock();
       } else {
-        alert("MPIN सुरक्षित भयो। सबै पेजमा auth.js जोड्नुहोस्।");
+        showStatus(
+          "securityStatus",
+          "MPIN सुरक्षित भयो। सबै आवश्यक पेजमा auth.js लोड भएको छ कि जाँच गर्नुहोस्。",
+          "info"
+        );
       }
     } catch (error) {
       console.error(error);
@@ -345,9 +474,9 @@
 
       if (!(await askAndVerifyCurrentPin())) return;
 
-      if (!confirmAction("MPIN बन्द गर्ने? त्यसपछि PIN सुरक्षा हट्नेछ।")) {
-        return;
-      }
+      if (!confirmAction(
+        "MPIN बन्द गर्ने? त्यसपछि PIN सुरक्षा हट्नेछ।"
+      )) return;
 
       localStorage.removeItem(MPIN_KEY);
       updateMpinStatus();
@@ -377,111 +506,17 @@
         : "🔐 Set / Enable MPIN";
     }
 
-    const changeButton = $("changeMpinBtn");
-    if (changeButton) changeButton.disabled = !enabled;
-
-    const disableButton = $("disableMpinBtn");
-    if (disableButton) disableButton.disabled = !enabled;
-  }
-
-  function saveSystemSettings(event) {
-    event.preventDefault();
-
-    const settings = getSettings();
-
-    settings.currency = $("currency").value;
-    settings.dateFormat = $("dateFormat").value;
-    settings.invoicePrefix = $("invoicePrefix").value.trim() || "INV";
-    settings.purchasePrefix = $("purchasePrefix").value.trim() || "PUR";
-    settings.defaultPayment = $("defaultPayment").value;
-
-    try {
-      writeJSON(SETTINGS_KEY, settings);
-      showStatus("systemStatus", "System Settings सुरक्षित भयो।");
-    } catch (error) {
-      console.error(error);
-      showStatus(
-        "systemStatus",
-        "System Settings सुरक्षित गर्न सकिएन।",
-        "error"
-      );
-    }
-  }
-
-  function saveAppearance() {
-    const settings = getSettings();
-
-    settings.appearance = {
-      theme: $("theme").value,
-      accentColor: $("accentColor").value,
-      fontFamily: $("fontFamily").value,
-      fontSize: $("fontSize").value
-    };
-
-    try {
-      writeJSON(SETTINGS_KEY, settings);
-      applyAppearance(settings);
-      showStatus(
-        "appearanceStatus",
-        "Appearance सुरक्षित भयो र यो पेजमा लागू गरियो।"
-      );
-    } catch (error) {
-      console.error(error);
-      showStatus(
-        "appearanceStatus",
-        "Appearance सुरक्षित गर्न सकिएन।",
-        "error"
-      );
-    }
-  }
-
-  function resetAppearance() {
-    if (!confirmAction(
-      "Theme, Accent Color र Font लाई Default मा फर्काउने?"
-    )) return;
-
-    const settings = getSettings();
-    settings.appearance = { ...DEFAULT_SETTINGS.appearance };
-
-    try {
-      writeJSON(SETTINGS_KEY, settings);
-
-      $("theme").value = settings.appearance.theme;
-      $("accentColor").value = settings.appearance.accentColor;
-      $("fontFamily").value = settings.appearance.fontFamily;
-      $("fontSize").value = settings.appearance.fontSize;
-
-      applyAppearance(settings);
-      showStatus("appearanceStatus", "Default Appearance लागू भयो।");
-    } catch (error) {
-      showStatus(
-        "appearanceStatus",
-        "Appearance reset गर्न सकिएन।",
-        "error"
-      );
-    }
-  }
-
-  function saveAutoLock() {
-    const settings = getSettings();
-    settings.autoLockMinutes = $("autoLockMinutes").value;
-
-    try {
-      writeJSON(SETTINGS_KEY, settings);
-      window.GSAuth?.startTimer?.();
-      showStatus("securityStatus", "Auto Lock सेटिङ सुरक्षित भयो।");
-    } catch (error) {
-      showStatus(
-        "securityStatus",
-        "Auto Lock सुरक्षित गर्न सकिएन।",
-        "error"
-      );
-    }
+    if ($("changeMpinBtn")) $("changeMpinBtn").disabled = !enabled;
+    if ($("disableMpinBtn")) $("disableMpinBtn").disabled = !enabled;
   }
 
   function lockNow() {
     if (!getMpinConfig().enabled) {
-      showStatus("securityStatus", "पहिले MPIN Enable गर्नुहोस्।", "info");
+      showStatus(
+        "securityStatus",
+        "पहिले MPIN Enable गर्नुहोस्।",
+        "info"
+      );
       return;
     }
 
@@ -492,9 +527,10 @@
     }
   }
 
+  // ---------------- Backup / Restore ----------------
+
   function getLocalDateStamp() {
     const d = new Date();
-
     return [
       d.getFullYear(),
       String(d.getMonth() + 1).padStart(2, "0"),
@@ -517,22 +553,49 @@
     a.click();
     a.remove();
 
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function getCounterKeys() {
+    const keys = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+
+      // Preserve existing daily invoice/purchase sequence keys.
+      if (
+        key.startsWith("gs_invoice_counter_") ||
+        key.startsWith("gs_purchase_counter_") ||
+        key.startsWith("gs_purchase_counter-") ||
+        key.startsWith("gs_invoice_counter-")
+      ) {
+        keys.push(key);
+      }
+    }
+
+    return keys;
   }
 
   function collectBackupData() {
     const data = {};
 
-    for (const key of STORE_DATA_KEYS) {
-      data[key] = readJSON(key, []);
-    }
+    STORE_DATA_KEYS.forEach(key => {
+      const value = readJSON(key, []);
+      data[key] = value;
+    });
 
-    // Preserve the full settings object, including Store Profile.
+    // Preserve the complete settings object, including Store Profile.
     data[SETTINGS_KEY] = getSettings();
+
+    // Keep bill numbering sequences so restoring does not reset counters.
+    getCounterKeys().forEach(key => {
+      data[key] = readJSON(key, null);
+    });
 
     return {
       app: "General Store Management System",
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       data
     };
@@ -540,9 +603,11 @@
 
   function exportBackup() {
     try {
+      const backup = collectBackupData();
+
       downloadJSON(
         `general-store-backup-${getLocalDateStamp()}.json`,
-        collectBackupData()
+        backup
       );
 
       localStorage.setItem(LAST_BACKUP_KEY, new Date().toISOString());
@@ -550,18 +615,23 @@
       showStatus("backupStatus", "Backup डाउनलोड भयो।");
     } catch (error) {
       console.error(error);
-      showStatus("backupStatus", "Backup बनाउन सकिएन।", "error");
+      showStatus(
+        "backupStatus",
+        "Backup बनाउन सकिएन। Browser storage वा download अनुमति जाँच गर्नुहोस्।",
+        "error"
+      );
     }
   }
 
-  function isPlainObject(value) {
-    return value !== null &&
-      typeof value === "object" &&
-      !Array.isArray(value);
+  function validateStoreValue(key, value) {
+    if (key === SETTINGS_KEY) return isPlainObject(value);
+    if (key === "gs_sales_returns") return Array.isArray(value);
+    return Array.isArray(value);
   }
 
   async function restoreBackup() {
-    const file = $("restoreFile").files[0];
+    const fileInput = $("restoreFile");
+    const file = fileInput?.files?.[0];
 
     if (!file) {
       showStatus(
@@ -590,98 +660,244 @@
     }
 
     if (window.GSAuth?.getConfig?.().enabled) {
-      const pin = prompt("Restore गर्न आफ्नो MPIN राख्नुहोस्:");
+      const pin = window.prompt("Restore गर्न आफ्नो MPIN राख्नुहोस्:");
       if (pin === null) return;
 
       if (!validPin(pin) || !(await verifyPin(pin))) {
-        showStatus("backupStatus", "MPIN गलत छ। Restore रोकियो।", "error");
+        showStatus(
+          "backupStatus",
+          "MPIN गलत छ। Restore रोकियो।",
+          "error"
+        );
         return;
       }
     }
 
     if (!confirmAction(
-      "Restore गर्दा हालको Store Data प्रतिस्थापन हुनेछ। जारी राख्ने?"
+      "Restore गर्दा backup मा भएका Store Data प्रतिस्थापन हुनेछ। पहिले हालको डेटा backup गरेको निश्चित हुनुहोस्। जारी राख्ने?"
     )) return;
 
+    const updates = {};
+    const oldValues = {};
+
     try {
-      const updates = {};
-
+      // Validate all supplied data before writing anything.
       for (const key of STORE_DATA_KEYS) {
-        const value = backup.data[key] ?? [];
+        if (!(key in backup.data)) {
+          // Older backups may not include newly supported keys.
+          // Keep existing data for absent keys instead of deleting it.
+          continue;
+        }
 
-        if (!Array.isArray(value)) {
+        const value = backup.data[key];
+
+        if (!validateStoreValue(key, value)) {
           throw new Error(`Backup मा ${key} को data मान्य छैन।`);
         }
 
         updates[key] = JSON.stringify(value);
       }
 
-      if (backup.data[SETTINGS_KEY] !== undefined) {
+      if (SETTINGS_KEY in backup.data) {
         if (!isPlainObject(backup.data[SETTINGS_KEY])) {
           throw new Error("Backup Settings data मान्य छैन।");
         }
 
+        const incoming = backup.data[SETTINGS_KEY];
+        const current = getSettings();
+
         updates[SETTINGS_KEY] = JSON.stringify({
-          ...getSettings(),
-          ...backup.data[SETTINGS_KEY],
+          ...current,
+          ...incoming,
           appearance: {
-            ...getSettings().appearance,
-            ...(backup.data[SETTINGS_KEY].appearance || {})
+            ...current.appearance,
+            ...(isPlainObject(incoming.appearance)
+              ? incoming.appearance
+              : {})
           }
         });
       }
 
-      Object.entries(updates).forEach(([key, value]) => {
-        localStorage.setItem(key, value);
+      // Restore counter keys stored inside the backup data.
+      Object.keys(backup.data).forEach(key => {
+        if (
+          key.startsWith("gs_invoice_counter_") ||
+          key.startsWith("gs_purchase_counter_") ||
+          key.startsWith("gs_purchase_counter-") ||
+          key.startsWith("gs_invoice_counter-")
+        ) {
+          const value = backup.data[key];
+
+          if (
+            value === null ||
+            ["string", "number", "boolean"].includes(typeof value)
+          ) {
+            updates[key] = JSON.stringify(value);
+          }
+        }
       });
 
+      // Snapshot current values for rollback if a write fails.
+      Object.keys(updates).forEach(key => {
+        oldValues[key] = localStorage.getItem(key);
+      });
+
+      try {
+        Object.entries(updates).forEach(([key, value]) => {
+          localStorage.setItem(key, value);
+        });
+      } catch (writeError) {
+        Object.entries(oldValues).forEach(([key, oldValue]) => {
+          try {
+            if (oldValue === null) {
+              localStorage.removeItem(key);
+            } else {
+              localStorage.setItem(key, oldValue);
+            }
+          } catch (rollbackError) {
+            console.error("Restore rollback failed:", key, rollbackError);
+          }
+        });
+
+        throw writeError;
+      }
+
       loadSettings();
-      showStatus("backupStatus", "Backup सफलतापूर्वक Restore भयो।");
-      $("restoreFile").value = "";
+      showStatus(
+        "backupStatus",
+        "Backup सफलतापूर्वक Restore भयो। पुरानो format का backup मा नभएका नयाँ keys सुरक्षित राखिएका छन्।"
+      );
+
+      if (fileInput) fileInput.value = "";
     } catch (error) {
       console.error(error);
       showStatus(
         "backupStatus",
-        error.message || "Restore असफल भयो।",
+        error.message || "Restore असफल भयो। कुनै परिवर्तन लागू हुन सकेन।",
         "error"
       );
     }
   }
 
   async function clearAllData() {
-    if (getMpinConfig().enabled && !(await askAndVerifyCurrentPin())) {
+    if (
+      getMpinConfig().enabled &&
+      !(await askAndVerifyCurrentPin())
+    ) {
       return;
     }
 
     if (!confirmAction(
-      "चेतावनी: सबै स्टोर डेटा मेटाइनेछ। Settings र MPIN सुरक्षित रहनेछन्। जारी राख्ने?"
+      "चेतावनी: बिक्री, खरिद, स्टक लट, Sales Return, ग्राहक, सप्लायर र Finance डेटा खाली गरिनेछ। Settings र MPIN सुरक्षित रहनेछन्। अगाडि बढ्ने?"
     )) return;
 
+    const oldValues = {};
+
     try {
-      STORE_DATA_KEYS.forEach(key => localStorage.setItem(key, "[]"));
+      STORE_DATA_KEYS.forEach(key => {
+        oldValues[key] = localStorage.getItem(key);
+      });
+
+      try {
+        STORE_DATA_KEYS.forEach(key => {
+          localStorage.setItem(key, "[]");
+        });
+      } catch (writeError) {
+        Object.entries(oldValues).forEach(([key, oldValue]) => {
+          try {
+            if (oldValue === null) {
+              localStorage.removeItem(key);
+            } else {
+              localStorage.setItem(key, oldValue);
+            }
+          } catch (rollbackError) {
+            console.error("Clear rollback failed:", key, rollbackError);
+          }
+        });
+
+        throw writeError;
+      }
 
       showStatus(
         "backupStatus",
-        "Store Data हटाइयो। Settings र MPIN सुरक्षित छन्।"
+        "Store Data खाली गरियो। Settings, Store Profile, bill counters र MPIN सुरक्षित छन्।"
       );
     } catch (error) {
+      console.error(error);
       showStatus(
         "backupStatus",
-        "डेटा हटाउने प्रक्रिया असफल भयो।",
+        "डेटा खाली गर्ने प्रक्रिया असफल भयो। Storage space जाँच गर्नुहोस्।",
         "error"
       );
     }
   }
 
+  function updateLastBackup() {
+    const value = localStorage.getItem(LAST_BACKUP_KEY);
+    const element = $("lastBackupText");
+    if (!element) return;
+
+    if (!value) {
+      element.textContent = "अन्तिम Backup: अहिलेसम्म रेकर्ड छैन।";
+      return;
+    }
+
+    const date = new Date(value);
+    element.textContent = Number.isNaN(date.getTime())
+      ? "अन्तिम Backup: मिति पढ्न सकिएन।"
+      : "अन्तिम Backup: " + date.toLocaleString();
+  }
+
+  function showStorageInfo() {
+    let total = 0;
+    const keys = [
+      ...STORE_DATA_KEYS,
+      SETTINGS_KEY,
+      MPIN_KEY,
+      FEEDBACK_KEY,
+      LAST_BACKUP_KEY,
+      ...getCounterKeys()
+    ];
+
+    const uniqueKeys = [...new Set(keys)];
+    const lines = [];
+
+    uniqueKeys.forEach(key => {
+      const raw = localStorage.getItem(key);
+      const bytes = raw ? new Blob([raw]).size : 0;
+      total += bytes;
+
+      lines.push(
+        `${key}: ${
+          raw === null
+            ? "डेटा छैन"
+            : bytes.toLocaleString() + " bytes"
+        }`
+      );
+    });
+
+    showStatus(
+      "aboutStatus",
+      `अनुमानित प्रयोग: ${(total / 1024).toFixed(2)} KB\n${lines.join("\n")}`,
+      "info"
+    );
+  }
+
+  // ---------------- Feedback ----------------
+
   function saveFeedback(event) {
     event.preventDefault();
 
-    const type = $("feedbackType").value;
-    const contact = $("feedbackContact").value.trim();
-    const message = $("feedbackMessage").value.trim();
+    const type = $("feedbackType")?.value || "Other";
+    const contact = $("feedbackContact")?.value.trim() || "";
+    const message = $("feedbackMessage")?.value.trim() || "";
 
     if (!message) {
-      showStatus("feedbackStatus", "Feedback विवरण लेख्नुहोस्।", "error");
+      showStatus(
+        "feedbackStatus",
+        "Feedback विवरण लेख्नुहोस्।",
+        "error"
+      );
       return;
     }
 
@@ -696,8 +912,8 @@
     const mailtoLink =
       `mailto:support@kamalgc.com.np?subject=${subject}&body=${body}`;
 
-    const list = readJSON(FEEDBACK_KEY, []);
-    const feedback = Array.isArray(list) ? list : [];
+    const saved = readJSON(FEEDBACK_KEY, []);
+    const feedback = Array.isArray(saved) ? saved : [];
 
     feedback.push({
       id: "FB-" + Date.now(),
@@ -709,7 +925,7 @@
 
     try {
       writeJSON(FEEDBACK_KEY, feedback);
-      $("feedbackForm").reset();
+      $("feedbackForm")?.reset();
 
       showStatus(
         "feedbackStatus",
@@ -719,7 +935,11 @@
       window.location.href = mailtoLink;
     } catch (error) {
       console.error(error);
-      showStatus("feedbackStatus", "Feedback सुरक्षित गर्न सकिएन।", "error");
+      showStatus(
+        "feedbackStatus",
+        "Feedback सुरक्षित गर्न सकिएन।",
+        "error"
+      );
     }
   }
 
@@ -735,59 +955,28 @@
       return;
     }
 
-    downloadJSON(
-      `general-store-feedback-${getLocalDateStamp()}.json`,
-      {
-        app: "General Store",
-        exportedAt: new Date().toISOString(),
-        feedback
-      }
-    );
+    try {
+      downloadJSON(
+        `general-store-feedback-${getLocalDateStamp()}.json`,
+        {
+          app: "General Store",
+          exportedAt: new Date().toISOString(),
+          feedback
+        }
+      );
 
-    showStatus("feedbackStatus", "Feedback JSON फाइल Export गरियो।");
-  }
-
-  function updateLastBackup() {
-    const value = localStorage.getItem(LAST_BACKUP_KEY);
-    const element = $("lastBackupText");
-    if (!element) return;
-
-    if (!value) {
-      element.textContent = "अन्तिम Backup: अहिलेसम्म रेकर्ड छैन।";
-      return;
+      showStatus("feedbackStatus", "Feedback JSON फाइल Export गरियो।");
+    } catch (error) {
+      console.error(error);
+      showStatus(
+        "feedbackStatus",
+        "Feedback Export गर्न सकिएन।",
+        "error"
+      );
     }
-
-    const date = new Date(value);
-
-    element.textContent = Number.isNaN(date.getTime())
-      ? "अन्तिम Backup: मिति पढ्न सकिएन।"
-      : "अन्तिम Backup: " + date.toLocaleString();
   }
 
-  function showStorageInfo() {
-    let total = 0;
-    const lines = [];
-
-    [...STORE_DATA_KEYS, SETTINGS_KEY, MPIN_KEY, FEEDBACK_KEY]
-      .forEach(key => {
-        const raw = localStorage.getItem(key);
-        const bytes = raw ? new Blob([raw]).size : 0;
-
-        total += bytes;
-
-        lines.push(
-          `${key}: ${raw === null
-            ? "डेटा छैन"
-            : bytes.toLocaleString() + " bytes"}`
-        );
-      });
-
-    showStatus(
-      "aboutStatus",
-      `अनुमानित प्रयोग: ${(total / 1024).toFixed(2)} KB\n${lines.join("\n")}`,
-      "info"
-    );
-  }
+  // ---------------- Initialization ----------------
 
   function initialize() {
     $("systemForm")?.addEventListener("submit", saveSystemSettings);
