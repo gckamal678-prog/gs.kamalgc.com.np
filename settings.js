@@ -158,8 +158,7 @@
     setValue("fontFamily", settings.appearance.fontFamily);
     setValue("fontSize", settings.appearance.fontSize);
 
-    // These fields will be added in the next settings.html replacement.
-    // Optional selectors allow this file to work with the current HTML too.
+    // Optional fields support the current HTML and the upcoming replacement.
     [
       "storeName",
       "ownerName",
@@ -181,7 +180,7 @@
     const prefix = String(value || "")
       .trim()
       .replace(/\s+/g, "-")
-      .replace(/[^\p{L}\p{N_-]/gu, "")
+      .replace(/[^\p{L}\p{N}_-]/gu, "")
       .slice(0, 12);
 
     return prefix || fallback;
@@ -279,6 +278,7 @@
       window.GSAuth?.startTimer?.();
       showStatus("securityStatus", "Auto Lock सेटिङ सुरक्षित भयो।");
     } catch (error) {
+      console.error(error);
       showStatus(
         "securityStatus",
         "Auto Lock सुरक्षित गर्न सकिएन।",
@@ -412,7 +412,7 @@
       } else {
         showStatus(
           "securityStatus",
-          "MPIN सुरक्षित भयो। सबै आवश्यक पेजमा auth.js लोड भएको छ कि जाँच गर्नुहोस्。",
+          "MPIN सुरक्षित भयो। सबै आवश्यक पेजमा auth.js लोड भएको छ कि जाँच गर्नुहोस्।",
           "info"
         );
       }
