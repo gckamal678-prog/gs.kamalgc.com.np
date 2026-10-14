@@ -2,7 +2,7 @@
 /* =========================================================
    GS GENERAL STORE — REPORTS.JS
    FULL REPLACEMENT
-   Compatible with current reports.html
+   Clean Appearance + Store Profile PDF Header/Footer
 ========================================================= */
 (() => {
   "use strict";
@@ -17,13 +17,13 @@
     settings: "gs_settings"
   };
 
-  const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 
   let fromDate = "";
   let toDate = "";
 
-  /* ---------------- STORAGE ---------------- */
+  /* ---------- STORAGE ---------- */
 
   function read(key, fallback = []) {
     try {
@@ -45,8 +45,8 @@
     if (Array.isArray(value)) return value;
 
     if (value && typeof value === "object") {
-      for (const prop of ["data", "items", "records", "list"]) {
-        if (Array.isArray(value[prop])) return value[prop];
+      for (const k of ["data", "items", "records", "list"]) {
+        if (Array.isArray(value[k])) return value[k];
       }
     }
 
@@ -106,15 +106,15 @@
     ).toUpperCase();
 
     const symbols = {
-      NPR: "Rs. ",
-      RS: "Rs. ",
+      NPR: "Rs.",
+      RS: "Rs.",
       INR: "₹",
       USD: "$",
       GBP: "£",
       EUR: "€"
     };
 
-    return (symbols[currency] || currency + " ") +
+    return (symbols[currency] || currency) + " " +
       num(value).toLocaleString("en-IN", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
@@ -204,7 +204,101 @@
     ));
   }
 
-  /* ---------------- UI HELPERS ---------------- */
+  /* ---------- PAGE APPEARANCE ---------- */
+
+  function applyReportAppearance() {
+    if ($("#gsReportAppearance")) return;
+
+    const style = document.createElement("style");
+    style.id = "gsReportAppearance";
+
+    style.textContent = `
+      html, body {
+        background: #f3f6fa !important;
+        color: #172033 !important;
+      }
+
+      .report-wrap {
+        color: #172033 !important;
+      }
+
+      .report-card,
+      .report-stat,
+      .report-tabs,
+      .report-table,
+      .report-field input,
+      .profit-item {
+        background: #ffffff !important;
+        color: #172033 !important;
+      }
+
+      .report-card,
+      .report-stat,
+      .report-tabs,
+      .report-table-wrap,
+      .report-table td,
+      .report-table th {
+        border-color: #d8e0e8 !important;
+      }
+
+      .report-table th {
+        background: #17683a !important;
+        color: #ffffff !important;
+      }
+
+      .report-table td {
+        color: #172033 !important;
+      }
+
+      .report-table tbody tr:nth-child(even) td {
+        background: #f0f7f2 !important;
+      }
+
+      .report-tab {
+        color: #475569 !important;
+      }
+
+      .report-tab.active {
+        background: #17683a !important;
+        color: #ffffff !important;
+      }
+
+      .stat-label,
+      .stat-note,
+      .report-period,
+      .report-help,
+      .report-count,
+      .report-field label,
+      .profit-item span {
+        color: #64748b !important;
+      }
+
+      .stat-value,
+      .profit-item strong,
+      .report-panel-header h2 {
+        color: #172033 !important;
+      }
+
+      .report-btn:not(.primary) {
+        background: #ffffff !important;
+        color: #172033 !important;
+      }
+
+      .report-btn.primary {
+        background: #17683a !important;
+        color: #ffffff !important;
+      }
+
+      .report-table td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  /* ---------- UI HELPERS ---------- */
 
   function setText(id, text) {
     const element = document.getElementById(id);
@@ -217,11 +311,14 @@
 
     body.innerHTML = rows.length
       ? rows.join("")
-      : `<tr><td class="report-empty" colspan="${colspan}">${esc(emptyText)}</td></tr>`;
+      : `<tr><td class="report-empty" colspan="${colspan}">
+           ${esc(emptyText)}
+         </td></tr>`;
   }
 
   function showError(message) {
     const box = $("#reportError");
+
     if (!box) return;
 
     box.textContent = message;
@@ -230,6 +327,7 @@
 
   function clearError() {
     const box = $("#reportError");
+
     if (!box) return;
 
     box.textContent = "";
@@ -240,7 +338,7 @@
     setText(id, `${count} ${label}`);
   }
 
-  /* ---------------- SALES REPORT ---------------- */
+  /* ---------- SALES REPORT ---------- */
 
   function renderSales() {
     const sales = filtered(KEY.sales).slice().sort(
@@ -259,14 +357,17 @@
         rows.push(`
           <tr>
             <td>${esc(dateOf(sale) || "—")}</td>
-            <td>${esc(val(sale, ["billNumber", "invoiceNumber", "invoiceNo", "id"], "—"))}</td>
-            <td>${esc(val(sale, ["customerName", "customer"], "Cash Customer"))}</td>
-            <td>${esc(val(item, ["productName", "name"], "Product"))}</td>
+            <td>${esc(val(sale,
+              ["billNumber", "invoiceNumber", "invoiceNo", "id"], "—"))}</td>
+            <td>${esc(val(sale,
+              ["customerName", "customer"], "Cash Customer"))}</td>
+            <td>${esc(val(item,
+              ["productName", "name"], "Product"))}</td>
             <td>${esc(val(item, ["barcode"], "—"))}</td>
-            <td>${num(val(item, ["qty", "quantity"], 0))}</td>
-            <td>${money(index === 0 ? amountOf(sale) : 0)}</td>
-            <td>${money(index === 0 ? paidOf(sale) : 0)}</td>
-            <td>${money(index === 0 ? dueOf(sale) : 0)}</td>
+            <td class="num">${num(val(item, ["qty", "quantity"], 0))}</td>
+            <td class="num">${money(index === 0 ? amountOf(sale) : 0)}</td>
+            <td class="num">${money(index === 0 ? paidOf(sale) : 0)}</td>
+            <td class="num">${money(index === 0 ? dueOf(sale) : 0)}</td>
           </tr>
         `);
       });
@@ -284,7 +385,7 @@
     return sales;
   }
 
-  /* ---------------- PURCHASE REPORT ---------------- */
+  /* ---------- PURCHASE REPORT ---------- */
 
   function renderPurchases() {
     const purchases = filtered(KEY.purchases).slice().sort(
@@ -303,13 +404,18 @@
         rows.push(`
           <tr>
             <td>${esc(dateOf(purchase) || "—")}</td>
-            <td>${esc(val(purchase, ["billNumber", "invoiceNumber", "id"], "—"))}</td>
-            <td>${esc(val(purchase, ["supplierName", "supplier"], "—"))}</td>
-            <td>${esc(val(item, ["productName", "name"], "Product"))}</td>
-            <td>${num(val(item, ["qty", "quantity", "totalReceivedQty"], 0))}</td>
-            <td>${money(val(item, ["rate", "purchasePrice", "effectiveCost"], 0))}</td>
-            <td>${money(index === 0 ? amountOf(purchase) : 0)}</td>
-            <td>${money(index === 0 ? paidOf(purchase) : 0)}</td>
+            <td>${esc(val(purchase,
+              ["billNumber", "invoiceNumber", "id"], "—"))}</td>
+            <td>${esc(val(purchase,
+              ["supplierName", "supplier"], "—"))}</td>
+            <td>${esc(val(item,
+              ["productName", "name"], "Product"))}</td>
+            <td class="num">${num(val(item,
+              ["qty", "quantity", "totalReceivedQty"], 0))}</td>
+            <td class="num">${money(val(item,
+              ["rate", "purchasePrice", "effectiveCost"], 0))}</td>
+            <td class="num">${money(index === 0 ? amountOf(purchase) : 0)}</td>
+            <td class="num">${money(index === 0 ? paidOf(purchase) : 0)}</td>
           </tr>
         `);
       });
@@ -327,7 +433,7 @@
     return purchases;
   }
 
-  /* ---------------- STOCK REPORT ---------------- */
+  /* ---------- STOCK REPORT ---------- */
 
   function renderStock() {
     const products = list(KEY.products).slice().sort(
@@ -368,10 +474,10 @@
           <td>${esc(val(product, ["barcode", "sku"], "—"))}</td>
           <td>${esc(val(product, ["category", "categoryName"], "—"))}</td>
           <td>${esc(val(product, ["unit"], "Unit"))}</td>
-          <td>${stock.toLocaleString("en-IN")}</td>
-          <td>${money(cost)}</td>
-          <td>${money(price)}</td>
-          <td>${money(stock * cost)}</td>
+          <td class="num">${stock.toLocaleString("en-IN")}</td>
+          <td class="num">${money(cost)}</td>
+          <td class="num">${money(price)}</td>
+          <td class="num">${money(stock * cost)}</td>
           <td>${status}</td>
         </tr>
       `;
@@ -379,11 +485,9 @@
 
     setBody("stockReportBody", rows, 9, "Product विवरण भेटिएन।");
     setCount("stockReportCount", products.length, "products");
-
-    return products;
   }
 
-  /* ---------------- CUSTOMER REPORT ---------------- */
+  /* ---------- CUSTOMER REPORT ---------- */
 
   function renderCustomers() {
     const customers = list(KEY.customers);
@@ -422,25 +526,19 @@
         <tr>
           <td>${esc(name)}</td>
           <td>${esc(val(customer, ["phone", "mobile", "contact"], "—"))}</td>
-          <td>${money(opening)}</td>
-          <td>${money(credit)}</td>
-          <td>${money(payments)}</td>
-          <td>${money(balance)}</td>
+          <td class="num">${money(opening)}</td>
+          <td class="num">${money(credit)}</td>
+          <td class="num">${money(payments)}</td>
+          <td class="num">${money(balance)}</td>
         </tr>
       `;
     });
 
-    setBody(
-      "customerReportBody",
-      rows,
-      6,
-      "Customer विवरण भेटिएन।"
-    );
-
+    setBody("customerReportBody", rows, 6, "Customer विवरण भेटिएन।");
     setCount("customerReportCount", customers.length, "customers");
   }
 
-  /* ---------------- SUPPLIER REPORT ---------------- */
+  /* ---------- SUPPLIER REPORT ---------- */
 
   function renderSuppliers() {
     const suppliers = list(KEY.suppliers);
@@ -479,25 +577,19 @@
         <tr>
           <td>${esc(name)}</td>
           <td>${esc(val(supplier, ["phone", "mobile", "contact"], "—"))}</td>
-          <td>${money(opening)}</td>
-          <td>${money(total)}</td>
-          <td>${money(payments)}</td>
-          <td>${money(balance)}</td>
+          <td class="num">${money(opening)}</td>
+          <td class="num">${money(total)}</td>
+          <td class="num">${money(payments)}</td>
+          <td class="num">${money(balance)}</td>
         </tr>
       `;
     });
 
-    setBody(
-      "supplierReportBody",
-      rows,
-      6,
-      "Supplier विवरण भेटिएन।"
-    );
-
+    setBody("supplierReportBody", rows, 6, "Supplier विवरण भेटिएन।");
     setCount("supplierReportCount", suppliers.length, "suppliers");
   }
 
-  /* ---------------- PROFIT & LOSS ---------------- */
+  /* ---------- PROFIT & LOSS ---------- */
 
   function renderProfit(sales, purchases) {
     const finance = filtered(KEY.finance);
@@ -548,16 +640,13 @@
       );
     }, 0);
 
-    const totalSales = sales.reduce(
-      (sum, sale) => sum + amountOf(sale), 0
+    setText("reportSales", money(revenue));
+
+    setText(
+      "reportPurchases",
+      money(purchases.reduce((sum, p) => sum + amountOf(p), 0))
     );
 
-    const totalPurchases = purchases.reduce(
-      (sum, purchase) => sum + amountOf(purchase), 0
-    );
-
-    setText("reportSales", money(totalSales));
-    setText("reportPurchases", money(totalPurchases));
     setText("reportExpenses", money(expenses));
     setText("reportGrossProfit", money(gross));
 
@@ -570,13 +659,14 @@
     const warning = $("#profitWarning");
 
     if (warning) {
-      warning.textContent = sales.length && !hasCost && savedProfit === 0
-        ? "चेतावनी: बिक्रीको लागत वा Profit विवरण उपलब्ध छैन। Gross Profit सही नहुन सक्छ।"
-        : "";
+      warning.textContent =
+        sales.length && !hasCost && savedProfit === 0
+          ? "चेतावनी: बिक्रीको लागत वा Profit विवरण उपलब्ध छैन। Gross Profit सही नहुन सक्छ।"
+          : "";
     }
   }
 
-  /* ---------------- MAIN RENDER ---------------- */
+  /* ---------- RENDER ALL ---------- */
 
   function renderAll() {
     clearError();
@@ -604,7 +694,7 @@
     }
   }
 
-  /* ---------------- TAB FIX ---------------- */
+  /* ---------- REPORT TABS ---------- */
 
   function setActiveTab(target) {
     $$("[data-report-tab]").forEach(tab => {
@@ -627,7 +717,7 @@
     });
   }
 
-  /* ---------------- DATE FILTERS ---------------- */
+  /* ---------- DATE FILTER ---------- */
 
   function bindFilters() {
     const from = $("#reportFromDate");
@@ -658,7 +748,354 @@
     $("#refreshReportsBtn")?.addEventListener("click", renderAll);
   }
 
-  /* ---------------- PRINT / SAVE PDF ---------------- */
+  /* ---------- STORE PROFILE FOR PDF ---------- */
+
+  function storeProfile() {
+    const s = settings();
+    const first = keys => String(val(s, keys, "")).trim();
+
+    return {
+      name: first([
+        "storeName", "businessName", "name", "shopName"
+      ]) || "General Store",
+
+      owner: first([
+        "ownerName", "proprietorName", "owner", "operatorName"
+      ]),
+
+      address: first([
+        "storeAddress", "address", "businessAddress", "shopAddress"
+      ]),
+
+      phone: first([
+        "storePhone", "phone", "mobile", "contactNumber", "businessPhone"
+      ]),
+
+      email: first([
+        "storeEmail", "email", "businessEmail"
+      ]),
+
+      tax: first([
+        "taxNumber", "panNumber", "vatNumber", "pan", "vat", "taxId"
+      ]),
+
+      footer: first([
+        "invoiceFooter", "receiptFooter", "footerText"
+      ]) || "हाम्रो पसलमा आउनुभएकोमा धन्यवाद!"
+    };
+  }
+
+  function profileLines(p) {
+    return [
+      p.owner
+        ? `<div><b>सञ्चालक:</b> ${esc(p.owner)}</div>`
+        : "",
+      p.address ? `<div>${esc(p.address)}</div>` : "",
+      p.phone ? `<div><b>फोन:</b> ${esc(p.phone)}</div>` : "",
+      p.email ? `<div><b>इमेल:</b> ${esc(p.email)}</div>` : "",
+      p.tax ? `<div><b>PAN/VAT:</b> ${esc(p.tax)}</div>` : ""
+    ].filter(Boolean).join("");
+  }
+
+  /* ---------- PRINT / SAVE PDF ---------- */
+
+  function printCurrentReport(panel) {
+    const profile = storeProfile();
+    const heading = $("h2", panel);
+    const reportName = heading?.textContent?.trim() || "Business Report";
+
+    const dateLabel = fromDate || toDate
+      ? `${fromDate || "—"} देखि ${toDate || "—"}`
+      : "सबै मिति";
+
+    /* Copy only the selected report into the print page. */
+    const content = panel.cloneNode(true);
+
+    content.querySelectorAll(".no-print, .report-print-btn")
+      .forEach(element => element.remove());
+
+    content.hidden = false;
+
+    const table = content.querySelector(".report-table");
+    if (table) table.style.minWidth = "0";
+
+    const win = window.open("", "_blank");
+
+    if (!win) {
+      showError("PDF खोल्न Browser popup अनुमति दिनुहोस्।");
+      return;
+    }
+
+    win.document.open();
+
+    win.document.write(`<!doctype html>
+<html lang="ne">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(profile.name)} - ${esc(reportName)}</title>
+
+<style>
+  @page {
+    size: A4 landscape;
+    margin: 18mm 12mm 18mm;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #fff !important;
+    color: #18212f !important;
+    font-family: Arial, "Noto Sans", sans-serif;
+    font-size: 10px;
+  }
+
+  .paper {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .store-head {
+    text-align: center;
+    border-bottom: 2px solid #17683a;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+
+  .store-head h1 {
+    font-size: 21px;
+    line-height: 1.25;
+    color: #17683a;
+    margin: 0 0 5px;
+  }
+
+  .store-details {
+    font-size: 10px;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .report-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    border-bottom: 1px solid #d1d5db;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+
+  .report-title h2 {
+    font-size: 16px;
+    margin: 0;
+    color: #111827;
+  }
+
+  .period {
+    font-size: 10px;
+    color: #4b5563;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .report-card {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+    color: #111827 !important;
+  }
+
+  .report-panel-header {
+    margin: 0 0 8px !important;
+  }
+
+  .report-panel-header h2 {
+    display: none;
+  }
+
+  .report-count {
+    color: #4b5563 !important;
+  }
+
+  .report-table-wrap {
+    overflow: visible !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .report-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-collapse: collapse !important;
+    font-size: 9px !important;
+    white-space: normal !important;
+    background: #fff !important;
+    color: #111827 !important;
+  }
+
+  .report-table th {
+    background: #17683a !important;
+    color: #fff !important;
+    padding: 7px 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 8px !important;
+  }
+
+  .report-table td {
+    background: #fff !important;
+    color: #111827 !important;
+    padding: 6px !important;
+    border: 1px solid #d1d5db !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  .report-table tbody tr:nth-child(even) td {
+    background: #f1f7f3 !important;
+  }
+
+  .report-empty {
+    text-align: center !important;
+    color: #4b5563 !important;
+  }
+
+  .report-warning {
+    background: #fff7e6 !important;
+    color: #7c5410 !important;
+    border: 1px solid #e7c879 !important;
+    padding: 8px !important;
+  }
+
+  .profit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .profit-item {
+    border: 1px solid #d1d5db !important;
+    background: #fff !important;
+    padding: 10px !important;
+    break-inside: avoid;
+  }
+
+  .profit-item span {
+    color: #4b5563 !important;
+  }
+
+  .profit-item strong {
+    color: #111827 !important;
+  }
+
+  .report-help {
+    color: #4b5563 !important;
+  }
+
+  .num {
+    text-align: right;
+  }
+
+  .thanks {
+    text-align: center;
+    color: #17683a;
+    font-weight: bold;
+    margin-top: 16px;
+    font-size: 10px;
+  }
+
+  .store-foot {
+    position: fixed;
+    bottom: -12mm;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #cbd5e1;
+    padding-top: 5px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 8px;
+    color: #4b5563;
+    background: #fff;
+  }
+
+  .store-foot .pages:after {
+    content: "Page " counter(page);
+  }
+
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    tr {
+      break-inside: avoid;
+    }
+  }
+</style>
+</head>
+
+<body>
+<main class="paper">
+
+  <header class="store-head">
+    <h1>${esc(profile.name)}</h1>
+    <div class="store-details">${profileLines(profile)}</div>
+  </header>
+
+  <section class="report-title">
+    <h2>${esc(reportName)}</h2>
+
+    <div class="period">
+      <b>अवधि:</b> ${esc(dateLabel)}<br>
+      <b>प्रिन्ट मिति:</b>
+      ${esc(new Date().toLocaleDateString("en-GB"))}
+    </div>
+  </section>
+
+  <section class="report-content">
+    ${content.outerHTML}
+  </section>
+
+  <div class="thanks">${esc(profile.footer)}</div>
+
+  <footer class="store-foot">
+    <span>
+      ${esc(profile.name)}
+      ${profile.phone ? " · फोन: " + esc(profile.phone) : ""}
+    </span>
+    <span class="pages"></span>
+  </footer>
+
+</main>
+
+<script>
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      window.focus();
+      window.print();
+    }, 250);
+  });
+<\/script>
+
+</body>
+</html>`);
+
+    win.document.close();
+  }
 
   function addPrintButtons() {
     $$(".report-panel[data-report]").forEach(panel => {
@@ -667,48 +1104,10 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "report-btn report-print-btn no-print";
-      button.textContent = "Print / Save PDF";
+      button.textContent = "🖨️ Print / Save PDF";
 
       button.addEventListener("click", () => {
-        const oldTitle = document.title;
-        const heading = $("h2", panel);
-
-        document.title =
-          "GS General Store - " + (heading?.textContent || "Report");
-
-        const style = document.createElement("style");
-        style.id = "gsReportPrintStyle";
-        style.textContent = `
-          @media print {
-            body * { visibility: hidden !important; }
-            .report-panel:not([hidden]),
-            .report-panel:not([hidden]) * {
-              visibility: visible !important;
-            }
-            .report-panel:not([hidden]) {
-              display: block !important;
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              margin: 0;
-              box-shadow: none;
-            }
-            .no-print { display: none !important; }
-            .report-table {
-              min-width: 0 !important;
-              font-size: 9px !important;
-            }
-          }
-        `;
-
-        document.head.appendChild(style);
-        window.print();
-
-        setTimeout(() => {
-          $("#gsReportPrintStyle")?.remove();
-          document.title = oldTitle;
-        }, 700);
+        printCurrentReport(panel);
       });
 
       const header = $(".report-panel-header", panel);
@@ -717,9 +1116,10 @@
     });
   }
 
-  /* ---------------- INITIALIZE ---------------- */
+  /* ---------- INITIALIZE ---------- */
 
   function init() {
+    applyReportAppearance();
     bindTabs();
     bindFilters();
     addPrintButtons();
@@ -741,7 +1141,8 @@
   window.GSReports = {
     refresh: renderAll,
     render: renderAll,
-    money
+    money,
+    storeProfile
   };
 
   if (document.readyState === "loading") {
