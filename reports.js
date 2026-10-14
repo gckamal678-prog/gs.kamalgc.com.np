@@ -780,7 +780,8 @@ function storeProfile() {
     ]),
 
     logo: first([
-      "storeLogo", "logo", "logoUrl", "photoUrl", "userPhoto"
+  "ownerPhoto", "ownerPhotoUrl", "operatorPhoto", "userPhoto", "photoUrl"
+])
     ]),
 
     footer: first([
