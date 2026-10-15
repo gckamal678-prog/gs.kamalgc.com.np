@@ -820,11 +820,43 @@ function profileLines(p) {
 }
 
 
-/* ---------- PRINT / SAVE REPORT PDF ---------- */
+/* ---------- PRINT / SAVE REPORT PDF - FULL REPLACEMENT ---------- */
 
 function printCurrentReport(panel) {
-  const profile = storeProfile();
+  const win = window.open("", "_blank");
 
+  if (!win) {
+    showError("PDF खोल्न Browser popup अनुमति दिनुहोस्।");
+    return;
+  }
+
+  const s = settings() || {};
+  const read = (...keys) => {
+    for (const key of keys) {
+      const value = s[key];
+      if (value !== undefined && value !== null &&
+          String(value).trim() !== "") {
+        return String(value).trim();
+      }
+    }
+    return "";
+  };
+
+  const profile = {
+    name: read("storeName", "businessName", "name", "shopName")
+      || "General Store",
+    owner: read("ownerName", "proprietorName", "owner", "operatorName"),
+    address: read("storeAddress", "address", "businessAddress", "shopAddress"),
+    phone: read("storePhone", "phone", "mobile", "contactNumber"),
+    email: read("storeEmail", "email", "businessEmail"),
+    taxType: read("taxType") || "VAT",
+    taxNumber: read("taxNumber", "panNumber", "vatNumber", "pan", "vat", "taxId"),
+    photo: read("operatorPhoto", "ownerPhoto", "ownerPhotoUrl", "userPhoto", "photoUrl"),
+    footer: read("invoiceFooter", "receiptFooter", "footerText")
+      || "हाम्रो पसलमा आउनुभएकोमा धन्यवाद!"
+  };
+
+  const safe = value => esc(String(value ?? ""));
   const heading = $("h2", panel);
   const reportName = heading?.textContent?.trim() || "Business Report";
 
@@ -835,22 +867,28 @@ function printCurrentReport(panel) {
   const content = panel.cloneNode(true);
 
   content.querySelectorAll(
-    ".no-print, .report-print-btn"
-  ).forEach(element => element.remove());
+    ".no-print, .report-print-btn, button"
+  ).forEach(el => el.remove());
 
   content.hidden = false;
+  content.removeAttribute("hidden");
 
-  const table = content.querySelector(".report-table");
-  if (table) table.style.minWidth = "0";
+  content.querySelectorAll("[hidden]").forEach(el => {
+    el.hidden = false;
+    el.removeAttribute("hidden");
+  });
 
-  const win = window.open("", "_blank");
+  content.querySelectorAll(
+    ".report-table, table"
+  ).forEach(table => {
+    table.style.setProperty("min-width", "0", "important");
+    table.style.setProperty("width", "100%", "important");
+  });
 
-  if (!win) {
-    showError("PDF खोल्न Browser popup अनुमति दिनुहोस्।");
-    return;
-  }
-
-  const safe = value => esc(String(value ?? ""));
+  const photo = profile.photo
+    ? `<img class="profile-photo" src="${safe(profile.photo)}"
+         alt="Store owner" onerror="this.style.display='none'">`
+    : `<div class="photo-placeholder">👤</div>`;
 
   win.document.open();
 
@@ -859,13 +897,12 @@ function printCurrentReport(panel) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>${safe(profile.name)} - ${safe(reportName)}</title>
 
 <style>
   @page {
     size: A4 portrait;
-    margin: 30mm 10mm 19mm;
+    margin: 10mm;
   }
 
   * {
@@ -878,49 +915,46 @@ function printCurrentReport(panel) {
     margin: 0;
     padding: 0;
     width: 100%;
-    background: #fff;
-    color: #18212f;
     font-family: Arial, "Noto Sans Devanagari", sans-serif;
     font-size: 10px;
+    color: #18212f;
+    background: white;
   }
 
   .paper {
     width: 100%;
-    margin: 0 auto;
+    margin: 0;
+    padding: 27mm 0 15mm;
   }
 
-  /* Header repeats on each printed page. */
   .store-head {
     position: fixed;
-    top: -26mm;
+    top: 0;
     left: 0;
     right: 0;
     height: 24mm;
-    padding-bottom: 2mm;
-    background: #fff;
+    background: white;
     border-bottom: 1.5px solid #17683a;
   }
 
   .profile-header {
-    width: 100%;
-    height: 22mm;
+    height: 23mm;
     display: grid;
     grid-template-columns: 19mm minmax(0, 1fr) minmax(0, 1fr);
+    gap: 3mm;
     align-items: center;
-    column-gap: 4mm;
   }
 
   .profile-photo-box {
     width: 18mm;
     height: 18mm;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     overflow: hidden;
   }
 
-  .profile-photo,
-  .photo-placeholder {
+  .profile-photo, .photo-placeholder {
     width: 18mm;
     height: 18mm;
     border-radius: 50%;
@@ -935,26 +969,22 @@ function printCurrentReport(panel) {
     font-size: 22px;
   }
 
-  .profile-store,
-  .profile-owner {
+  .profile-store, .profile-owner {
     min-width: 0;
-    overflow-wrap: anywhere;
-    line-height: 1.5;
     font-size: 9px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
   }
 
   .store-name {
-    color: #17683a;
     font-size: 13px;
     font-weight: bold;
-    line-height: 1.3;
-    margin-bottom: 2px;
+    color: #17683a;
   }
 
   .owner-name {
     font-size: 11px;
     font-weight: bold;
-    margin-bottom: 2px;
   }
 
   .report-title {
@@ -962,39 +992,42 @@ function printCurrentReport(panel) {
     justify-content: space-between;
     align-items: flex-end;
     gap: 8px;
-    padding-bottom: 7px;
-    margin-bottom: 10px;
     border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   .report-title h2 {
     margin: 0;
-    font-size: 15px;
+    font-size: 14px;
     overflow-wrap: anywhere;
   }
 
   .period {
     text-align: right;
+    font-size: 8px;
     line-height: 1.5;
-    font-size: 9px;
   }
 
-  .report-content,
-  .report-card {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
+  .report-content, .report-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     margin: 0 !important;
     padding: 0 !important;
+    overflow: visible !important;
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    background: #fff !important;
+    background: white !important;
     color: #18212f !important;
   }
 
   .report-panel-header {
-    margin: 0 0 6px !important;
+    margin: 0 0 5px !important;
   }
 
   .report-panel-header h2 {
@@ -1002,131 +1035,105 @@ function printCurrentReport(panel) {
   }
 
   .report-table-wrap {
+    width: 100% !important;
     max-width: 100% !important;
     overflow: visible !important;
     border: 1px solid #cbd5e1 !important;
-    border-radius: 0 !important;
   }
 
-  .report-table {
+  table, .report-table {
     width: 100% !important;
     min-width: 0 !important;
     border-collapse: collapse !important;
     table-layout: auto;
+    font-size: 8px !important;
     white-space: normal !important;
-    font-size: 9px !important;
-    background: #fff !important;
   }
 
-  .report-table thead {
+  thead {
     display: table-header-group;
   }
 
-  .report-table tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  .report-table th {
-    padding: 6px 4px !important;
+  th, .report-table th {
+    padding: 5px 3px !important;
     background: #17683a !important;
-    color: #fff !important;
+    color: white !important;
     border: 1px solid #cbd5e1 !important;
     overflow-wrap: anywhere;
   }
 
-  .report-table td {
-    padding: 5px 4px !important;
-    background: #fff !important;
+  td, .report-table td {
+    padding: 4px 3px !important;
     color: #18212f !important;
+    background: white !important;
     border: 1px solid #d1d5db !important;
-    white-space: normal !important;
     overflow-wrap: anywhere;
+    white-space: normal !important;
   }
 
-  .report-table tbody tr:nth-child(even) td {
+  tbody tr:nth-child(even) td {
     background: #f1f7f3 !important;
   }
 
-  .report-empty {
-    text-align: center !important;
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .profit-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px;
+    gap: 5px;
   }
 
   .profit-item {
+    padding: 7px !important;
+    border: 1px solid #d1d5db !important;
     break-inside: avoid;
     page-break-inside: avoid;
-    border: 1px solid #d1d5db !important;
-    padding: 8px !important;
-    background: #fff !important;
-  }
-
-  .profit-item span {
-    color: #4b5563 !important;
-  }
-
-  .profit-item strong {
-    overflow-wrap: anywhere;
   }
 
   .report-warning {
-    padding: 7px !important;
-    border: 1px solid #e7c879 !important;
-  }
-
-  .report-help {
-    color: #4b5563 !important;
-  }
-
-  /* Footer repeats at the bottom of every page. */
-  .store-foot {
-    position: fixed;
-    bottom: -15mm;
-    left: 0;
-    right: 0;
-    height: 12mm;
-    padding-top: 3mm;
-    border-top: 1px solid #9ca3af;
-    background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 8mm;
-    font-size: 9px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-  }
-
-  .store-foot span {
-    min-width: 0;
+    padding: 6px !important;
   }
 
   .thanks {
     text-align: center;
-    color: #17683a;
     font-weight: bold;
-    margin-top: 10px;
+    color: #17683a;
     font-size: 9px;
+    margin-top: 8px;
+  }
+
+  .store-foot {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 12mm;
+    padding-top: 3mm;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 8mm;
+    background: white;
+    border-top: 1px solid #9ca3af;
+    font-size: 9px;
+    overflow-wrap: anywhere;
   }
 
   .actions {
-    margin: 18px auto;
     text-align: center;
+    margin: 15px auto;
   }
 
   .actions button {
-    border: 0;
-    border-radius: 4px;
-    padding: 10px 18px;
+    padding: 9px 16px;
     margin: 4px;
     color: white;
     background: #17683a;
-    cursor: pointer;
+    border: 0;
+    border-radius: 4px;
   }
 
   @media screen {
@@ -1136,14 +1143,15 @@ function printCurrentReport(panel) {
     }
 
     .paper {
+      width: 100%;
       max-width: 190mm;
       min-height: 240mm;
+      margin: auto;
       padding: 12px;
       background: white;
     }
 
-    .store-head,
-    .store-foot {
+    .store-head, .store-foot {
       position: static;
       height: auto;
     }
@@ -1159,43 +1167,37 @@ function printCurrentReport(panel) {
   }
 
   @media print {
-    .actions,
-    .no-print {
+    .actions, .no-print {
       display: none !important;
     }
 
     html, body {
-      width: 100%;
-      margin: 0;
-      padding: 0;
-      background: #fff;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: auto;
+      height: auto !important;
+      min-height: 0 !important;
+      overflow: visible !important;
+      background: white !important;
     }
 
     .paper {
       width: 100%;
       max-width: none;
-      min-height: 0;
-      padding: 0;
+      min-height: 0 !important;
+      margin: 0;
+      padding: 27mm 0 15mm;
+      overflow: visible !important;
     }
 
-    .store-head,
+    .store-head {
+      position: fixed;
+      top: 0;
+    }
+
     .store-foot {
       position: fixed;
-      background: #fff;
-    }
-
-    .report-table {
-      page-break-inside: auto;
-    }
-
-    .report-table thead {
-      display: table-header-group;
-    }
-
-    .report-table tr,
-    .profit-item {
-      break-inside: avoid;
-      page-break-inside: avoid;
+      bottom: 0;
     }
   }
 </style>
@@ -1205,22 +1207,30 @@ function printCurrentReport(panel) {
 <main class="paper">
 
   <header class="store-head">
-    ${profileLines(profile)}
+    <div class="profile-header">
+      <div class="profile-photo-box">${photo}</div>
+
+      <div class="profile-store">
+        <div class="store-name">${safe(profile.name)}</div>
+        <div>${safe(profile.taxType)}: ${safe(profile.taxNumber || "-")}</div>
+      </div>
+
+      <div class="profile-owner">
+        <div class="owner-name">${safe(profile.owner || "-")}</div>
+        <div>${safe(profile.address || "-")}</div>
+      </div>
+    </div>
   </header>
 
   <section class="report-title">
     <h2>${safe(reportName)}</h2>
-
     <div class="period">
       <b>अवधि:</b> ${safe(dateLabel)}<br>
-      <b>प्रिन्ट मिति:</b>
-      ${safe(new Date().toLocaleDateString("en-GB"))}
+      <b>प्रिन्ट मिति:</b> ${safe(new Date().toLocaleDateString("en-GB"))}
     </div>
   </section>
 
-  <section class="report-content">
-    ${content.outerHTML}
-  </section>
+  <section class="report-content">${content.outerHTML}</section>
 
   <div class="thanks">${safe(profile.footer)}</div>
 
@@ -1241,15 +1251,15 @@ function printCurrentReport(panel) {
     setTimeout(() => {
       window.focus();
       window.print();
-    }, 400);
+    }, 300);
   });
 <\/script>
-
 </body>
 </html>`);
 
   win.document.close();
 }
+
   
   function addPrintButtons() {
     $$(".report-panel[data-report]").forEach(panel => {
