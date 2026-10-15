@@ -1,6 +1,6 @@
 /* =========================================================
    GENERAL STORE MANAGEMENT SYSTEM - APPEARANCE ENGINE
-   Updated to support index.html (Dashboard) variables & classes
+   Supports all pages including Inventory.html
    ========================================================= */
 
 (function () {
@@ -12,7 +12,7 @@
     theme: "light",
     fontFamily: "Arial, sans-serif",
     fontSize: "15",
-    accentColor: "#ec00ed"
+    accentColor: "#166534"
   };
 
   function getSettings() {
@@ -56,7 +56,7 @@
       "Verdana": "Verdana, sans-serif"
     };
     const font = String(value || "").trim();
-    return allowedFonts[font] || ( /^[a-zA-Z0-9 "'(),-]+$/.test(font) ? font : DEFAULTS.fontFamily );
+    return allowedFonts[font] || (/^[a-zA-Z0-9 "'(),-]+$/.test(font) ? font : DEFAULTS.fontFamily);
   }
 
   function addGlobalAppearanceStyles() {
@@ -70,35 +70,9 @@
         font-family: var(--font-family, Arial, sans-serif);
         font-size: var(--font-size, 15px);
       }
-
       body {
         font-family: var(--font-family, Arial, sans-serif) !important;
         font-size: var(--font-size, 15px);
-      }
-
-      /* Dashboard Accent & Theme Bridge */
-      :root {
-        --gs-pink: var(--accent-color, #ec00ed);
-      }
-
-      html[data-theme="dark"] {
-        color-scheme: dark;
-        --gs-bg: #111827;
-        --gs-panel: #1f2937;
-        --gs-input: #111827;
-        --gs-border: #374151;
-        --gs-text: #f3f4f6;
-        --gs-muted: #9ca3af;
-      }
-
-      html[data-theme="light"] {
-        color-scheme: light;
-        --gs-bg: #f3f4f6;
-        --gs-panel: #ffffff;
-        --gs-input: #f9fafb;
-        --gs-border: #e5e7eb;
-        --gs-text: #111827;
-        --gs-muted: #6b7280;
       }
     `;
 
@@ -117,10 +91,30 @@
     root.dataset.theme = theme;
     root.style.colorScheme = theme;
 
+    // Set variables used across inventory.html and other pages
     root.style.setProperty("--font-family", fontFamily);
     root.style.setProperty("--font-size", fontSize + "px");
     root.style.setProperty("--accent-color", accent);
-    root.style.setProperty("--gs-pink", accent);
+
+    if (theme === "dark") {
+      root.style.setProperty("--body-bg", "#111827");
+      root.style.setProperty("--card-bg", "#1f2937");
+      root.style.setProperty("--text-color", "#f3f4f6");
+      root.style.setProperty("--muted-color", "#9ca3af");
+      root.style.setProperty("--border-color", "#374151");
+      root.style.setProperty("--hover-bg", "#273449");
+      root.style.setProperty("--table-header-bg", "#273449");
+      root.style.setProperty("--input-bg", "#111827");
+    } else {
+      root.style.setProperty("--body-bg", "#f3f6fa");
+      root.style.setProperty("--card-bg", "#ffffff");
+      root.style.setProperty("--text-color", "#111827");
+      root.style.setProperty("--muted-color", "#6b7280");
+      root.style.setProperty("--border-color", "#e5e7eb");
+      root.style.setProperty("--hover-bg", "#f8fafc");
+      root.style.setProperty("--table-header-bg", "#f8fafc");
+      root.style.setProperty("--input-bg", "#ffffff");
+    }
 
     addGlobalAppearanceStyles();
 
