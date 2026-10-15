@@ -1,7 +1,9 @@
+
 "use strict";
 
 (function () {
   const SETTINGS_KEY = "gs_settings";
+  const STYLE_ID = "gs-global-appearance-style";
 
   const DEFAULTS = {
     theme: "light",
@@ -10,34 +12,87 @@
     accentColor: "#166534"
   };
 
-  function getSettings() {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem(SETTINGS_KEY) || "{}"
-      );
+  const FONT_MAP = {
+    Arial: "Arial, sans-serif",
+    Roboto: "Roboto, Arial, sans-serif",
+    Inter: "Inter, Arial, sans-serif",
+    System: "system-ui, sans-serif",
+    Georgia: "Georgia, serif",
+    Verdana: "Verdana, sans-serif"
+  };
 
-      return saved && typeof saved === "object" ? saved : {};
+  const THEMES = {
+    light: {
+      body: "#f3f6fa",
+      card: "#ffffff",
+      text: "#111827",
+      muted: "#6b7280",
+      border: "#e5e7eb",
+      input: "#ffffff",
+      table: "#f8fafc",
+      hover: "#f1f5f9"
+    },
+    dark: {
+      body: "#111827",
+      card: "#1f2937",
+      text: "#f3f4f6",
+      muted: "#9ca3af",
+      border: "#374151",
+      input: "#111827",
+      table: "#273449",
+      hover: "#273449"
+    }
+  };
+
+  function readSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      const saved = raw ? JSON.parse(raw) : {};
+
+      return saved &&
+        typeof saved === "object" &&
+        !Array.isArray(saved)
+        ? saved
+        : {};
     } catch (error) {
-      console.warn("Could not read appearance settings:", error);
+      console.warn(
+        "[GSAppearance] Settings पढ्न सकिएन:",
+        error
+      );
       return {};
     }
   }
 
-  function getAppearanceSettings() {
-    const saved = getSettings();
+  function getSettings() {
+    return readSettings();
+  }
 
-    // Supports both root-level and nested appearance settings.
+  function getAppearanceSettings() {
+    const saved = readSettings();
+
+    const nested =
+      saved.appearance &&
+      typeof saved.appearance === "object" &&
+      !Array.isArray(saved.appearance)
+        ? saved.appearance
+        : {};
+
     return {
       ...DEFAULTS,
       ...saved,
-      ...(saved.appearance &&
-      typeof saved.appearance === "object"
-        ? saved.appearance
-        : {})
+      ...nested
     };
   }
 
-  function safeAccentColor(value) {
+  function normalizeTheme(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase() === "dark"
+      ? "dark"
+      : "light";
+  }
+
+  function normalizeAccent(value) {
     const color = String(value || "").trim();
 
     return /^#[0-9a-f]{6}$/i.test(color)
@@ -45,109 +100,126 @@
       : DEFAULTS.accentColor;
   }
 
-  function safeFontSize(value) {
-    const size = String(value || DEFAULTS.fontSize);
+  function normalizeFontSize(value) {
+    const size = String(value ?? DEFAULTS.fontSize)
+      .trim()
+      .replace(/px$/i, "");
 
     return ["13", "15", "17", "19"].includes(size)
       ? size
       : DEFAULTS.fontSize;
   }
 
-  function safeFontFamily(value) {
-    const allowedFonts = {
-      "Arial": "Arial, sans-serif",
-      "Roboto": "Roboto, Arial, sans-serif",
-      "Inter": "Inter, Arial, sans-serif",
-      "System": "system-ui, sans-serif",
-      "Georgia": "Georgia, serif",
-      "Verdana": "Verdana, sans-serif"
-    };
+  function normalizeFontFamily(value) {
+    const font = String(
+      value || DEFAULTS.fontFamily
+    ).trim();
 
-    const font = String(value || "").trim();
-
-    if (allowedFonts[font]) {
-      return allowedFonts[font];
+    if (FONT_MAP[font]) {
+      return FONT_MAP[font];
     }
 
-    // Preserve an already-stored CSS font-family value.
-    const safePattern =
-      /^[a-zA-Z0-9 "'(),-]+$/;
+    const allowedPattern =
+      /^[a-zA-Z0-9 "'(),_-]+$/;
 
-    return safePattern.test(font)
+    return allowedPattern.test(font)
       ? font
       : DEFAULTS.fontFamily;
   }
 
+  function setVariable(root, name, value) {
+    root.style.setProperty(name, value);
+  }
+
   function addGlobalAppearanceStyles() {
-    if (document.getElementById("gs-global-appearance-style")) {
+    if (document.getElementById(STYLE_ID)) {
       return;
     }
 
     const style = document.createElement("style");
-    style.id = "gs-global-appearance-style";
+    style.id = STYLE_ID;
 
     style.textContent = `
       :root {
+        color-scheme: light;
+
         --font-family: Arial, sans-serif;
         --font-size: 15px;
+
         --accent-color: #166534;
         --primary: #166534;
         --primary-dark: #14532d;
+        --link-color: #166534;
+        --focus-color: #166534;
+
         --body-bg: #f3f6fa;
         --card-bg: #ffffff;
+        --panel-bg: #ffffff;
         --text-color: #111827;
         --muted-color: #6b7280;
         --border-color: #e5e7eb;
         --input-bg: #ffffff;
         --table-header-bg: #f8fafc;
         --hover-bg: #f1f5f9;
+
+        --gs-bg: var(--body-bg);
+        --gs-panel: var(--card-bg);
+        --gs-input: var(--input-bg);
+        --gs-border: var(--border-color);
       }
 
       html {
         font-family: var(--font-family);
         font-size: var(--font-size);
+        background: var(--body-bg);
+        color: var(--text-color);
       }
 
       body {
+        margin: 0;
         font-family: var(--font-family) !important;
         font-size: var(--font-size);
         background-color: var(--body-bg);
         color: var(--text-color);
         transition:
-          background-color 0.2s ease,
-          color 0.2s ease;
+          background-color .2s ease,
+          color .2s ease;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
       }
 
       button,
       input,
       select,
-      textarea {
+      textarea,
+      option {
         font-family: var(--font-family);
       }
 
       input,
       select,
       textarea {
+        font-size: inherit;
         color: var(--text-color);
         border-color: var(--border-color);
+      }
+
+      input::placeholder,
+      textarea::placeholder {
+        color: var(--muted-color);
+        opacity: 1;
       }
 
       button {
         cursor: pointer;
       }
 
-      :where(
-        .sale-btn,
-        .return-btn,
-        .purchase-btn,
-        .inventory-btn,
-        .customer-btn,
-        .supplier-btn,
-        .finance-btn,
-        .btn-primary,
-        button.primary
-      ) {
-        border-radius: 9px;
+      a {
+        color: var(--link-color);
       }
 
       :where(
@@ -165,7 +237,13 @@
         .customer-panel,
         .supplier-panel,
         .finance-panel,
-        .card
+        .card,
+        .panel,
+        .stat-card,
+        .dashboard-card,
+        .settings-card,
+        .modal-content,
+        .dialog-content
       ) {
         border-color: var(--border-color);
       }
@@ -176,10 +254,14 @@
         .purchase-btn.primary,
         .inventory-btn.primary,
         .customer-btn.primary,
+        .supplier-btn.primary,
         .supplier-btn-primary,
         .finance-btn.primary,
         .btn-primary,
-        button.primary
+        button.primary,
+        .primary-btn,
+        .save-btn,
+        .submit-btn
       ) {
         background-color: var(--accent-color);
         border-color: var(--accent-color);
@@ -192,12 +274,25 @@
         .purchase-btn.primary,
         .inventory-btn.primary,
         .customer-btn.primary,
+        .supplier-btn.primary,
         .supplier-btn-primary,
         .finance-btn.primary,
         .btn-primary,
-        button.primary
+        button.primary,
+        .primary-btn,
+        .save-btn,
+        .submit-btn
       ):hover {
-        filter: brightness(0.94);
+        filter: brightness(.94);
+      }
+
+      :where(
+        input,
+        select,
+        textarea,
+        button
+      ):focus-visible {
+        outline-color: var(--focus-color);
       }
 
       :where(
@@ -207,25 +302,42 @@
         .inventory-table,
         .customer-table,
         .supplier-table,
-        .finance-table
-      ) th {
+        .finance-table,
+        table
+      ) th,
+      :where(
+        .sale-table,
+        .return-table,
+        .purchase-table,
+        .inventory-table,
+        .customer-table,
+        .supplier-table,
+        .finance-table,
+        table
+      ) td {
         border-color: var(--border-color);
+      }
+
+      :where(
+        .sale-table,
+        .return-table,
+        .purchase-table,
+        .inventory-table,
+        .customer-table,
+        .supplier-table,
+        .finance-table,
+        table
+      ) th {
+        background-color: var(--table-header-bg);
+        color: var(--text-color);
       }
 
       html[data-theme="dark"] {
         color-scheme: dark;
-        --body-bg: #111827;
-        --card-bg: #1f2937;
-        --text-color: #f3f4f6;
-        --muted-color: #9ca3af;
-        --border-color: #374151;
-        --input-bg: #111827;
-        --table-header-bg: #273449;
-        --hover-bg: #273449;
       }
 
       html[data-theme="dark"] body {
-        background-color: var(--body-bg) !important;
+        background-color: var(--body-bg);
         color: var(--text-color);
       }
 
@@ -244,7 +356,13 @@
         .customer-panel,
         .supplier-panel,
         .finance-panel,
-        .card
+        .card,
+        .panel,
+        .stat-card,
+        .dashboard-card,
+        .settings-card,
+        .modal-content,
+        .dialog-content
       ) {
         background-color: var(--card-bg);
         color: var(--text-color);
@@ -268,9 +386,7 @@
         border-color: var(--border-color);
       }
 
-      html[data-theme="dark"] :where(
-        table th
-      ) {
+      html[data-theme="dark"] table th {
         background-color: var(--table-header-bg);
         color: var(--text-color);
       }
@@ -282,10 +398,14 @@
         h2,
         h3,
         h4,
+        h5,
+        h6,
         th,
-        td
+        td,
+        small,
+        legend
       ) {
-        border-color: var(--border-color);
+        color: inherit;
       }
 
       html[data-theme="dark"] :where(
@@ -299,6 +419,21 @@
         .finance-btn
       ) {
         border-color: var(--border-color);
+      }
+
+      html[data-theme="dark"] :where(
+        a
+      ) {
+        color: var(--link-color);
+      }
+
+      html[data-theme="dark"] :where(
+        .muted,
+        .text-muted,
+        .secondary-text,
+        .help-text
+      ) {
+        color: var(--muted-color);
       }
 
       @media (max-width: 760px) {
@@ -324,7 +459,8 @@
           .supplier-stats,
           .finance-stats
         ) {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns:
+            repeat(2, minmax(0, 1fr));
           gap: 10px;
         }
 
@@ -361,80 +497,75 @@
       }
     `;
 
-    (document.head || document.documentElement).appendChild(style);
+    (document.head || document.documentElement)
+      .appendChild(style);
   }
 
   function applyAppearance() {
+    if (!document.documentElement) {
+      return;
+    }
+
     const appearance = getAppearanceSettings();
     const root = document.documentElement;
 
-    const theme =
-      String(appearance.theme).toLowerCase() === "dark"
-        ? "dark"
-        : "light";
+    const theme = normalizeTheme(appearance.theme);
+    const accent = normalizeAccent(
+      appearance.accentColor
+    );
+    const fontSize = normalizeFontSize(
+      appearance.fontSize
+    );
+    const fontFamily = normalizeFontFamily(
+      appearance.fontFamily
+    );
 
-    const accent = safeAccentColor(appearance.accentColor);
-    const fontSize = safeFontSize(appearance.fontSize);
-    const fontFamily = safeFontFamily(appearance.fontFamily);
+    const colors = THEMES[theme];
 
     root.dataset.theme = theme;
     root.style.colorScheme = theme;
 
-    root.style.setProperty("--font-family", fontFamily);
-    root.style.setProperty("--font-size", fontSize + "px");
-    root.style.setProperty("--accent-color", accent);
-    root.style.setProperty("--primary", accent);
-    root.style.setProperty("--primary-dark", accent);
+    setVariable(root, "--font-family", fontFamily);
+    setVariable(root, "--font-size", fontSize + "px");
 
-    root.style.setProperty(
-      "--body-bg",
-      theme === "dark" ? "#111827" : "#f3f6fa"
-    );
+    setVariable(root, "--accent-color", accent);
+    setVariable(root, "--primary", accent);
+    setVariable(root, "--primary-dark", accent);
+    setVariable(root, "--link-color", accent);
+    setVariable(root, "--focus-color", accent);
 
-    root.style.setProperty(
-      "--card-bg",
-      theme === "dark" ? "#1f2937" : "#ffffff"
-    );
+    setVariable(root, "--body-bg", colors.body);
+    setVariable(root, "--card-bg", colors.card);
+    setVariable(root, "--panel-bg", colors.card);
+    setVariable(root, "--text-color", colors.text);
+    setVariable(root, "--muted-color", colors.muted);
+    setVariable(root, "--border-color", colors.border);
+    setVariable(root, "--input-bg", colors.input);
+    setVariable(root, "--table-header-bg", colors.table);
+    setVariable(root, "--hover-bg", colors.hover);
 
-    root.style.setProperty(
-      "--text-color",
-      theme === "dark" ? "#f3f4f6" : "#111827"
-    );
-
-    root.style.setProperty(
-      "--muted-color",
-      theme === "dark" ? "#9ca3af" : "#6b7280"
-    );
-
-    root.style.setProperty(
-      "--border-color",
-      theme === "dark" ? "#374151" : "#e5e7eb"
-    );
-
-    root.style.setProperty(
-      "--input-bg",
-      theme === "dark" ? "#111827" : "#ffffff"
-    );
-
-    root.style.setProperty(
-      "--table-header-bg",
-      theme === "dark" ? "#273449" : "#f8fafc"
-    );
-
-    root.style.setProperty(
-      "--hover-bg",
-      theme === "dark" ? "#273449" : "#f1f5f9"
-    );
+    // Compatibility with existing GS CSS variables.
+    setVariable(root, "--gs-bg", colors.body);
+    setVariable(root, "--gs-panel", colors.card);
+    setVariable(root, "--gs-input", colors.input);
+    setVariable(root, "--gs-border", colors.border);
 
     addGlobalAppearanceStyles();
 
     function updateBodyTheme() {
-      if (document.body) {
-        document.body.classList.toggle(
-          "dark-theme",
-          theme === "dark"
-        );
+      if (!document.body) {
+        return;
       }
+
+      document.body.classList.toggle(
+        "dark-theme",
+        theme === "dark"
+      );
+
+      document.body.classList.toggle(
+        "light-theme",
+        theme === "light"
+      );
     }
 
     updateBodyTheme();
@@ -448,16 +579,17 @@
     }
   }
 
-  // Keep the public API used by settings.js.
+  // Public API: preserve compatibility with settings.js.
   window.GSAppearance = {
     apply: applyAppearance,
-    getSettings: getSettings
+    getSettings: getSettings,
+    getAppearanceSettings: getAppearanceSettings
   };
 
-  // Apply saved settings as soon as this file loads.
+  // Apply saved settings immediately.
   applyAppearance();
 
-  // Re-apply when another page/tab changes the saved settings.
+  // Reapply after settings change in another tab.
   window.addEventListener("storage", function (event) {
     if (
       event.key === SETTINGS_KEY ||
@@ -466,4 +598,10 @@
       applyAppearance();
     }
   });
+
+  // Allow other same-page code to request a refresh.
+  document.addEventListener(
+    "gs:appearance-change",
+    applyAppearance
+  );
 })();
