@@ -781,7 +781,7 @@
   });
 
 
-/* ---------------- Invoice / Print - A4 PDF ---------------- */
+/* ---------- INVOICE / PRINT / SAVE PDF - FULL REPLACEMENT ---------- */
 
 function printInvoice(sale) {
   const win = window.open("", "_blank");
@@ -793,51 +793,54 @@ function printInvoice(sale) {
 
   const store = settings() || {};
   const items = getSaleItems(sale) || [];
+  const safe = value => esc(String(value ?? ""));
 
-  // Read Store Profile fields without changing saved settings.
-  const storeName = store.storeName || store.businessName || "General Store";
-  const ownerName = store.ownerName || "";
-  const storeAddress = store.storeAddress || "";
-  const storePhone = store.storePhone || "";
-  const storeEmail = store.storeEmail || "";
-  const taxType = store.taxType || "VAT";
-  const taxNumber = store.taxNumber || "";
-  const ownerPhoto =
-    store.operatorPhoto ||
-    store.ownerPhoto ||
-    store.ownerPhotoUrl ||
-    "";
+  const read = (...keys) => {
+    for (const key of keys) {
+      const value = store[key];
+      if (value !== undefined && value !== null &&
+          String(value).trim() !== "") {
+        return String(value).trim();
+      }
+    }
+    return "";
+  };
 
-  const invoiceFooter =
-    store.invoiceFooter || "Thank you, visit again!";
+  const profile = {
+    name: read("storeName", "businessName", "name", "shopName")
+      || "General Store",
+    owner: read("ownerName", "proprietorName", "owner", "operatorName"),
+    address: read("storeAddress", "address", "businessAddress", "shopAddress"),
+    phone: read("storePhone", "phone", "mobile", "contactNumber"),
+    email: read("storeEmail", "email", "businessEmail"),
+    taxType: read("taxType") || "VAT",
+    taxNumber: read("taxNumber", "panNumber", "vatNumber", "pan", "vat", "taxId"),
+    photo: read("operatorPhoto", "ownerPhoto", "ownerPhotoUrl", "userPhoto", "photoUrl"),
+    footer: read("invoiceFooter", "receiptFooter", "footerText")
+      || "हाम्रो पसलमा आउनुभएकोमा धन्यवाद!"
+  };
 
-  const safe = (value) => esc(String(value ?? ""));
-
-  const photoHtml = ownerPhoto
-    ? `<img class="owner-photo" src="${safe(ownerPhoto)}"
-         alt="Store owner"
-         onerror="this.style.display='none'">`
+  const photo = profile.photo
+    ? `<img class="profile-photo" src="${safe(profile.photo)}"
+         alt="Owner photo" onerror="this.style.display='none'">`
     : `<div class="photo-placeholder">👤</div>`;
 
   const rows = items.map((item, index) => `
     <tr>
       <td class="sn">${index + 1}</td>
-      <td class="product">${safe(item.productName || "Product")}</td>
+      <td>${safe(item.productName || "Product")}</td>
       <td>${safe(item.barcode || "-")}</td>
       <td class="right">${num(item.qty)} ${safe(item.unit || "")}</td>
       <td class="right">${money(item.rate)}</td>
-      <td class="right">
-        ${money(item.itemAmount ?? num(item.qty) * num(item.rate))}
-      </td>
+      <td class="right">${money(
+        item.itemAmount ?? num(item.qty) * num(item.rate)
+      )}</td>
     </tr>
   `).join("");
 
   const subtotal = sale.itemAmount ??
-    items.reduce(
-      (sum, item) =>
-        sum + num(item.itemAmount ?? num(item.qty) * num(item.rate)),
-      0
-    );
+    items.reduce((sum, item) =>
+      sum + num(item.itemAmount ?? num(item.qty) * num(item.rate)), 0);
 
   const discount = num(sale.discount);
   const total = sale.total ?? subtotal - discount;
@@ -846,127 +849,123 @@ function printInvoice(sale) {
 
   win.document.open();
 
-  win.document.write(`<!DOCTYPE html>
-<html lang="en">
+  win.document.write(`<!doctype html>
+<html lang="ne">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Invoice ${safe(sale.billNumber || "")}</title>
 
 <style>
   @page {
     size: A4 portrait;
-    margin: 34mm 10mm 20mm;
+    margin: 10mm;
   }
 
   * {
     box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   html, body {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    width: 100%;
+    font-family: Arial, "Noto Sans Devanagari", sans-serif;
     font-size: 10px;
     color: #222;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    background: white;
   }
 
   .invoice {
     width: 100%;
-    margin: 0 auto;
+    margin: 0;
+    padding: 27mm 0 15mm;
   }
 
-  /* Repeats at the top of each printed page. */
   .page-header {
     position: fixed;
-    top: -29mm;
+    top: 0;
     left: 0;
     right: 0;
-    height: 27mm;
+    height: 24mm;
     background: white;
     border-bottom: 1.5px solid #17683a;
-    padding: 0 0 3mm;
   }
 
   .brand-row {
+    height: 23mm;
     display: grid;
-    grid-template-columns: 20mm 1fr 1fr;
-    gap: 4mm;
+    grid-template-columns: 19mm minmax(0, 1fr) minmax(0, 1fr);
+    gap: 3mm;
     align-items: center;
-    height: 24mm;
   }
 
   .photo-box {
-    width: 19mm;
-    height: 19mm;
+    width: 18mm;
+    height: 18mm;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
   }
 
-  .owner-photo {
-    width: 19mm;
-    height: 19mm;
-    object-fit: cover;
+  .profile-photo, .photo-placeholder {
+    width: 18mm;
+    height: 18mm;
     border-radius: 50%;
-    border: 1px solid #ddd;
+    object-fit: cover;
   }
 
   .photo-placeholder {
-    width: 19mm;
-    height: 19mm;
-    border-radius: 50%;
-    background: #f0f0f0;
     display: flex;
-    align-items: center;
     justify-content: center;
-    font-size: 23px;
+    align-items: center;
+    background: #f0f0f0;
+    font-size: 22px;
   }
 
   .brand-info {
     min-width: 0;
+    font-size: 9px;
+    line-height: 1.5;
     overflow-wrap: anywhere;
-    line-height: 1.45;
   }
 
   .brand-name {
-    font-size: 14px;
-    font-weight: bold;
     color: #17683a;
-    margin-bottom: 2px;
+    font-size: 13px;
+    font-weight: bold;
   }
 
   .owner-name {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
-    margin-bottom: 2px;
   }
 
   .invoice-meta {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3px 12px;
-    padding: 3mm 0;
-    border-bottom: 1px solid #bbb;
-    line-height: 1.4;
+    gap: 5px 12px;
+    padding-bottom: 7px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ccc;
+    line-height: 1.5;
     overflow-wrap: anywhere;
   }
 
   .invoice-title {
+    margin: 8px 0;
     text-align: center;
     font-size: 14px;
-    margin: 3mm 0;
-    letter-spacing: 1px;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    margin: 0;
+    font-size: 8px;
   }
 
   col.sn-col { width: 7%; }
@@ -980,42 +979,32 @@ function printInvoice(sale) {
     display: table-header-group;
   }
 
-  tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
   th, td {
+    padding: 5px 3px;
     border: 1px solid #ccc;
-    padding: 6px 4px;
     text-align: left;
     vertical-align: top;
     overflow-wrap: anywhere;
   }
 
   th {
+    color: white;
     background: #17683a;
-    color: #fff;
-    font-size: 9px;
   }
 
-  td {
-    line-height: 1.35;
-  }
-
-  .right {
-    text-align: right;
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .sn {
     text-align: center;
   }
 
-  .product {
-    font-weight: 500;
+  .right {
+    text-align: right;
   }
 
-  /* Totals remain after the last item, on the final page. */
   .totals-wrap {
     display: flex;
     justify-content: flex-end;
@@ -1044,19 +1033,25 @@ function printInvoice(sale) {
     border-top: 1.5px solid #17683a;
   }
 
-  /* Repeats at the bottom of every printed page. */
+  .thank-you {
+    text-align: center;
+    color: #17683a;
+    font-weight: bold;
+    margin-top: 8mm;
+  }
+
   .page-footer {
     position: fixed;
-    bottom: -16mm;
+    bottom: 0;
     left: 0;
     right: 0;
-    height: 13mm;
+    height: 12mm;
     padding-top: 3mm;
     border-top: 1px solid #999;
     background: white;
     text-align: center;
+    font-size: 9px;
     line-height: 1.5;
-    overflow-wrap: anywhere;
   }
 
   .footer-contact {
@@ -1064,31 +1059,21 @@ function printInvoice(sale) {
     justify-content: center;
     gap: 8mm;
     flex-wrap: wrap;
-  }
-
-  .footer-contact span {
     overflow-wrap: anywhere;
   }
 
-  .thank-you {
-    text-align: center;
-    font-weight: bold;
-    margin-top: 5mm;
-  }
-
   .actions {
+    margin: 15px auto;
     text-align: center;
-    margin: 18px auto;
   }
 
   .actions button {
+    padding: 9px 16px;
+    margin: 4px;
     border: 0;
     border-radius: 4px;
     background: #17683a;
     color: white;
-    padding: 10px 18px;
-    margin: 4px;
-    cursor: pointer;
   }
 
   .actions .close-btn {
@@ -1102,59 +1087,68 @@ function printInvoice(sale) {
     }
 
     .invoice {
+      width: 100%;
       max-width: 190mm;
       min-height: 240mm;
+      margin: auto;
       padding: 12px;
       background: white;
     }
 
-    .page-header,
-    .page-footer {
+    .page-header, .page-footer {
       position: static;
       height: auto;
     }
 
     .page-header {
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .page-footer {
-      margin-top: 20px;
+      margin-top: 18px;
+      padding-bottom: 8px;
     }
   }
 
   @media print {
-    html, body {
-      width: 100%;
-      margin: 0;
-      padding: 0;
-      background: white;
-    }
-
     .actions {
       display: none !important;
+    }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: auto;
+      height: auto !important;
+      min-height: 0 !important;
+      overflow: visible !important;
+      background: white !important;
     }
 
     .invoice {
       width: 100%;
       max-width: none;
-      min-height: 0;
-      padding: 0;
-      background: white;
+      min-height: 0 !important;
+      margin: 0;
+      padding: 27mm 0 15mm;
+      overflow: visible !important;
     }
 
-    .page-header,
+    .page-header {
+      position: fixed;
+      top: 0;
+    }
+
     .page-footer {
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
+      position: fixed;
+      bottom: 0;
     }
 
     table {
       page-break-inside: auto;
     }
 
-    .totals-wrap,
-    .thank-you {
+    .totals-wrap, .thank-you {
       break-inside: avoid;
       page-break-inside: avoid;
     }
@@ -1167,25 +1161,25 @@ function printInvoice(sale) {
 
   <header class="page-header">
     <div class="brand-row">
-      <div class="photo-box">${photoHtml}</div>
+      <div class="photo-box">${photo}</div>
 
       <div class="brand-info">
-        <div class="brand-name">${safe(storeName)}</div>
-        <div>${safe(taxType)}: ${safe(taxNumber || "-")}</div>
+        <div class="brand-name">${safe(profile.name)}</div>
+        <div>${safe(profile.taxType)}: ${safe(profile.taxNumber || "-")}</div>
       </div>
 
       <div class="brand-info">
-        <div class="owner-name">${safe(ownerName || "-")}</div>
-        <div>${safe(storeAddress || "-")}</div>
+        <div class="owner-name">${safe(profile.owner || "-")}</div>
+        <div>${safe(profile.address || "-")}</div>
       </div>
     </div>
   </header>
 
   <section class="invoice-meta">
-    <div><strong>Bill No.:</strong> ${safe(sale.billNumber || "-")}</div>
-    <div><strong>Date:</strong> ${safe(sale.date || "-")}</div>
-    <div><strong>Customer:</strong> ${safe(sale.customerName || "Cash Customer")}</div>
-    <div><strong>Payment:</strong> ${safe(sale.paymentMethod || "-")}</div>
+    <div><b>Bill No.:</b> ${safe(sale.billNumber || "-")}</div>
+    <div><b>Date:</b> ${safe(sale.date || "-")}</div>
+    <div><b>Customer:</b> ${safe(sale.customerName || "Cash Customer")}</div>
+    <div><b>Payment:</b> ${safe(sale.paymentMethod || "-")}</div>
   </section>
 
   <h2 class="invoice-title">SALES INVOICE</h2>
@@ -1212,7 +1206,7 @@ function printInvoice(sale) {
     </thead>
 
     <tbody>
-      ${rows || `<tr><td colspan="6" style="text-align:center">No items</td></tr>`}
+      ${rows || '<tr><td colspan="6">No items</td></tr>'}
     </tbody>
   </table>
 
@@ -1241,12 +1235,12 @@ function printInvoice(sale) {
     </div>
   </section>
 
-  <div class="thank-you">${safe(invoiceFooter)}</div>
+  <div class="thank-you">${safe(profile.footer)}</div>
 
   <footer class="page-footer">
     <div class="footer-contact">
-      <span>Phone: ${safe(storePhone || "-")}</span>
-      <span>Email: ${safe(storeEmail || "-")}</span>
+      <span>फोन: ${safe(profile.phone || "-")}</span>
+      <span>इमेल: ${safe(profile.email || "-")}</span>
     </div>
   </footer>
 
@@ -1262,6 +1256,7 @@ function printInvoice(sale) {
 
   win.document.close();
 }
+
 
   /* ---------------- Reset / Initialize ---------------- */
 
