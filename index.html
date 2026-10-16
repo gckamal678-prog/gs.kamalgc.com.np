@@ -11,21 +11,18 @@
   <link rel="icon" type="image/png" href="./gs192.png">
   <link rel="apple-touch-icon" href="./gs192.png">
   <link rel="stylesheet" href="./style.css?v=20261011-4">
-  <script src="./appearance.js></script>
+  <script src="./appearance.js"></script>
 
   <style>
     :root {
       --gs-bg: #111827;
-      --gs-panel: #1e293b;
-      --gs-input: #0f172a;
-      --gs-border: #334155;
-      --gs-text: var(--text-color, #f8fafc);
-      --gs-muted: var(--muted-color, #94a3b8);
+      --gs-panel: #202a3b;
+      --gs-input: #111827;
+      --gs-border: #3b4659;
+      --gs-text: var(--text-color, #111827);
+      --gs-muted: var(--muted-color, #6b7280);
       --gs-pink: var(--accent-color, #166534);
       --gs-sidebar-width: 370px;
-      --gs-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-      --gs-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-      --gs-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
     }
 
     * { box-sizing: border-box; }
@@ -36,7 +33,7 @@
       margin: 0;
       background: var(--gs-bg);
       color: var(--gs-text);
-      font-family: var(--font-family, 'Segoe UI', system-ui, -apple-system, sans-serif);
+      font-family: var(--font-family, Arial, sans-serif);
       min-height: 100vh;
     }
 
@@ -51,10 +48,8 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 12px 24px;
-      background: rgba(30, 41, 59, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      padding: 12px 20px;
+      background: var(--gs-panel);
       border-bottom: 1px solid var(--gs-border);
       position: sticky;
       top: 0;
@@ -64,59 +59,49 @@
     .gs-topbar-left {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       min-width: 0;
     }
 
     .gs-menu-toggle {
       border: 0;
-      background: rgba(255, 255, 255, 0.05);
+      background: transparent;
       color: var(--gs-text);
-      font-size: 24px;
+      font-size: 32px;
       cursor: pointer;
-      padding: 8px 12px;
-      border-radius: 10px;
+      padding: 3px 8px;
       flex-shrink: 0;
-      transition: background 0.2s ease, transform 0.2s ease;
-    }
-
-    .gs-menu-toggle:hover {
-      background: rgba(255, 255, 255, 0.12);
-      transform: scale(1.05);
     }
 
     .gs-topbar-title { min-width: 0; }
 
     .gs-topbar-title h1 {
       margin: 0;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
+      font-size: 23px;
       overflow-wrap: anywhere;
     }
 
     .gs-topbar-title p {
-      margin: 3px 0 0;
+      margin: 5px 0 0;
       color: var(--gs-muted);
       font-size: 13px;
     }
 
+    /* Dashboard Avatar: Store Profile को operatorPhoto */
     .gs-topbar-avatar {
-      width: 54px;
-      height: 54px;
-      flex: 0 0 54px;
+      width: 58px;
+      height: 58px;
+      flex: 0 0 58px;
       display: grid;
       place-items: center;
       overflow: hidden;
       border-radius: 50%;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
+      background: #111827;
       color: white;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 800;
       pointer-events: none;
       user-select: none;
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      box-shadow: var(--gs-shadow-sm);
     }
 
     .gs-topbar-avatar img {
@@ -132,6 +117,7 @@
       min-height: calc(100vh - 88px);
     }
 
+    /* Sidebar: Store Profile फारम यहीँ स्थायी रूपमा रहन्छ */
     .gs-sidebar {
       position: fixed;
       top: 88px;
@@ -139,28 +125,28 @@
       bottom: 0;
       z-index: 1500;
       width: var(--gs-sidebar-width);
-      padding: 20px;
+      padding: 16px;
       overflow-y: auto;
       overscroll-behavior: contain;
-      background: #0f172a;
+      background: #111b2d;
       border-right: 1px solid var(--gs-border);
       transform: translateX(0);
-      transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform .25s ease;
     }
 
     .gs-sidebar-brand {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 4px 2px 20px;
-      margin-bottom: 20px;
+      gap: 12px;
+      padding: 4px 2px 18px;
+      margin-bottom: 16px;
       border-bottom: 1px solid var(--gs-border);
     }
 
     .gs-sidebar-brand img {
-      width: 54px;
-      height: 54px;
-      flex: 0 0 54px;
+      width: 58px;
+      height: 58px;
+      flex: 0 0 58px;
       object-fit: contain;
       border-radius: 14px;
     }
@@ -168,63 +154,57 @@
     .gs-sidebar-brand strong {
       display: block;
       font-size: 18px;
-      line-height: 1.3;
-      font-weight: 700;
+      line-height: 1.4;
     }
 
     .gs-sidebar-brand small {
       display: block;
       color: var(--gs-muted);
       margin-top: 4px;
-      font-size: 12px;
     }
 
     .gs-profile-card {
-      padding: 18px;
+      padding: 15px;
       border: 1px solid var(--gs-border);
-      border-radius: 18px;
+      border-radius: 17px;
       background: var(--gs-panel);
-      box-shadow: var(--gs-shadow-sm);
     }
 
     .gs-profile-card h2 {
-      margin: 0 0 8px;
-      font-size: 20px;
-      font-weight: 700;
+      margin: 0 0 7px;
+      font-size: 21px;
     }
 
     .gs-profile-intro {
       margin: 0 0 16px;
       color: var(--gs-muted);
-      line-height: 1.5;
+      line-height: 1.6;
       font-size: 13px;
     }
 
     .gs-profile-preview {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       min-width: 0;
-      padding: 14px;
-      margin-bottom: 20px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      margin-bottom: 18px;
+      border-radius: 13px;
+      background: rgba(255,255,255,.045);
     }
 
     .gs-profile-photo {
-      width: 58px;
-      height: 58px;
-      flex: 0 0 58px;
+      width: 62px;
+      height: 62px;
+      flex: 0 0 62px;
       display: grid;
       place-items: center;
       overflow: hidden;
       border-radius: 50%;
-      background: #0f172a;
+      background: #111827;
       color: white;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 800;
-      border: 2px solid var(--gs-border);
     }
 
     .gs-profile-photo img {
@@ -240,32 +220,29 @@
       overflow-wrap: anywhere;
     }
 
-    .gs-profile-preview strong { font-size: 15px; font-weight: 700; }
+    .gs-profile-preview strong { font-size: 15px; }
 
     .gs-profile-preview small {
       color: var(--gs-muted);
-      margin-top: 4px;
+      margin-top: 5px;
     }
 
     .gs-profile-form {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      gap: 14px;
+      gap: 13px;
     }
 
     .gs-field {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 7px;
       min-width: 0;
     }
 
     .gs-field label {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      color: #cbd5e1;
     }
 
     .gs-field input,
@@ -273,64 +250,49 @@
     .gs-field textarea {
       width: 100%;
       min-width: 0;
-      padding: 11px 13px;
-      border: 1px solid var(--gs-border);
-      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid #64748b;
+      border-radius: 11px;
       background: var(--gs-input);
       color: var(--gs-text);
       outline-offset: 2px;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .gs-field input:focus,
     .gs-field select:focus,
     .gs-field textarea:focus {
-      outline: none;
-      border-color: var(--gs-pink);
-      box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.25);
+      outline: 2px solid var(--gs-pink);
     }
 
     .gs-field textarea {
-      min-height: 80px;
+      min-height: 78px;
       resize: vertical;
     }
 
     .gs-field small {
       color: var(--gs-muted);
       font-size: 12px;
-      line-height: 1.4;
+      line-height: 1.5;
     }
 
     .gs-profile-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 18px;
+      gap: 9px;
+      margin-top: 15px;
     }
 
     .gs-button {
       border: 0;
       border-radius: 10px;
-      padding: 12px 16px;
+      padding: 11px 13px;
       cursor: pointer;
       font-weight: 700;
-      transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .gs-button:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.1);
-      box-shadow: var(--gs-shadow-sm);
-    }
-
-    .gs-button:active {
-      transform: translateY(0);
     }
 
     .gs-save {
       background: var(--gs-pink);
       color: white;
-      flex: 1;
     }
 
     .gs-remove {
@@ -340,21 +302,19 @@
 
     .gs-profile-status {
       display: none;
-      margin-top: 14px;
-      padding: 12px;
+      margin-top: 13px;
+      padding: 11px;
       border-radius: 10px;
       background: #14532d;
       color: #dcfce7;
       line-height: 1.5;
       overflow-wrap: anywhere;
       font-size: 13px;
-      border: 1px solid #22c55e;
     }
 
     .gs-profile-status.error {
       background: #7f1d1d;
       color: #fee2e2;
-      border-color: #ef4444;
     }
 
     .gs-sidebar-overlay {
@@ -362,14 +322,13 @@
       position: fixed;
       inset: 88px 0 0;
       z-index: 1400;
-      background: rgba(0,0,0,.7);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,.65);
     }
 
     .gs-main {
       margin-left: var(--gs-sidebar-width);
       min-width: 0;
-      padding: 28px;
+      padding: 22px;
     }
 
     .gs-welcome {
@@ -377,70 +336,47 @@
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 28px;
+      gap: 15px;
+      margin-bottom: 24px;
     }
 
-    .gs-welcome h2 { margin: 0 0 6px; font-size: 26px; font-weight: 800; }
+    .gs-welcome h2 { margin: 0 0 8px; }
 
     .gs-welcome p {
       color: var(--gs-muted);
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .gs-primary-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 12px 20px;
-      border-radius: 12px;
+      padding: 12px 16px;
+      border-radius: 11px;
       background: var(--gs-pink);
       color: white;
       text-decoration: none;
       font-weight: 800;
       white-space: nowrap;
-      box-shadow: var(--gs-shadow-sm);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     }
 
-    .gs-primary-link:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--gs-shadow-md);
-      filter: brightness(1.1);
-    }
-
-    .gs-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 18px;
-      margin-bottom: 28px;
-    }
-
+    .gs-stats-grid,
     .gs-finance-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 18px;
-      margin-bottom: 28px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+      margin-bottom: 26px;
     }
 
     .gs-stat-card,
     .gs-finance-card,
     .gs-dashboard-card {
       min-width: 0;
-      padding: 20px;
+      padding: 18px;
       border: 1px solid var(--gs-border);
-      border-radius: 18px;
+      border-radius: 16px;
       background: var(--gs-panel);
-      box-shadow: var(--gs-shadow-sm);
-      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
-    }
-
-    .gs-stat-card:hover,
-    .gs-finance-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--gs-shadow-md);
-      border-color: #475569;
     }
 
     .gs-stat-top {
@@ -458,51 +394,46 @@
       place-items: center;
       flex: 0 0 44px;
       border-radius: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255,255,255,.09);
       font-size: 22px;
     }
 
-    .gs-stat-label { color: var(--gs-muted); font-size: 13px; font-weight: 600; }
+    .gs-stat-label { color: var(--gs-muted); font-size: 13px; }
 
     .gs-stat-value {
-      margin-top: 14px;
-      font-size: clamp(20px, 2.2vw, 28px);
+      margin-top: 15px;
+      font-size: clamp(20px, 2.5vw, 28px);
       font-weight: 800;
-      letter-spacing: -0.02em;
       overflow-wrap: anywhere;
     }
 
     .gs-stat-bottom {
-      margin-top: 12px;
+      margin-top: 11px;
       color: var(--gs-muted);
-      font-size: 12px;
+      font-size: 13px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      align-items: center;
     }
 
-    .gs-positive { color: #4ade80; font-weight: 700; }
+    .gs-positive { color: #22c55e; }
 
-    .gs-section-heading { margin: 32px 0 16px; }
+    .gs-section-heading { margin: 25px 0 14px; }
 
     .gs-section-heading h3 {
-      margin: 0 0 4px;
-      font-size: 22px;
-      font-weight: 800;
+      margin: 0 0 6px;
+      font-size: 21px;
     }
 
     .gs-section-heading p {
       margin: 0;
       color: var(--gs-muted);
-      font-size: 14px;
     }
 
     .gs-finance-card {
       display: flex;
       align-items: flex-start;
-      gap: 14px;
+      gap: 12px;
     }
 
     .gs-finance-card > div:last-child { min-width: 0; }
@@ -511,22 +442,18 @@
     .gs-finance-card strong,
     .gs-finance-card small { display: block; }
 
-    .gs-finance-card span { color: var(--gs-muted); font-size: 13px; font-weight: 600; }
-
-    .gs-finance-card small { color: var(--gs-muted); font-size: 12px; margin-top: 2px; }
+    .gs-finance-card span,
+    .gs-finance-card small { color: var(--gs-muted); }
 
     .gs-finance-card strong {
-      margin: 6px 0 2px;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.01em;
+      margin: 5px 0;
       overflow-wrap: anywhere;
     }
 
     .gs-dashboard-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-      gap: 20px;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 16px;
     }
 
     .gs-card-heading {
@@ -535,187 +462,84 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
-    .gs-card-heading h3 { margin: 0 0 4px; font-size: 18px; font-weight: 700; }
+    .gs-card-heading h3 { margin: 0 0 5px; }
     .gs-card-heading p { margin: 0; color: var(--gs-muted); font-size: 13px; }
 
     #salesPeriod {
-      padding: 8px 12px;
+      padding: 10px;
       border: 1px solid var(--gs-border);
-      border-radius: 10px;
+      border-radius: 9px;
       background: var(--gs-input);
       color: var(--gs-text);
-      outline: none;
-      cursor: pointer;
     }
 
     .gs-chart-area { min-height: 180px; overflow-x: auto; }
-    .gs-attention-list { display: grid; gap: 12px; }
+    .gs-attention-list { display: grid; gap: 15px; }
 
     .gs-attention-item {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       min-width: 0;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      transition: background 0.2s ease;
-    }
-
-    .gs-attention-item:hover {
-      background: rgba(255, 255, 255, 0.05);
     }
 
     .gs-attention-text { flex: 1; min-width: 0; }
-    .gs-attention-text strong { display: block; font-size: 14px; }
-    .gs-attention-text span { display: block; margin-top: 2px; color: var(--gs-muted); font-size: 12px; }
+    .gs-attention-text strong,
+    .gs-attention-text span { display: block; }
+    .gs-attention-text span { margin-top: 4px; color: var(--gs-muted); }
 
     .gs-attention-item a,
-    .gs-text-link {
-      color: #f472b6;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 13px;
-      transition: color 0.2s ease;
-    }
-
-    .gs-attention-item a:hover,
-    .gs-text-link:hover {
-      color: #ec4899;
-      text-decoration: underline;
-    }
+    .gs-text-link { color: #e879f9; }
 
     .gs-table-wrap { width: 100%; overflow-x: auto; }
 
     .gs-quick-actions {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
+      gap: 12px;
     }
 
     .gs-quick-action {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
       min-width: 0;
-      padding: 16px;
+      padding: 15px;
       border: 1px solid var(--gs-border);
-      border-radius: 14px;
+      border-radius: 13px;
       background: var(--gs-panel);
       color: var(--gs-text);
       text-decoration: none;
       overflow-wrap: anywhere;
-      box-shadow: var(--gs-shadow-sm);
-      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, background 0.2s ease;
     }
 
-    .gs-quick-action:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--gs-shadow-md);
-      border-color: #64748b;
-      background: #26334d;
-    }
+    .gs-quick-action span { font-size: 23px; }
+    .gs-quick-action small { color: var(--gs-muted); }
 
-    .gs-quick-action span { font-size: 26px; }
-    .gs-quick-action strong { font-size: 15px; }
-    .gs-quick-action small { color: var(--gs-muted); font-size: 12px; }
-
-    /* =========================================================
-       PREMIUM AI CARD DESIGN (Glow, Gradient, Modern Border)
-       ========================================================= */
     .gs-ai-card {
-      position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 16px;
-      margin-top: 24px;
-      padding: 24px 28px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #111827 100%);
-      border: 1px solid rgba(236, 72, 153, 0.3);
-      box-shadow: 0 10px 30px -10px rgba(168, 85, 247, 0.3);
-      overflow: hidden;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    }
-
-    .gs-ai-card::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(236, 72, 153, 0.12) 0%, transparent 60%);
-      pointer-events: none;
-      animation: aiGlow 8s infinite alternate ease-in-out;
-    }
-
-    @keyframes aiGlow {
-      0% { transform: translate(-10%, -10%); }
-      100% { transform: translate(10%, 10%); }
-    }
-
-    .gs-ai-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 40px -12px rgba(168, 85, 247, 0.45);
-      border-color: rgba(236, 72, 153, 0.6);
-    }
-
-    .gs-ai-card h3 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #ffffff 0%, #f472b6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .gs-ai-card p {
-      color: #cbd5e1 !important;
-      margin-top: 6px !important;
-      font-size: 14px;
-    }
-
-    .gs-ai-card .gs-text-link {
-      position: relative;
-      z-index: 2;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 20px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
-      color: white !important;
-      font-weight: 800;
-      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-    }
-
-    .gs-ai-card .gs-text-link:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6);
-      filter: brightness(1.1);
-      text-decoration: none;
+      gap: 15px;
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid var(--gs-border);
+      border-radius: 15px;
+      background: var(--gs-panel);
     }
 
     .gs-footer {
-      margin-top: 32px;
-      padding: 20px 0;
+      margin-top: 24px;
+      padding: 16px 0;
       color: var(--gs-muted);
-      font-size: 13px;
-      text-align: center;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      font-size: 12px;
     }
 
+    /* Mobile footer navigation */
     .gs-bottom-nav {
       position: fixed;
       z-index: 1200;
@@ -726,9 +550,8 @@
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 3px;
       padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid var(--gs-border);
+      background: #111b2d;
+      border-top: 1px solid #354056;
     }
 
     .gs-bottom-nav a {
@@ -736,24 +559,23 @@
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
       min-width: 0;
       min-height: 48px;
-      color: var(--gs-muted);
+      color: #cbd5e1;
       text-decoration: none;
-      font-size: 11px;
+      font-size: 12px;
       cursor: pointer;
-      border-radius: 8px;
-      transition: color 0.2s ease, background 0.2s ease;
     }
 
-    .gs-bottom-nav .gs-nav-icon { font-size: 20px; }
+    .gs-bottom-nav .gs-nav-icon { font-size: 23px; }
 
     .gs-bottom-nav a.active {
-      color: #f472b6;
+      color: var(--gs-pink);
       font-weight: 800;
     }
 
+    /* All-menu grid */
     .gs-menu-dialog {
       display: none;
       position: fixed;
@@ -762,8 +584,7 @@
       align-items: center;
       justify-content: center;
       padding: 16px;
-      background: rgba(0,0,0,.8);
-      backdrop-filter: blur(6px);
+      background: rgba(0,0,0,.78);
     }
 
     .gs-menu-dialog.open { display: flex; }
@@ -772,63 +593,55 @@
       width: min(620px, 100%);
       max-height: 85dvh;
       overflow-y: auto;
-      padding: 22px;
+      padding: 18px;
       border: 1px solid var(--gs-border);
-      border-radius: 20px;
+      border-radius: 18px;
       background: var(--gs-panel);
-      box-shadow: var(--gs-shadow-lg);
     }
 
     .gs-menu-heading {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 18px;
+      margin-bottom: 15px;
     }
 
-    .gs-menu-heading h2 { margin: 0; font-size: 20px; }
+    .gs-menu-heading h2 { margin: 0; }
 
     .gs-menu-close {
       border: 0;
-      padding: 6px 12px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 13px;
+      border-radius: 9px;
+      background: #4b5563;
       color: white;
-      font-size: 20px;
+      font-size: 22px;
       cursor: pointer;
-      transition: background 0.2s ease;
     }
-
-    .gs-menu-close:hover { background: rgba(255, 255, 255, 0.2); }
 
     .gs-menu-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      gap: 10px;
     }
 
     .gs-menu-grid a {
       display: flex;
       align-items: center;
-      gap: 12px;
-      min-height: 54px;
-      padding: 12px 16px;
+      gap: 10px;
+      min-height: 57px;
+      padding: 12px;
       border: 1px solid var(--gs-border);
       border-radius: 12px;
       color: var(--gs-text);
       text-decoration: none;
       overflow-wrap: anywhere;
-      font-weight: 600;
-      background: rgba(255,255,255,0.02);
-      transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
     }
 
-    .gs-menu-grid a:hover {
-      background: rgba(255,255,255,0.06);
-      border-color: #64748b;
-      transform: translateY(-2px);
+    .gs-menu-grid a:active {
+      background: rgba(236,0,237,.18);
     }
 
+    /* Splash + MPIN screen */
     .gs-startup {
       position: fixed;
       inset: 0;
@@ -848,31 +661,29 @@
 
     .gs-startup-logo {
       display: block;
-      width: 130px;
-      height: 130px;
+      width: 142px;
+      height: 142px;
       object-fit: contain;
-      margin: 0 auto 20px;
-      border-radius: 24px;
-      box-shadow: var(--gs-shadow-md);
+      margin: 0 auto 22px;
+      border-radius: 25px;
     }
 
     .gs-startup-card h1 {
       margin: 0 0 8px;
       font-size: 26px;
-      font-weight: 800;
     }
 
     .gs-startup-card p {
       color: #cbd5e1;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .gs-startup-progress {
       width: 100%;
-      height: 6px;
+      height: 5px;
       margin: 24px 0;
       border-radius: 20px;
-      background: #1e293b;
+      background: #334155;
       overflow: hidden;
     }
 
@@ -891,74 +702,57 @@
     .gs-pin-form {
       display: none;
       text-align: left;
-      padding: 24px;
-      border: 1px solid var(--gs-border);
-      border-radius: 20px;
-      background: #0f172a;
-      box-shadow: var(--gs-shadow-lg);
+      padding: 20px;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      background: #132640;
     }
 
     .gs-pin-form label {
       display: block;
-      margin: 16px 0 6px;
+      margin: 15px 0 7px;
       font-weight: 700;
-      font-size: 13px;
     }
 
     .gs-pin-form input {
       width: 100%;
-      padding: 12px;
-      border: 1px solid var(--gs-border);
+      padding: 13px;
+      border: 1px solid #64748b;
       border-radius: 10px;
       background: #071b35;
       color: white;
-      font-size: 20px;
-      letter-spacing: 6px;
+      font-size: 18px;
+      letter-spacing: 4px;
       text-align: center;
     }
 
     .gs-pin-form button {
       width: 100%;
-      margin-top: 20px;
-      padding: 14px;
+      margin-top: 16px;
+      padding: 13px;
       border: 0;
       border-radius: 10px;
       background: var(--gs-pink);
       color: white;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: var(--gs-shadow-sm);
-      transition: filter 0.2s ease, transform 0.2s ease;
-    }
-
-    .gs-pin-form button:hover {
-      filter: brightness(1.1);
-      transform: translateY(-2px);
     }
 
     .gs-pin-error {
       min-height: 20px;
-      color: #fca5a5;
+      color: #fecaca;
       font-size: 13px;
       line-height: 1.5;
-      margin-top: 8px;
     }
 
     #dashboardError {
       display: none;
-      margin: 12px 0 20px;
-      padding: 14px;
-      border-radius: 12px;
+      margin: 12px;
+      padding: 12px;
+      border-radius: 10px;
       background: #7f1d1d;
       color: white;
-      border: 1px solid #ef4444;
       overflow-wrap: anywhere;
-    }
-
-    /* RESPONSIVE LAYOUT ADJUSTMENTS */
-    @media (max-width: 1200px) {
-      .gs-stats-grid,
-      .gs-finance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 1000px) {
@@ -968,14 +762,14 @@
     }
 
     @media (max-width: 760px) {
-      .gs-topbar { height: 78px; padding: 10px 16px; }
-      .gs-topbar-title h1 { font-size: 19px; }
-      .gs-topbar-avatar { width: 46px; height: 46px; flex-basis: 46px; }
+      .gs-topbar { height: 78px; padding: 10px 12px; }
+      .gs-topbar-title h1 { font-size: 20px; }
+      .gs-topbar-avatar { width: 50px; height: 50px; flex-basis: 50px; }
 
       .gs-sidebar {
         top: 78px;
         bottom: 0;
-        width: min(90vw, 360px);
+        width: min(92vw, 390px);
         transform: translateX(-105%);
       }
 
@@ -986,43 +780,42 @@
 
       .gs-main {
         margin-left: 0;
-        padding: 18px 14px 90px;
+        padding: 17px 12px 90px;
       }
 
       .gs-bottom-nav { display: grid; }
 
       .gs-stats-grid,
-      .gs-finance-grid { gap: 12px; }
+      .gs-finance-grid { gap: 10px; }
 
       .gs-stat-card,
       .gs-finance-card,
-      .gs-dashboard-card { padding: 16px; }
+      .gs-dashboard-card { padding: 13px; }
 
       .gs-stat-icon,
       .gs-finance-icon {
-        width: 40px;
-        height: 40px;
-        flex-basis: 40px;
-        font-size: 20px;
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+        font-size: 19px;
       }
 
-      .gs-stat-label { font-size: 12px; }
-      .gs-stat-value { font-size: 22px; }
+      .gs-stat-label { font-size: 11px; }
+      .gs-stat-value { font-size: 20px; }
       .gs-stat-bottom { font-size: 11px; }
-      .gs-finance-card { gap: 10px; }
-      .gs-finance-card span { font-size: 12px; }
+      .gs-finance-card { gap: 8px; }
+      .gs-finance-card span,
       .gs-finance-card small { font-size: 11px; }
-      .gs-finance-card strong { font-size: 16px; }
+      .gs-finance-card strong { font-size: 14px; }
       .gs-menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 370px) {
       .gs-stats-grid,
-      .gs-finance-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-      .gs-quick-actions { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+      .gs-finance-grid { grid-template-columns: 1fr; }
       .gs-menu-grid { grid-template-columns: 1fr; }
       .gs-topbar-title h1 { font-size: 17px; }
-      .gs-topbar-avatar { width: 42px; height: 42px; flex-basis: 42px; }
+      .gs-topbar-avatar { width: 43px; height: 43px; flex-basis: 43px; }
     }
   </style>
 </head>
@@ -1076,6 +869,7 @@
     </div>
 
     <!-- Dashboard Avatar: Store Profile मा Save गरिएको फोटो -->
+    <!-- यो Avatar क्लिक गर्न मिल्दैन; Sidebar को GS लोगो अलग र स्थायी छ -->
     <div class="gs-topbar-avatar" id="gsDashboardAvatar"
       aria-label="Store Profile photo">GS</div>
   </header>
@@ -1338,7 +1132,7 @@
         </article>
       </section>
 
-      <section class="gs-dashboard-card" style="margin-top:20px">
+      <section class="gs-dashboard-card" style="margin-top:18px">
         <div class="gs-card-heading">
           <div>
             <h3>Fast Moving Products</h3>
@@ -1349,7 +1143,7 @@
         <div class="gs-table-wrap" id="fastMovingArea"></div>
       </section>
 
-      <section class="gs-dashboard-card" style="margin-top:20px">
+      <section class="gs-dashboard-card" style="margin-top:18px">
         <div class="gs-card-heading">
           <div>
             <h3>Recent Activity</h3>
@@ -1375,7 +1169,7 @@
         <a class="gs-quick-action" href="./purchase.html">
           <span>📦</span><strong>Purchase</strong><small>नयाँ खरिद</small>
         </a>
-        <a class="gs-quick-action" href="./stock-lots.html">
+        <main class="gs-quick-action" href="./stock-lots.html">
           <span>🧮</span><strong>FIFO Lots</strong><small>Stock cost</small>
         </a>
         <a class="gs-quick-action" href="./customers.html">
@@ -1395,11 +1189,10 @@
         </a>
       </section>
 
-      <!-- PREMIUM AI CARD -->
       <section class="gs-ai-card">
         <div>
           <h3>🤖 AI Shop Assistant</h3>
-          <p>
+          <p style="color:var(--gs-muted);margin-top:6px">
             पसलको व्यापारसम्बन्धी प्रश्न सोध्नुहोस्।
           </p>
         </div>
@@ -1414,6 +1207,7 @@
 
   <!-- मोबाइल Footer Navigation -->
   <nav class="gs-bottom-nav" aria-label="Main navigation">
+    <!-- Overview मा एकपटक ट्याप गर्दा Grid खुल्छ -->
     <a href="./index.html" class="active" id="gsOverviewNav"
       aria-haspopup="dialog" aria-controls="gsMenuDialog">
       <span class="gs-nav-icon">⌂</span><span>Overview</span>
@@ -1559,6 +1353,7 @@
         $("gsProfilePreviewOwner").textContent = owner;
         document.title = name + " - Dashboard";
 
+        /* Store Profile को एउटै operatorPhoto दुवै ठाउँमा देखाउने */
         renderPhoto($("gsProfilePhotoPreview"), photo, name);
         renderPhoto($("gsDashboardAvatar"), photo, name);
       }
@@ -1663,6 +1458,7 @@
         if (event.key === KEY) loadProfile();
       });
 
+      /* उही पेजमा अन्य स्क्रिप्टले Profile update गरेमा Avatar refresh */
       window.addEventListener("gs:settings-updated", function (event) {
         if (event.detail && event.detail.settings) {
           currentPhoto = event.detail.settings.operatorPhoto || "";
@@ -1673,7 +1469,7 @@
       loadProfile();
     })();
 
-    /* Footer Overview */
+    /* Footer Overview: single tap मा Grid खोल्ने */
     (function () {
       const dialog = document.getElementById("gsMenuDialog");
       const close = document.getElementById("gsMenuClose");
@@ -1691,6 +1487,7 @@
         document.body.style.overflow = "";
       }
 
+      /* Double tap वा context menu आवश्यक छैन */
       overview.addEventListener("click", function (event) {
         event.preventDefault();
         openDialog();
@@ -1709,14 +1506,17 @@
         }
       });
 
+      /* Grid भित्रको link सामान्य रूपमा खुल्छ */
       menuLinks.forEach(function (link) {
         link.addEventListener("click", function () {
           closeDialog();
+          /* href browser ले सामान्य रूपमा खोल्छ */
         });
       });
     })();
 
-    /* Splash -> MPIN -> Dashboard */
+    /* Splash -> MPIN -> Dashboard
+       gs_mpin_security key र SHA-256 format कायम राखिएको छ। */
     (function () {
       const MPIN_KEY = "gs_mpin_security";
       const splash = document.getElementById("gsStartup");
@@ -1842,6 +1642,7 @@
         const storeName = settings.storeName || "Krishna G.C.";
         document.getElementById("gsStartupTitle").textContent = storeName;
 
+        /* कम्तीमा 1.5 सेकेन्ड Splash देखाउने */
         await new Promise(resolve => setTimeout(resolve, 1500));
 
         const config = readConfig();
@@ -1944,6 +1745,6 @@
     }
   </script>
 
-  <script src="./dashboard.js"></script>
+  <script src="./dashboard.js?"></script>
 </body>
 </html>
