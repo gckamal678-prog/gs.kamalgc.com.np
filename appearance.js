@@ -1,4 +1,3 @@
-
 "use strict";
 
 (function () {
@@ -544,11 +543,30 @@
     setVariable(root, "--table-header-bg", colors.table);
     setVariable(root, "--hover-bg", colors.hover);
 
-    // Compatibility with existing GS CSS variables.
+    // Shared appearance variables for ALL pages.
     setVariable(root, "--gs-bg", colors.body);
     setVariable(root, "--gs-panel", colors.card);
     setVariable(root, "--gs-input", colors.input);
     setVariable(root, "--gs-border", colors.border);
+    setVariable(root, "--gs-text", colors.text);
+    setVariable(root, "--gs-muted", colors.muted);
+    setVariable(root, "--gs-pink", accent);
+
+    // Reports page compatibility.
+    setVariable(root, "--r-bg", colors.body);
+    setVariable(root, "--r-card", colors.card);
+    setVariable(root, "--r-text", colors.text);
+    setVariable(root, "--r-muted", colors.muted);
+    setVariable(root, "--r-border", colors.border);
+    setVariable(root, "--r-accent", accent);
+
+    // Settings page compatibility.
+    setVariable(root, "--bg", colors.body);
+    setVariable(root, "--surface", colors.card);
+    setVariable(root, "--text", colors.text);
+    setVariable(root, "--muted", colors.muted);
+    setVariable(root, "--border", colors.border);
+    setVariable(root, "--green", accent);
 
     addGlobalAppearanceStyles();
 
