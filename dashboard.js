@@ -1,4 +1,3 @@
-
 /* =========================================================
    GENERAL STORE MANAGEMENT SYSTEM
    Dashboard - Complete Replacement
@@ -361,12 +360,12 @@
             ">
                 ${items.map(function (item) {
                     const height = item.amount > 0
-                        ? Math.max(5, item.amount / maxAmount * 130)
+                        ? Math.max(6, item.amount / maxAmount * 130)
                         : 3;
 
                     return `
                         <div
-                            title="${escapeHTML(item.key)}: Rs. ${money(item.amount)}"
+                            title="${escapeHTML(item.key)}: Rs.${money(item.amount)}"
                             style="
                                 flex:1;
                                 min-width:0;
@@ -382,20 +381,23 @@
                                 font-size:10px;
                                 text-align:center;
                                 overflow-wrap:anywhere;
+                                color:var(--gs-muted);
                             ">
                                 ${item.amount ? escapeHTML(money(item.amount)) : ""}
                             </span>
 
                             <div style="
-                                width:min(100%,30px);
+                                width:min(100%,28px);
                                 height:${height}px;
-                                background:var(--gs-pink,#ec00ed);
-                                border-radius:5px 5px 0 0;
+                                background:linear-gradient(180deg, var(--gs-pink, #166534) 0%, #0d381e 100%);
+                                border-radius:6px 6px 0 0;
+                                transition:height 0.3s ease;
                             "></div>
 
                             <span style="
                                 font-size:10px;
                                 white-space:nowrap;
+                                color:var(--gs-muted);
                             ">
                                 ${escapeHTML(item.label)}
                             </span>
@@ -407,9 +409,12 @@
             <div style="
                 text-align:center;
                 font-size:12px;
-                margin-top:8px;
+                margin-top:10px;
+                color:var(--gs-muted);
+                border-top:1px solid rgba(255,255,255,0.05);
+                padding-top:8px;
             ">
-                कुल बिक्री: Rs. ${money(total)}
+                कुल बिक्री: <strong style="color:var(--gs-text)">Rs. ${money(total)}</strong>
             </div>
         `;
     }
@@ -460,7 +465,7 @@
 
         if (!rows.length) {
             area.innerHTML = `
-                <p style="padding:16px">
+                <p style="padding:16px;color:var(--gs-muted);margin:0">
                     अहिलेसम्म बिक्रीको रेकर्ड छैन।
                 </p>
             `;
@@ -468,25 +473,25 @@
         }
 
         area.innerHTML = `
-            <table style="width:100%;border-collapse:collapse">
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
                 <thead>
-                    <tr>
-                        <th style="text-align:left;padding:10px">Product</th>
-                        <th style="text-align:right;padding:10px">Qty Sold</th>
-                        <th style="text-align:right;padding:10px">Sales</th>
+                    <tr style="border-bottom:1px solid var(--gs-border);color:var(--gs-muted)">
+                        <th style="text-align:left;padding:12px 10px">Product</th>
+                        <th style="text-align:right;padding:12px 10px">Qty Sold</th>
+                        <th style="text-align:right;padding:12px 10px">Sales</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${rows.map(function (row) {
                         return `
-                            <tr>
-                                <td style="padding:10px">
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.03)">
+                                <td style="padding:12px 10px;font-weight:600">
                                     ${escapeHTML(row.name)}
                                 </td>
-                                <td style="padding:10px;text-align:right">
+                                <td style="padding:12px 10px;text-align:right">
                                     ${money(row.qty)}
                                 </td>
-                                <td style="padding:10px;text-align:right;white-space:nowrap">
+                                <td style="padding:12px 10px;text-align:right;white-space:nowrap;font-weight:700">
                                     Rs. ${money(row.amount)}
                                 </td>
                             </tr>
@@ -591,7 +596,7 @@
 
         if (!recent.length) {
             area.innerHTML = `
-                <p style="padding:16px">
+                <p style="padding:16px;color:var(--gs-muted);margin:0">
                     अहिलेसम्म कारोबारको रेकर्ड छैन।
                 </p>
             `;
@@ -599,27 +604,27 @@
         }
 
         area.innerHTML = `
-            <table style="width:100%;border-collapse:collapse">
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
                 <thead>
-                    <tr>
-                        <th style="text-align:left;padding:10px">Date</th>
-                        <th style="text-align:left;padding:10px">Type / Details</th>
-                        <th style="text-align:right;padding:10px">Amount</th>
+                    <tr style="border-bottom:1px solid var(--gs-border);color:var(--gs-muted)">
+                        <th style="text-align:left;padding:12px 10px">Date</th>
+                        <th style="text-align:left;padding:12px 10px">Type / Details</th>
+                        <th style="text-align:right;padding:12px 10px">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${recent.map(function (item) {
                         return `
-                            <tr>
-                                <td style="padding:10px;white-space:nowrap">
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.03)">
+                                <td style="padding:12px 10px;white-space:nowrap;color:var(--gs-muted)">
                                     ${escapeHTML(item.date || "-")}
                                 </td>
-                                <td style="padding:10px">
-                                    <strong>${escapeHTML(item.type)}</strong>
-                                    <div>${escapeHTML(item.name)}</div>
-                                    <small>${escapeHTML(item.status)}</small>
+                                <td style="padding:12px 10px">
+                                    <strong style="display:block;font-size:14px">${escapeHTML(item.type)}</strong>
+                                    <div style="font-size:12px;margin-top:2px">${escapeHTML(item.name)}</div>
+                                    <small style="color:var(--gs-muted);font-size:11px">${escapeHTML(item.status)}</small>
                                 </td>
-                                <td style="padding:10px;text-align:right;white-space:nowrap">
+                                <td style="padding:12px 10px;text-align:right;white-space:nowrap;font-weight:700">
                                     Rs. ${money(item.amount)}
                                 </td>
                             </tr>
@@ -889,7 +894,6 @@
         }
     });
 
-    // Other modules can request a refresh
     window.addEventListener("gs:settings-updated", function () {
         renderStoreProfile();
         renderDashboard();
