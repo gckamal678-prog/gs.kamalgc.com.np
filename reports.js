@@ -539,4 +539,3 @@ document.addEventListener("DOMContentLoaded", init, { once: true });
 init();
 }
 })();
-तिमिले भने जस्तै कोड सहि छ ?
