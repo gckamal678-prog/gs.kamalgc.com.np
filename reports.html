@@ -15,8 +15,7 @@
       --r-text: var(--text-color, #111827);
       --r-muted: var(--muted-color, #6b7280);
       --r-border: var(--border-color, #e5e7eb);
-      --r-accent: var(--accent-color, #166534);
-      --r-table-row-even: var(--hover-bg, #f3f8f4);
+      --r-accent: #166534;
     }
 
     * { box-sizing: border-box; }
@@ -55,7 +54,6 @@
     .report-header h1 {
       margin: 0 0 7px;
       font-size: clamp(23px, 3vw, 30px);
-      color: var(--r-text);
     }
 
     .report-header p {
@@ -165,7 +163,6 @@
       border-left: 4px solid var(--stat-color, var(--r-accent));
       border-radius: 11px;
       background: var(--r-card);
-      color: var(--r-text);
       overflow-wrap: anywhere;
     }
 
@@ -181,7 +178,6 @@
       font-size: clamp(18px, 2.2vw, 26px);
       font-weight: 800;
       line-height: 1.4;
-      color: var(--r-text);
     }
 
     .stat-note {
@@ -229,7 +225,6 @@
     .report-panel-header h2 {
       margin: 0;
       font-size: 19px;
-      color: var(--r-text);
     }
 
     .report-count {
@@ -243,7 +238,6 @@
       overflow-x: auto;
       border: 1px solid var(--r-border);
       border-radius: 8px;
-      background: var(--r-card);
     }
 
     .report-table {
@@ -259,7 +253,7 @@
     .report-table th {
       padding: 10px 9px;
       border: 1px solid var(--r-border);
-      background: var(--r-accent);
+      background: #166534;
       color: #fff;
       text-align: left;
       font-size: 10px;
@@ -272,12 +266,10 @@
       padding: 9px;
       border: 1px solid var(--r-border);
       vertical-align: middle;
-      color: var(--r-text);
-      background: var(--r-card);
     }
 
     .report-table tbody tr:nth-child(even) td {
-      background: var(--r-table-row-even);
+      background: #f3f8f4;
     }
 
     .report-empty {
@@ -285,7 +277,6 @@
       text-align: center;
       color: var(--r-muted);
       white-space: normal;
-      background: var(--r-card) !important;
     }
 
     .report-status {
@@ -299,10 +290,6 @@
     .report-status.ok { background: #dcfce7; color: #166534; }
     .report-status.low { background: #fef3c7; color: #92400e; }
     .report-status.out { background: #fee2e2; color: #991b1b; }
-
-    .report-orange { color: #f97316 !important; }
-    .report-green { color: #16a34a !important; }
-    .report-red { color: #dc2626 !important; }
 
     .report-warning {
       padding: 12px 14px;
@@ -329,7 +316,6 @@
       border: 1px solid var(--r-border);
       border-radius: 10px;
       background: var(--r-bg);
-      color: var(--r-text);
       overflow-wrap: anywhere;
     }
 
@@ -340,10 +326,7 @@
       font-size: 12px;
     }
 
-    .profit-item strong { 
-      font-size: 20px; 
-      color: var(--r-text);
-    }
+    .profit-item strong { font-size: 20px; }
     .profit-item.net { border-color: var(--r-accent); }
 
     @media (max-width: 950px) {
@@ -446,23 +429,12 @@
   </section>
 
   <nav class="report-tabs no-print" aria-label="Report categories">
-    <button class="report-tab active" data-report-tab="sales"
-      aria-selected="true" type="button">🧾 Sales</button>
-
-    <button class="report-tab" data-report-tab="purchases"
-      aria-selected="false" type="button">📥 Purchases</button>
-
-    <button class="report-tab" data-report-tab="stock"
-      aria-selected="false" type="button">📦 Stock</button>
-
-    <button class="report-tab" data-report-tab="customers"
-      aria-selected="false" type="button">👥 Customers</button>
-
-    <button class="report-tab" data-report-tab="suppliers"
-      aria-selected="false" type="button">🚚 Suppliers</button>
-
-    <button class="report-tab" data-report-tab="profit"
-      aria-selected="false" type="button">💰 Profit & Loss</button>
+    <button class="report-tab active" data-report-tab="sales" aria-selected="true" type="button">🧾 Sales</button>
+    <button class="report-tab" data-report-tab="purchases" aria-selected="false" type="button">📥 Purchases</button>
+    <button class="report-tab" data-report-tab="stock" aria-selected="false" type="button">📦 Stock</button>
+    <button class="report-tab" data-report-tab="customers" aria-selected="false" type="button">👥 Customers</button>
+    <button class="report-tab" data-report-tab="suppliers" aria-selected="false" type="button">🚚 Suppliers</button>
+    <button class="report-tab" data-report-tab="profit" aria-selected="false" type="button">💰 Profit & Loss</button>
   </nav>
 
   <section class="report-card report-panel" data-report="sales">
@@ -618,52 +590,6 @@
 
 </main>
 
-<script>
-(function () {
-  "use strict";
-
-  const refreshButton = document.getElementById("refreshReportsBtn");
-
-  if (!refreshButton) return;
-
-  let refreshing = false;
-
-  refreshButton.addEventListener("click", async function () {
-    if (refreshing) return;
-
-    refreshing = true;
-    refreshButton.disabled = true;
-    refreshButton.textContent = "↻ Refreshing...";
-
-    try {
-      if (typeof window.loadReports === "function") {
-        await window.loadReports();
-      } else if (typeof window.refreshReports === "function") {
-        await window.refreshReports();
-      } else {
-        window.location.reload();
-        return;
-      }
-    } catch (error) {
-      console.error("Report refresh failed:", error);
-
-      const errorBox = document.getElementById("reportError");
-
-      if (errorBox) {
-        errorBox.textContent =
-          "Reports could not be refreshed. Please reload the page and try again.";
-        errorBox.classList.add("show");
-      }
-    } finally {
-      refreshing = false;
-      refreshButton.disabled = false;
-      refreshButton.textContent = "↻ Refresh";
-    }
-  });
-})();
-</script>
-
 <script src="reports.js"></script>
-
 </body>
 </html>
