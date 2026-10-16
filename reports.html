@@ -15,7 +15,8 @@
       --r-text: var(--text-color, #111827);
       --r-muted: var(--muted-color, #6b7280);
       --r-border: var(--border-color, #e5e7eb);
-      --r-accent: #166534;
+      --r-accent: var(--accent-color, #166534);
+      --r-table-row-even: var(--hover-bg, #f3f8f4);
     }
 
     * { box-sizing: border-box; }
@@ -54,6 +55,7 @@
     .report-header h1 {
       margin: 0 0 7px;
       font-size: clamp(23px, 3vw, 30px);
+      color: var(--r-text);
     }
 
     .report-header p {
@@ -163,6 +165,7 @@
       border-left: 4px solid var(--stat-color, var(--r-accent));
       border-radius: 11px;
       background: var(--r-card);
+      color: var(--r-text);
       overflow-wrap: anywhere;
     }
 
@@ -178,6 +181,7 @@
       font-size: clamp(18px, 2.2vw, 26px);
       font-weight: 800;
       line-height: 1.4;
+      color: var(--r-text);
     }
 
     .stat-note {
@@ -225,6 +229,7 @@
     .report-panel-header h2 {
       margin: 0;
       font-size: 19px;
+      color: var(--r-text);
     }
 
     .report-count {
@@ -238,6 +243,7 @@
       overflow-x: auto;
       border: 1px solid var(--r-border);
       border-radius: 8px;
+      background: var(--r-card);
     }
 
     .report-table {
@@ -253,7 +259,7 @@
     .report-table th {
       padding: 10px 9px;
       border: 1px solid var(--r-border);
-      background: #166534;
+      background: var(--r-accent);
       color: #fff;
       text-align: left;
       font-size: 10px;
@@ -266,10 +272,12 @@
       padding: 9px;
       border: 1px solid var(--r-border);
       vertical-align: middle;
+      color: var(--r-text);
+      background: var(--r-card);
     }
 
     .report-table tbody tr:nth-child(even) td {
-      background: #f3f8f4;
+      background: var(--r-table-row-even);
     }
 
     .report-empty {
@@ -277,6 +285,7 @@
       text-align: center;
       color: var(--r-muted);
       white-space: normal;
+      background: var(--r-card) !important;
     }
 
     .report-status {
@@ -320,6 +329,7 @@
       border: 1px solid var(--r-border);
       border-radius: 10px;
       background: var(--r-bg);
+      color: var(--r-text);
       overflow-wrap: anywhere;
     }
 
@@ -330,7 +340,10 @@
       font-size: 12px;
     }
 
-    .profit-item strong { font-size: 20px; }
+    .profit-item strong { 
+      font-size: 20px; 
+      color: var(--r-text);
+    }
     .profit-item.net { border-color: var(--r-accent); }
 
     @media (max-width: 950px) {
@@ -651,6 +664,7 @@
   });
 })();
 </script>
+<script src="report.js"></script>
 
 </body>
 </html>
