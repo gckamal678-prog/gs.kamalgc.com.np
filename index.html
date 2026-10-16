@@ -19,9 +19,9 @@
       --gs-panel: #202a3b;
       --gs-input: #111827;
       --gs-border: #3b4659;
-      --gs-text: #f3f4f6;
-      --gs-muted: #b5bfce;
-      --gs-pink: #ec00ed;
+      --gs-text: var(--text-color, #111827);
+      --gs-muted: var(--muted-color, #6b7280);
+      --gs-pink: var(--accent-color, #166534);
       --gs-sidebar-width: 370px;
     }
 
@@ -33,7 +33,7 @@
       margin: 0;
       background: var(--gs-bg);
       color: var(--gs-text);
-      font-family: Arial, "Noto Sans Devanagari", sans-serif;
+      font-family: var(--font-family, Arial, sans-serif);
       min-height: 100vh;
     }
 
@@ -1169,7 +1169,7 @@
         <a class="gs-quick-action" href="./purchase.html">
           <span>📦</span><strong>Purchase</strong><small>नयाँ खरिद</small>
         </a>
-        <a class="gs-quick-action" href="./stock-lots.html">
+        <main class="gs-quick-action" href="./stock-lots.html">
           <span>🧮</span><strong>FIFO Lots</strong><small>Stock cost</small>
         </a>
         <a class="gs-quick-action" href="./customers.html">
@@ -1726,7 +1726,7 @@
           }
         } catch (error) {
           console.error("MPIN प्रक्रिया असफल:", error);
-          errorText.textContent = error.message ||
+          errorText.error = error.message ||
             "MPIN प्रक्रिया पूरा भएन। HTTPS जाँच गर्नुहोस्।";
         }
       });
@@ -1745,6 +1745,6 @@
     }
   </script>
 
-  <script src="./dashboard.js?v=20261011-4"></script>
+  <script src="./dashboard.js?"></script>
 </body>
 </html>
